@@ -33,7 +33,6 @@ char* l_files[l_f_count] = {"w","b/d/e","a","d","b/y","b/c","b/f","s/j/k/z","s/j
 char** list_of_stuff  = NULL;
 int list_of_stuff_count = 0;
 
-int test_spm();
 int test_data ();
 int test_ecmp();
 int test_move();
@@ -58,11 +57,8 @@ int main(int argc, char const *argv[])
 
     
 
-    if (strcmp(argv[1],"spm") == 0)
-    {
-        return test_spm();
-    }
-    else if (strcmp(argv[1],"data") == 0)
+
+    if (strcmp(argv[1],"data") == 0)
     {
         return test_data();
     }
@@ -73,7 +69,6 @@ int main(int argc, char const *argv[])
     else if (strcmp(argv[1],"all") == 0)
     {
         int ret = 0;
-        ret += test_spm();
         ret += test_data();
         ret += test_ecmp();
         return ret;
@@ -297,22 +292,7 @@ int test_data ()
     return EXIT;
 }
 
-int test_spm()
-{
-    struct package o_pkg = {0};
 
-    open_spm("tests/vim.spm",&o_pkg);
-
-    printf("name: %s\n",o_pkg.name);
-    printf("version: %s\n",o_pkg.version);
-    printf("type: %s\n",o_pkg.type);
-
-    // create a new package
-    create_spm("tests/vim-test.spm",&o_pkg);
-
-    return 0;
-
-}
 
 int test_ecmp(int type)
 {

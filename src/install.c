@@ -26,8 +26,8 @@ int installSpmFile(char* spm_path,int as_dep)
 {
     struct package pkg;
 
-    open_pkg(spm_path, &pkg,NULL);
-
+    open_pkg(spm_path,&pkg,NULL);
+    printf("Adding to queue\n");
     PACKAGE_QUEUE[QUEUE_COUNT] = pkg.name; // add this shit to the PKG_QUEUE ARRAY
     QUEUE_COUNT++;
     msg(DBG1,"Added %s to the queue",pkg.name);

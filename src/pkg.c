@@ -12,8 +12,7 @@ int open_pkg(char* path, struct package* pkg,char* format)
 {
     msg(DBG2,"Setting everything to NULL"); 
     //set all varibales t NULL
-    
-    pkg = calloc(1,sizeof(struct package));
+    memset(pkg,0,sizeof(struct package));
 
 
     // print make dependencies count
@@ -47,6 +46,11 @@ int open_pkg(char* path, struct package* pkg,char* format)
             {
                 msg(DBG2,"Opening package with %s format",FORMATS[i]);
                 runFormatLib(FORMATS[i],"open",path,pkg);
+                msg(DBG2,"Package opened");
+                if (DEBUG >= 2)
+                {
+                    printPkg(pkg);
+                }
                 return 0;
             }
         }

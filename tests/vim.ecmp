@@ -2,7 +2,7 @@
 # basic information about the package
 [info] 
 name = vim
-version = 8.2
+version = 9.0.0228
 type = src
 license =MIT
 url=https://anduin.linuxfromscratch.org/BLFS/vim/vim-9.0.0228.tar.gz

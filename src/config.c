@@ -1,12 +1,13 @@
 #include "stdio.h"
 
 #include "spm/libspm.h"
+#include "spm/globals.h"
 
+#include <spm/utils.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "spm/globals.h"
-#include "spm/utils.h"
+
 
 
 /* 
@@ -27,68 +28,63 @@ int readConfig(char* configFilePath)
            presence would allow to handle lines longer that sizeof(line) */
         // removing the '\n' mentioned above
         line[strlen(line)-1] = 0;
-        count  = splitm(line,'=',kvlist,2);
-        msg(DBG3,"Key: %s Value: %s",kvlist[0],kvlist[1]);
 
-        if (count == 0)
+        char* key = strtok(line,"=");
+        char* value = strtok(NULL,"=");
+        if (key == NULL || value == NULL) {
+            msg(ERROR,"Invalid config file");
+            return 1;
+        }
+
+        msg(DBG3,"Key: %s Value: %s",key,value);
+
+        if (strcmp(key,"ROOT") == 0)
         {
-            msg(ERROR,"Invalid config file format");
-            continue;
+            strcpy(ROOT,value);
+        }
+        else if (strcmp(key,"MAIN_DIR") == 0)
+        {
+
+            strcpy(MAIN_DIR,value);
+        }
+        else if (strcmp(key,"WORK_DIR") == 0)
+        {
+
+            strcpy(WORK_DIR,value);
+        }
+        else if (strcmp(key,"INSTALLED_FILE") == 0)
+        {
+
+            strcpy(INSTALLED_DB,value);
+        }
+        else if (strcmp(key,"ALL_FILE") == 0)
+        {
+            strcpy(ALL_DB,value);
+        }
+        else if (strcmp(key,"CONFIG_FILE") == 0)
+        {
+
+            strcpy(CONFIG_FILE,value);
+        }
+        else if (strcmp(key,"REPOS") == 0)
+        {
+                
+            REPO_COUNT = splitm(value,' ',REPOS,MAX_REPOS);
+            
+        }
+        else if (strcmp(key,"FORMATS") == 0)
+        {
+            msg(DBG3,"FORMATS: %s",value);
+            strcpy(REPO_ALLOC,value);
+            FORMAT_COUNT = splitm(REPO_ALLOC,' ',FORMATS,MAX_FORMATS);
+            for (int i = 0; i < FORMAT_COUNT; i++)
+            {
+                msg(DBG3,"FORMATS: %s",FORMATS[i]);
+            }
         }
         else {
-            char* key = kvlist[0];
-            char* value = kvlist[1];
-            if (strcmp(key,"ROOT") == 0)
-            {
-                strcpy(ROOT,value);
-            }
-            else if (strcmp(key,"MAIN_DIR") == 0)
-            {
-
-                strcpy(MAIN_DIR,value);
-            }
-            else if (strcmp(key,"WORK_DIR") == 0)
-            {
-
-                strcpy(WORK_DIR,value);
-            }
-            else if (strcmp(key,"INSTALLED_FILE") == 0)
-            {
-
-                strcpy(INSTALLED_DB,value);
-            }
-            else if (strcmp(key,"ALL_FILE") == 0)
-            {
-                strcpy(ALL_DB,value);
-            }
-            else if (strcmp(key,"CONFIG_FILE") == 0)
-            {
-
-                strcpy(CONFIG_FILE,value);
-            }
-            else if (strcmp(key,"REPOS") == 0)
-            {
-                 
-                REPO_COUNT = splitm(value,' ',REPOS,MAX_REPOS);
-                
-            }
-            else if (strcmp(key,"FORMATS") == 0)
-            {
-                msg(DBG3,"FORMATS: %s",value);
-                strcpy(REPO_ALLOC,value);
-                FORMAT_COUNT = splitm(REPO_ALLOC,' ',FORMATS,MAX_FORMATS);
-                for (int i = 0; i < FORMAT_COUNT; i++)
-                {
-                    msg(DBG3,"FORMATS: %s",FORMATS[i]);
-                }
-            }
-            else {
-                msg(ERROR,"Unknown key in config file : %s",key);
-            }
-            
-
+            msg(ERROR,"Unknown key in config file : %s",key);
         }
-
     }
     /* may check feof here to make a difference between eof and io failure -- network
        timeout for instance */

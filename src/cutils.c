@@ -251,7 +251,42 @@ int free_pkg(struct package* pkg)
     return 0;
 }
 
+int printPkg(struct package* pkg)
+{
+    msg(DBG3,"Printing pkg %s",pkg->name);
+    printf("Name : %s\n",pkg->name);
+    printf("Type : %s\n",pkg->type);
+    printf("Version : %s\n",pkg->version);
+    printf("URL : %s\n",pkg->url);
+    printf("License : %s\n",pkg->license);
+    printf("Dependencies : \n");
+    int i;
+    for (i = 0; i < pkg->dependenciesCount;i++)
+    {
+        printf("\t%s\n",pkg->dependencies[i]);
+    }
+    printf("Make Dependencies : \n");
+    for (i = 0; i < pkg->makedependenciesCount;i++)
+    {
+        printf("\t%s\n",pkg->makedependencies[i]);
+    }
+    printf("Optional Dependencies : \n");
+    for (i = 0; i < pkg->optionaldependenciesCount;i++)
+    {
+        printf("\t%s\n",pkg->optionaldependencies[i]);
+    }
+    printf("Info : \n");
+    printf("\tDownload : %s\n",pkg->info.download);
+    printf("\tInstall : %s\n",pkg->info.install);
+    printf("\tPrepare : %s\n",pkg->info.prepare);
+    printf("\tMake : %s\n",pkg->info.make);
+    printf("\tTest : %s\n",pkg->info.test);
+    printf("Locations : \n");
+    for (i = 0; i < pkg->locationsCount;i++)
+    {
+        printf("\t%s\n",pkg->locations[i]);
+    }
+    return 0;
 
-
-
+}
 

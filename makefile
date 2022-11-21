@@ -77,7 +77,7 @@ formats:
 		fi; \
 	done
 
-.PHONY: clean test
+.PHONY: clean test formats
 
 clean:
 	rm -f $(ODIR)/*.o $(BINDIR)/$(LIBOUT) $(BINDIR)/$(EXEOUT) $(BINDIR)/plugins/*.so 
@@ -86,7 +86,7 @@ install:
 	if [ ! -d "/usr/local/lib/spm" ]; then mkdir -p /usr/local/lib/spm; fi
 	cp -rf include/* $(DESTDIR)/usr/include/spm
 	cp $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib
-	cp -rf $(BINDIR)/plugins/* $(DESTDIR)/var/cccp/plugins
+	install  $(BINDIR)/plugins/* -D $(DESTDIR)/var/cccp/plugins
 
 
 	

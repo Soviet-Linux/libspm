@@ -23,6 +23,7 @@ typedef struct ecmp_section {
     char *buff; 
 }section;
 
+
 unsigned int getsections(char* path,section*** sectionq);
 
 unsigned int parseinfo(char* s, struct package* dest);
@@ -85,25 +86,17 @@ int open(const char* path,struct package* pkg)
 	infohm = hm_init(infodict,sizeof(infodict)/sizeof(infodict[0]));
 
 	printf("hm : \n");
-	hm_visualize(hm);
+	//hm_visualize(hm);
 	printf("infohm : \n");
-	hm_visualize(infohm);
+	//hm_visualize(infohm);
 
 	unsigned int (*parser)(char* s,void* dest);
 
 	section** sections;
 	uint count = getsections(path,&sections);
 
-	// print all sections
-	for (int i = 0; i < count; i++) {
-		printf("section : %s\n",sections[i]->name);
-		printf("buff : %s\n",sections[i]->buff);
-	}
 
 	for (int i = 0; i < count; i++) {
-		printf("section name : %s\n",sections[i]->name);
-		printf("section buff : %s\n",sections[i]->buff);
-		msg(INFO,"Getting Options from Hashtable with '%s' key",sections[i]->name);
 		void** options = hm_get(hm,sections[i]->name);
 		if (options == NULL) {
 			msg(WARNING,"Unknown section : %s",sections[i]->name);
@@ -132,7 +125,6 @@ int open(const char* path,struct package* pkg)
 
 unsigned int parsenl(char* s,char*** dest)
 {
-	printf("Parsing nl\n");
 	char* str;
 	if (parseraw(s,&str) == EOF) return EOF;
 	return split(str,'\n',*dest);
@@ -144,7 +136,6 @@ unsigned int parseraw(char* s, char** dest)
 	// So we are just going to copy the pointer to it
 	// In the last version , we were copying the string to a new buffer
 	// Because the `s` string was a buffer that was going to be freed by `getline()`
-	printf("Parsing raw\n");
 	*dest = s;
 	return strlen(s);
 }
@@ -161,7 +152,6 @@ unsigned int parseinfo(char *s, struct package* dest)
 	// split with nl
 	char** nlist = calloc(sizeof(char*),16);
 	int count = parsenl(s,&nlist);
-	printf("count : %d\n",count);
 	for (int i = 0;i < count;i++) {
 		char* key = strtok(nlist[i],"=");
 		char* value = strtok(NULL,"=");
@@ -171,7 +161,6 @@ unsigned int parseinfo(char *s, struct package* dest)
 			msg(WARNING,"Unknown key : '%s'",key);
 			continue;
 		}
-		msg(INFO,"adding key %s to %p",key,*destbuff);
 		*destbuff = value;
 
 	}
@@ -198,13 +187,11 @@ unsigned int getsections(char* path,section*** sections) {
 		if (line[0] == '[') {
 			section *sec = calloc(1,sizeof(section));
 			sec->name = strdup(strtok(line,"[]"));
-			printf("sec.name: %s\n",sec->name);
 
 			sec->buff = calloc(256,sizeof(char));
 			(*sections)[sectionscount++] = sec;
 
 			alloc = 256;
-			printf("Setting current to %s\n",sec->name);
 			current = sec;
 
 			continue;
@@ -253,7 +240,6 @@ int create(const char* path,struct package* pkg)
 	if (pkg->url != NULL) fprintf(ecmp,"url = %s\n",pkg->url);
 	fprintf(ecmp,"\n"); // for impoved readability
 
-	printf("Going to loop %lu time on list\n",sizeof(list) / sizeof(list[0]));
 	for (int i = 0;i < sizeof(list) / sizeof(list[0]);i++ )
 	{
 		if (list[i][1] == NULL) {
