@@ -13,29 +13,27 @@
 #   2017-04-24 - changed order of linker params
 # ------------------------------------------------
 
-# project name (generate executable with this name)
-
-
-# compiling flags here
+# -------------------
+# CCCP Makefile
+# Modified by: PKD
+#--------------------
 
 LIBOUT = libspm.so
-EXEOUT = cccp
+
 
 CC = gcc
 CPP = g++
 
 ODIR = obj
 SDIR = src
-CPPDIR = src/cccp/cpp
-RSDIR = src/cccp/rust
+
 
 CFLAGS = -Wall -g -fPIC -O2 -Wextra -fPIC -L./bin
-RSFLAGS = -O
 
 LIBS = -lcurl -lsqlite3 -lm 
 
 # change these to proper directories where each file should be
-SRCDIR   = src/libspm
+SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
 
@@ -43,7 +41,7 @@ SOURCES  := $(wildcard $(SRCDIR)/*.c)
 INCLUDES := $(wildcard $(SRCDIR)/*.h)
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
-FMT_DIR = src/formats
+FMT_DIR = formats
 
 
 all: $(BINDIR)/$(LIBOUT)
@@ -62,12 +60,9 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	@echo "Compiled "$<" successfully!"
 
 
-rust-dev:
-	cargo build --manifest-path $(RSDIR)/Cargo.toml
-	cp $(RSDIR)/target/debug/cccp $(BINDIR)/$(EXEOUT)
 
 test:
-	$(CC) $(CFLAGS) -DSTATIC src/formats/*/* tests/test.c $(LIBS) -o bin/spm-test -lspm -L./bin
+	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* tests/test.c $(LIBS) -o bin/spm-test -lspm -L./bin
 
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -shared -fPIC -o $(LIBOUT)
@@ -91,7 +86,6 @@ install:
 	if [ ! -d "/usr/local/lib/spm" ]; then mkdir -p /usr/local/lib/spm; fi
 	cp -rf include/* $(DESTDIR)/usr/include/spm
 	cp $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib
-	cp $(BINDIR)/$(EXEOUT) $(DESTDIR)/bin
 	cp -rf $(BINDIR)/plugins/* $(DESTDIR)/var/cccp/plugins
 
 
