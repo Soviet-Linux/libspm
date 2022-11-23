@@ -18,11 +18,10 @@ build:
   # install the necessary build tools when needed
 
   script:
-    - make install
     - make
     - make formats
     - make test
-    - make install
+    - make DESTDIR=/srv/gitroot install
   
 
 # run tests using the binary built before
