@@ -28,4 +28,5 @@ push:
   stage: push
   script:
      - echo "push to repo"
+     - echo user is $USER
      - git push ssh://git@github.com/Soviet-Linux/libspm.git HEAD:main
