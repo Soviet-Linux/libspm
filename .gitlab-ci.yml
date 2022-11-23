@@ -12,17 +12,20 @@
 
 image: pkd667/sovietlinux:latest
 
+variables:
+  SOVIET_ENV: "docker run pkd667/sovietlinux:latest"
+
 build:
   stage: build
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
 
   script:
-    - neofetch
-    - make
-    - make formats
-    - make test
-    - make DESTDIR=/srv/gitroot install
+    - $SOVIET_ENV neofetch
+    - $SOVIET_ENV make
+    - $SOVIET_ENV make formats
+    - $SOVIET_ENV make test
+    - $SOVIET_ENV make DESTDIR=/srv/gitroot install
   
 
 # run tests using the binary built before
