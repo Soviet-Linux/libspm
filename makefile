@@ -83,7 +83,6 @@ clean:
 	rm -f $(ODIR)/*.o $(BINDIR)/$(LIBOUT) $(BINDIR)/$(EXEOUT) $(BINDIR)/plugins/*.so 
 
 install:
-	if [ ! -d "/usr/local/lib/spm" ]; then mkdir -p /usr/local/lib/spm; fi
 	
 	find include/ -type f -exec install -vDm 555 {} $(DESTDIR)/{} \;
 	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib/$(LIBOUT) 
