@@ -13,7 +13,7 @@
 image: pkd667/sovietlinux:latest
 
 variables:
-  SOVIET_ENV: "docker run -v `pwd`:`pwd` -w `pwd` pkd667/sovietlinux:latest"
+  SOVIET_ENV: "docker run -v $PWD:$PWD -w $PWD pkd667/sovietlinux:latest"
 
 build:
   stage: build
