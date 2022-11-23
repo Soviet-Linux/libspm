@@ -16,6 +16,7 @@ build:
   script:
 #   - mkdir obj bin
     - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE sh -c "
+      make clean &&
       make && 
       make formats"
 
