@@ -7,7 +7,7 @@ stages:
   - push
 
 variables:
-  IMAGE: archlinux
+  IMAGE: gcc
 
 build:
   stage: build
@@ -15,7 +15,7 @@ build:
 
   script:
 #   - mkdir obj bin
-    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE "pacman -Sy libsqlite3-dev libcurl-dev
+    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE sh -c "
       make && 
       make formats && 
       make test"
