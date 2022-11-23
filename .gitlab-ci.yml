@@ -18,6 +18,7 @@ build:
   # install the necessary build tools when needed
 
   script:
+    - neofetch
     - make
     - make formats
     - make test
