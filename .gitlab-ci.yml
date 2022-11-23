@@ -10,7 +10,7 @@
 # can use versions as well, like gcc:5.2
 # see https://hub.docker.com/_/gcc/
 
-image: pkd667/sovietlinux
+image: pkd667/sovietlinux:latest
 
 build:
   stage: build
