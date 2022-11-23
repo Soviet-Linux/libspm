@@ -28,7 +28,7 @@ ODIR = obj
 SDIR = src
 
 
-CFLAGS = -Wall -g -fPIC -O2 -Wextra -fPIC -L./bin
+CFLAGS = -Wall -g -fPIC -O2 -Wextra -fPIC -L./bin -Iinclude
 
 LIBS = -lcurl -lsqlite3 -lm 
 
@@ -36,6 +36,8 @@ LIBS = -lcurl -lsqlite3 -lm
 SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
+INCDIR   = include
+
 
 SOURCES  := $(wildcard $(SRCDIR)/*.c)
 INCLUDES := $(wildcard $(SRCDIR)/*.h)

@@ -4,8 +4,8 @@
 
 
 //class thing
-#include "spm/libspm.h"
-#include "spm/utils.h"
+#include "libspm.h"
+#include "utils.h"
 
 #include "sqlite3.h"
 #include <malloc.h>

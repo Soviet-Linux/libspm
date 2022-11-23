@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "spm/hashtable.h"
+#include "hashtable.h"
 
 
 hashtable* hm_create(int capacity)

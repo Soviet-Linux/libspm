@@ -3,7 +3,7 @@
 
 
 // class stuff
-#include "spm/libspm.h"
+#include "libspm.h"
 
 
 //checking if package is installed and untouched

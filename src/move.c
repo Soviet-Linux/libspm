@@ -4,8 +4,8 @@
 #include <unistd.h>
 // class stuff
 
-#include "spm/globals.h"
-#include "spm/utils.h"
+#include "globals.h"
+#include "utils.h"
 
 // This function is moving the binaries to the correct locations
 void move_binaries(char** locations,long loc_size)

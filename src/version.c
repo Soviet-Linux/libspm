@@ -1,4 +1,4 @@
-#include "spm/libspm.h"
+#include "libspm.h"
 
 float version()
 {

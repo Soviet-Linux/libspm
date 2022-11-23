@@ -1,0 +1,4 @@
+compileFlags: # Tweak the parse settings
+  Add: 
+    - "-I=include"
+

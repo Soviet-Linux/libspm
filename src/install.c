@@ -4,9 +4,9 @@
 
 
 // class stuff
-#include "spm/libspm.h"
-#include "spm/utils.h"
-#include "spm/data.h"
+#include "libspm.h"
+#include "utils.h"
+#include "data.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

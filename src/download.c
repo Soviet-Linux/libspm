@@ -6,8 +6,8 @@
 #include <curl/curl.h>
 
 // class stuff
-#include "spm/libspm.h"
-#include "spm/utils.h"
+#include "libspm.h"
+#include "utils.h"
 
 
 

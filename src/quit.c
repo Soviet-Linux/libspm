@@ -3,9 +3,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "spm/libspm.h"
-#include "spm/globals.h"
-#include "spm/utils.h"
+#include "libspm.h"
+#include "globals.h"
+#include "utils.h"
 
 
 void quit(int status)

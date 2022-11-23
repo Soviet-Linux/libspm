@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 // class stuff
-#include "spm/libspm.h"
-#include "spm/utils.h"
+#include "libspm.h"
+#include "utils.h"
 
 
 #define RESET   "\033[0m"

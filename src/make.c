@@ -6,9 +6,9 @@
 
 
 //class stuff
-#include "spm/libspm.h"
-#include "spm/utils.h"
-#include "spm/globals.h"
+#include "libspm.h"
+#include "utils.h"
+#include "globals.h"
 
 /*
     All the complexity in this function and really in this entire project if just because we need to track  files installed by a makefile

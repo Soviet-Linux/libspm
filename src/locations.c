@@ -3,9 +3,9 @@
 #include "string.h"
 
 // class stuff
-#include "spm/globals.h"
-#include "spm/libspm.h"
-#include "spm/utils.h"
+#include "globals.h"
+#include "libspm.h"
+#include "utils.h"
 #include <linux/limits.h>
 #include <stdlib.h>
 

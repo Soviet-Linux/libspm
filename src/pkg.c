@@ -2,8 +2,8 @@
 #include "stdio.h"
 #include "string.h"
 
-#include "spm/utils.h"
-#include "spm/libspm.h"
+#include "utils.h"
+#include "libspm.h"
 #include <dlfcn.h>
 #include <stdlib.h>
 

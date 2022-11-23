@@ -3,7 +3,7 @@
 #include <ftw.h>
 #include <unistd.h>
 
-#include "spm/libspm.h"
+#include "libspm.h"
 
 int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {

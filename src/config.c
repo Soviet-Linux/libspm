@@ -1,9 +1,9 @@
 #include "stdio.h"
 
-#include "spm/libspm.h"
-#include "spm/globals.h"
+#include "libspm.h"
+#include "globals.h"
 
-#include <spm/utils.h>
+#include <utils.h>
 #include <stdlib.h>
 #include <string.h>
 

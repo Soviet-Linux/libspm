@@ -2,10 +2,10 @@
 #include "unistd.h"
 #include <sys/stat.h>
 
-#include "spm/libspm.h"
-#include "spm/utils.h"
-#include "spm/globals.h"
-#include "spm/data.h"
+#include "libspm.h"
+#include "utils.h"
+#include "globals.h"
+#include "data.h"
 
 
 void init()

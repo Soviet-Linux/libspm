@@ -1,9 +1,9 @@
 
 
 // class stuff
-#include "spm/libspm.h"
-#include "spm/globals.h"
-#include "spm/utils.h"
+#include "libspm.h"
+#include "globals.h"
+#include "utils.h"
 
 
 void sync ()

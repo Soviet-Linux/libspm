@@ -8,11 +8,11 @@
 #include <errno.h>
 #include <dlfcn.h>
 
-#include "spm/libspm.h"
+#include "libspm.h"
 
 
 
-#include "spm/utils.h"
+#include "utils.h"
 
 
 unsigned int splitm (char* string,char delim,char** dest,unsigned max)

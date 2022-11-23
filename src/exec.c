@@ -2,8 +2,8 @@
 #include "stdlib.h"
 #include "malloc.h"
 // class stuff
-#include "spm/libspm.h"
-#include "spm/utils.h"
+#include "libspm.h"
+#include "utils.h"
 #include <string.h>
 
 char* exec(const char* cmd) 

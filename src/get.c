@@ -7,10 +7,10 @@
 
 
  // class stuff
-#include "spm/libspm.h"
-#include "spm/globals.h"
-#include "spm/utils.h"
-#include "spm/data.h"
+#include "libspm.h"
+#include "globals.h"
+#include "utils.h"
+#include "data.h"
 
 
 

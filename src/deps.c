@@ -4,8 +4,8 @@
 #include <unistd.h>
 
 // class stuff
-#include "spm/libspm.h"
-#include "spm/utils.h"
+#include "libspm.h"
+#include "utils.h"
 
 // This function will check if all dependencies of a package are installed
 int check_dependencies (char ** dependencies,int dependenciesCount) 

@@ -2,8 +2,8 @@
 
 #include "stdbool.h"
 #include <stdlib.h>
-#include "spm/utils.h"
-#include "spm/globals.h"
+#include "utils.h"
+#include "globals.h"
 
 #define QUEUE_MAX 64
 
