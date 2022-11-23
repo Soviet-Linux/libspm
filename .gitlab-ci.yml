@@ -1,33 +1,31 @@
-# You can copy and paste this template into a new `.gitlab-ci.yml` file.
-# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
-#
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/C++.gitlab-ci.yml
 
-# use the official gcc image, based on debian
-# can use versions as well, like gcc:5.2
-# see https://hub.docker.com/_/gcc/
 
-image: pkd667/sovietlinux
+
+
+stages:
+  - build
+  - push
+
+variables:
+  IMAGE: gcc
 
 build:
   stage: build
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
-
+  # before_script:
+  #   - apt update && apt -y install make autoconf
   script:
-    - make
-    - make formats
-    - make test
-    - make DESTDIR=/srv/gitroot install
-  
+#   - mkdir obj bin
+    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE make && make formats
+    - STATUS=$?
+    - echo $STATUS
+    - exit $STATUS
+
 
 # run tests using the binary built before
-test:
-  stage: test
+push:
+  stage: push
   script:
-     - echo "testing...."
-#    - bin/spm-test ecmp
-
+     - echo "push to repo"
+     - git push ssh://git@github.com/Soviet-Linux/CCCP.git HEAD:main
