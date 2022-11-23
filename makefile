@@ -84,9 +84,10 @@ clean:
 
 install:
 	if [ ! -d "/usr/local/lib/spm" ]; then mkdir -p /usr/local/lib/spm; fi
-	cp -rf include/* $(DESTDIR)/usr/include/spm
-	cp $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib
-	install  $(BINDIR)/plugins/* -D $(DESTDIR)/var/cccp/plugins
+	
+	find include/ -type f -exec install -vDm 555 {} $(DESTDIR)/{} \;
+	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib/$(LIBOUT) 
+	install  $(BINDIR)/plugins/* -vDm 755 $(DESTDIR)/var/cccp/plugins 
 
 
 	
