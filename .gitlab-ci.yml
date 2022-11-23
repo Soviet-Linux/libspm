@@ -7,7 +7,7 @@ stages:
   - push
 
 variables:
-  BUILD_ENV: "docker run -v `pwd`:`pwd` -w `pwd` gcc"
+  BUILD_ENV: docker run -v `pwd`:`pwd` -w `pwd` gcc
 
 build:
   stage: build
