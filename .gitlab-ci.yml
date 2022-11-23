@@ -17,10 +17,12 @@ build:
   #   - apt update && apt -y install make autoconf
   script:
 #   - mkdir obj bin
-    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE make && make formats
-    - STATUS=$?
-    - echo $STATUS
-    - exit $STATUS
+    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE make &&\
+      make formats &&\
+      make test &&\
+      
+
+
 
 
 # run tests using the binary built before
