@@ -34,9 +34,9 @@ hashtable* hm;
 hashtable* infohm;
 
 #ifdef STATIC
-int open_ecmp(const char* path,struct package* pkg)
+int open_ecmp(char* path,struct package* pkg)
 #else
-int open(const char* path,struct package* pkg)
+int open(char* path,struct package* pkg)
 #endif
 {
 	if (access(path,F_OK) != 0) {
@@ -85,10 +85,7 @@ int open(const char* path,struct package* pkg)
 	hm = hm_init(pairs,sizeof(pairs)/sizeof(pairs[0]));
 	infohm = hm_init(infodict,sizeof(infodict)/sizeof(infodict[0]));
 
-	printf("hm : \n");
-	//hm_visualize(hm);
-	printf("infohm : \n");
-	//hm_visualize(infohm);
+
 
 	unsigned int (*parser)(char* s,void* dest);
 
@@ -97,6 +94,7 @@ int open(const char* path,struct package* pkg)
 
 
 	for (int i = 0; i < count; i++) {
+		printf("section : %s\n",sections[i]->name);
 		void** options = hm_get(hm,sections[i]->name);
 		if (options == NULL) {
 			msg(WARNING,"Unknown section : %s",sections[i]->name);
@@ -106,7 +104,6 @@ int open(const char* path,struct package* pkg)
 		
 		if (parser != NULL) {
 			int ret = parser(sections[i]->buff,options[1]);
-			msg(INFO,"Parsing section : %s",sections[i]->name);
 			if (options[2] != NULL) {
 				*(int*)options[2] = ret;
 			}
@@ -116,7 +113,7 @@ int open(const char* path,struct package* pkg)
 			msg(WARNING,"Unknown parser for section : %s",sections[i]->name);
 		}
 	}
-
+	msg(INFO,"Parsing done\n");
 	return 0;
 }
 
@@ -126,8 +123,11 @@ int open(const char* path,struct package* pkg)
 unsigned int parsenl(char* s,char*** dest)
 {
 	char* str;
-	if (parseraw(s,&str) == EOF) return EOF;
-	return split(str,'\n',*dest);
+	
+	unsigned int count = ncountc(s,parseraw(s,&str),'\n');
+	printf("count : %d\n",count);
+	*dest = calloc(sizeof(char*),count+2);
+	return splitm(str,'\n',*dest,count+2);
 }
 unsigned int parseraw(char* s, char** dest)
 {	
@@ -150,8 +150,9 @@ unsigned int parseinfo(char *s, struct package* dest)
 		p++;
 	}
 	// split with nl
-	char** nlist = calloc(sizeof(char*),16);
+	char** nlist;
 	int count = parsenl(s,&nlist);
+	printf("count : %d\n",count);
 	for (int i = 0;i < count;i++) {
 		char* key = strtok(nlist[i],"=");
 		char* value = strtok(NULL,"=");

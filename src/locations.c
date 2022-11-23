@@ -23,11 +23,13 @@ long get_locations(char ***locations, char *loc_dir) {
   // WARING : this is a memory leak
   char* res = exec(files_location_cmd);
 
-  msg(DBG2, "Got locations !");
+  msg(DBG2, "Got locations : '%s'", res);
   
   // print the locations
-  unsigned int max_count = countc(res, '\n');
-  int count = splitm(res, '\n', *locations, max_count);
+  unsigned int max_count = ncountc(res,strlen(res),'\n');
+  *locations = malloc(sizeof(char*) * max_count);
+  printf("Found %d files\n", max_count);
+  int count = splitm(res, '\n', *locations, max_count+1);
 
 
   printf("Got %d locations\n", count);

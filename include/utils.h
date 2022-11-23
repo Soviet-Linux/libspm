@@ -22,7 +22,9 @@ unsigned int splitm (char* string,char delim,char** dest,unsigned max);
 #define split(string,delim,dest) splitm(string,delim,dest,INT_MAX)
 
 // to count the number of occurences of a char in a string
-unsigned int countc(char* string,char c);
+unsigned int ncountc(const char* string,unsigned int len,char c);
+#define countc(string,c) ncountc(string,strlen(string),c)
+
 // a tool to have cool terminal output
 int msg(enum level msgLevel, const char* message,...);
 // a small helper function to free an array

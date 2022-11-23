@@ -37,10 +37,10 @@ unsigned int splitm (char* string,char delim,char** dest,unsigned max)
 
 
 
-unsigned int countc(char* string,char c)
+unsigned int ncountc(const char* string,unsigned int len,char c)
 {
     unsigned int count = 0;
-    for (int i = 0; i < strlen(string); i++)
+    for (int i = 0; i < len; i++)
     {
         if (string[i] == c)
         {

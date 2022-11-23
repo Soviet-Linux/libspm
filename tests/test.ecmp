@@ -1,0 +1,21 @@
+[info]
+name = test
+type = src
+version = 1.0.0
+url = 8.8.8.8
+
+[download]
+echo "Downloading done." > package.txt
+mkdir $NAME-$VERSION && mv package.txt $NAME-$VERSION
+
+[prepare]
+echo "Preparing done." >> package.txt
+
+[make]
+echo "Making done." >> package.txt
+
+[install]
+install package.txt $BUILD_ROOT
+
+
+

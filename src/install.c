@@ -26,8 +26,9 @@ int installSpmFile(char* spm_path,int as_dep)
 {
     struct package pkg;
 
-    open_pkg(spm_path,&pkg,NULL);
-    printf("Adding to queue\n");
+    open_pkg(spm_path, &pkg,NULL);
+    msg(INFO, "Installing %s", pkg.name);
+
     PACKAGE_QUEUE[QUEUE_COUNT] = pkg.name; // add this shit to the PKG_QUEUE ARRAY
     QUEUE_COUNT++;
     msg(DBG1,"Added %s to the queue",pkg.name);
@@ -74,7 +75,7 @@ int installSpmFile(char* spm_path,int as_dep)
          - chnage it  : 0
     */
 
-    char* legacy_dir = malloc(strlen(MAKE_DIR)+strlen(pkg.name)+strlen(pkg.version)+2);
+    char legacy_dir[MAX_PATH];
     sprintf(legacy_dir,"%s/%s-%s",MAKE_DIR,pkg.name,pkg.version);
 
 
@@ -106,10 +107,9 @@ int installSpmFile(char* spm_path,int as_dep)
    
     // remove the deprecated unsafe format function call
     // format the path using sprintf
-    char* file_path = calloc(strlen(SPM_DIR)+strlen(pkg.name)+strlen(pkg.version)+2,sizeof(char));
+    char file_path[MAX_PATH];
     sprintf(file_path,"%s/%s.%s",SPM_DIR,pkg.name,DEFAULT_FORMAT);
     create_pkg(file_path,&pkg,NULL);
-    free(file_path);
 
     store_data(INSTALLED_DB,&pkg ,as_dep);
 
@@ -119,7 +119,7 @@ int installSpmFile(char* spm_path,int as_dep)
     QUEUE_COUNT--;
     PACKAGE_QUEUE[QUEUE_COUNT] = NULL;
 
-    free_pkg(&pkg);
+    //free_pkg(&pkg);
     return 0;
 }
 
@@ -139,7 +139,7 @@ int installSpmBinary(char* archivePath,int as_dep)
     if (uncompress_binary(archivePath,BUILD_DIR) != 0) return -1;
 
     // format the path using sprintf
-    char* spm_path = calloc(strlen(BUILD_DIR)+strlen(pkg.name)+strlen(DEFAULT_FORMAT)+2,sizeof(char));
+    char spm_path[MAX_PATH];
     sprintf(spm_path,"%s/%s.%s",BUILD_DIR,pkg.name,DEFAULT_FORMAT);
     if (access(spm_path,F_OK) != 0)
     {
@@ -167,12 +167,12 @@ int installSpmBinary(char* archivePath,int as_dep)
     exec_special(pkg.info.special,BUILD_DIR);
 
     // format the path using sprintf
-    char* create_path = calloc(strlen(SPM_DIR)+strlen(pkg.name)+strlen(DEFAULT_FORMAT)+2,sizeof(char));
+    char create_path[MAX_PATH];
     sprintf(create_path,"%s/%s.%s",SPM_DIR,pkg.name,DEFAULT_FORMAT);
     create_pkg(create_path,&pkg,NULL);
 
     // format
-    char* store_path = calloc(strlen(SPM_DIR)+strlen(pkg.name)+strlen(DEFAULT_FORMAT)+2,sizeof(char));
+    char store_path[MAX_PATH];
     sprintf(store_path,"%s/%s.%s",SPM_DIR,pkg.name,DEFAULT_FORMAT);
     store_data(store_path,&pkg ,as_dep);
 
@@ -180,11 +180,8 @@ int installSpmBinary(char* archivePath,int as_dep)
     clean();
 
 
-    free(spm_path);
-    free(create_path);
-    free(store_path);
 
-    free_pkg(&pkg);
+    //free_pkg(&pkg);
 
     return 0;
 }
