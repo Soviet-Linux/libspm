@@ -12,15 +12,15 @@ variables:
 build:
   stage: build
   # instead of calling g++ directly you can also use some build toolkit like make
-  # install the necessary build tools when needed
-  # before_script:
-  #   - apt update && apt -y install make autoconf
+
   script:
 #   - mkdir obj bin
-    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE make && make formats
-    - STATUS=$?
-    - echo $STATUS
-    - exit $STATUS
+    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE sh -c "
+      make clean &&
+      make && 
+      make formats"
+
+
 
 
 # run tests using the binary built before
@@ -28,4 +28,5 @@ push:
   stage: push
   script:
      - echo "push to repo"
-     - git push ssh://git@github.com/Soviet-Linux/CCCP.git HEAD:main
+     - echo user is $USER
+     - git push ssh://git@github.com/Soviet-Linux/libspm.git HEAD:main
