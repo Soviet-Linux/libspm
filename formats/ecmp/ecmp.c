@@ -4,10 +4,10 @@
 #include "unistd.h"
 #include "malloc.h"
 
-#include "spm/libspm.h"
-#include "spm/utils.h"
+#include "libspm.h"
+#include "utils.h"
 
-#include "spm/hashtable.h"
+#include "hashtable.h"
 #include <stdio.h>
 
 #define uint unsigned int

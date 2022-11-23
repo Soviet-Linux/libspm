@@ -16,8 +16,7 @@
 
 
 
-unsigned int splitm (char* string,char delim,char** dest,unsigned max)
-{
+unsigned int splitm (char* string,char delim,char** dest,unsigned max) {
     //msg(DBG3,"Splitting \"%s\" with delim '%c' and max %d",string,delim,max);
     char* token = strtok(string, &delim);
     unsigned int count = 0;
