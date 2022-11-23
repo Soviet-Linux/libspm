@@ -29,5 +29,6 @@ build:
 test:
   stage: test
   script:
+     - echo "testing...."
 #    - bin/spm-test ecmp
 
