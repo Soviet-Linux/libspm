@@ -17,8 +17,7 @@ build:
 #   - mkdir obj bin
     - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE sh -c "
       make && 
-      make formats && 
-      make test"
+      make formats"
 
 
 
