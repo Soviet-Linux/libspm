@@ -82,7 +82,7 @@ formats:
 .PHONY: clean test formats
 
 clean:
-	rm -f $(ODIR)/*.o $(BINDIR)/$(LIBOUT) $(BINDIR)/$(EXEOUT) $(BINDIR)/plugins/*.so 
+	rm -f $(ODIR)/*.o $(BINDIR)/$(LIBOUT) $(BINDIR)/plugins/*.so 
 
 install:
 	
