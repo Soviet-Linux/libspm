@@ -17,9 +17,9 @@ build:
   #   - apt update && apt -y install make autoconf
   script:
 #   - mkdir obj bin
-    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE make &&\
-      make formats &&\
-      make test &&\
+    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE make && 
+      make formats && 
+      make test 
       
 
 
