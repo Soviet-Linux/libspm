@@ -7,7 +7,7 @@ stages:
   - push
 
 variables:
-  BUILD_ENV: docker run -v `pwd`:`pwd` -w `pwd` gcc
+  IMAGE: gcc
 
 build:
   stage: build
@@ -17,8 +17,10 @@ build:
   #   - apt update && apt -y install make autoconf
   script:
 #   - mkdir obj bin
-    - $BUILD_ENV make && make formats
-    - exit $?
+    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE make && make formats
+    - STATUS=$?
+    - echo $STATUS
+    - exit $STATUS
 
 
 # run tests using the binary built before
