@@ -2,6 +2,9 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "unistd.h"
+#include "string.h"
+#include "libgen.h"
 
 // class stuff
 #include "libspm.h"
@@ -49,17 +52,6 @@ int msg(enum level msgLevel, const char* message,...)
 
     switch (msgLevel)
     {
-        // different debug levels
-        case DBG1:
-            if (DEBUG >=1 ) printf("%sDEBUG: %s%s%s%s\n",BOLDGREEN,GREEN,strDest,RESET,RESET);
-            break;
-        case DBG2:
-            if (DEBUG >= 2) printf("%sDEBUG: %s%s%s%s\n",BOLDGREEN,RESET,BOLDBLUE,strDest,RESET);
-            break;
-        case DBG3:
-            if (DEBUG >= 3) printf("%sDEBUG: %s%s%s%s\n", BOLDGREEN, RESET,GREEN,strDest,RESET);
-
-            break;
         case INFO:
             printf("%sINFO: %s%s%s%s\n",BOLDBLUE,RESET,BLUE,strDest,RESET);
             break;
@@ -85,5 +77,37 @@ int msg(enum level msgLevel, const char* message,...)
     free(strDest);
     
 
+    return 0;
+}
+
+// the debug function is bad
+int f_dbg__(int level,int line,const char* function,const char* file,char* message,...)
+{
+    //declare char* strDest
+    char* strDest;
+
+    va_list args;
+    //initialize va_list args
+    va_start(args, message);
+    //declare size_t size
+    size_t size = vsnprintf(NULL, 0, message, args);
+    //allocate memory for strDest
+    strDest = (char*) calloc(size +2 ,sizeof(char));
+    //initialize va_list args
+    va_start(args,message);
+    //initialize vsnprintf
+    vsnprintf(strDest, size+1, message, args);
+
+    //initialize va_end
+    va_end(args);
+
+    file = basename(file);
+
+    if (DEBUG >= level)
+    {
+        printf("%s[%s:%d|%s()] %s%s%s%s\n",BOLDCYAN,file,line,function,RESET,GREEN,strDest,RESET);
+    }
+    //free memory
+    free(strDest);
     return 0;
 }

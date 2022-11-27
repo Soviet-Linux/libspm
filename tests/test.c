@@ -79,6 +79,12 @@ int main(int argc, char const *argv[])
         installSpmFile(argv[2],0);
         return 0;
     }
+    else if (strcmp(argv[1],"uninstall") == 0)
+    {
+        init();
+        uninstall(argv[2]);
+        return 0;
+    }
     else if (strcmp(argv[1],"move") == 0)
     {
         return test_move();
@@ -299,26 +305,12 @@ int test_ecmp(int type)
     init();
     int EXIT = EXIT_SUCCESS;
 
-    printf("Testing ecmp functions\n");
-
     struct package pkg = {0};
 
     open_ecmp("tests/vim.ecmp",&pkg);
     
     // print the pkg
     printf("  %s => %s %s\n",pkg.name,pkg.version,pkg.type);
-
-    // print package info
-    printf("install script : \n");
-    printf("  %s\n",pkg.info.install);
-    
-
-    // print dependencies
-    printf("dependencies : %d \n",pkg.dependenciesCount);
-    for (int i = 0; i < pkg.dependenciesCount; i++)
-    {
-        printf("  %s\n",pkg.dependencies[i]);
-    }
 
     msg(INFO,"Creating ecmp package file");
 

@@ -92,9 +92,7 @@ int open(char* path,struct package* pkg)
 	section** sections;
 	uint count = getsections(path,&sections);
 
-
 	for (int i = 0; i < count; i++) {
-		printf("section : %s\n",sections[i]->name);
 		void** options = hm_get(hm,sections[i]->name);
 		if (options == NULL) {
 			msg(WARNING,"Unknown section : %s",sections[i]->name);
@@ -113,7 +111,7 @@ int open(char* path,struct package* pkg)
 			msg(WARNING,"Unknown parser for section : %s",sections[i]->name);
 		}
 	}
-	msg(INFO,"Parsing done\n");
+	dbg(2,"done parsing | returning");
 	return 0;
 }
 
@@ -123,9 +121,9 @@ int open(char* path,struct package* pkg)
 unsigned int parsenl(char* s,char*** dest)
 {
 	char* str;
-	
-	unsigned int count = ncountc(s,parseraw(s,&str),'\n');
-	printf("count : %d\n",count);
+	// the parseraw below is useless but i'll keep since in case
+	parseraw(s,&str);
+	unsigned int count = countc(s,'\n');
 	*dest = calloc(sizeof(char*),count+2);
 	return splitm(str,'\n',*dest,count+2);
 }
@@ -152,7 +150,7 @@ unsigned int parseinfo(char *s, struct package* dest)
 	// split with nl
 	char** nlist;
 	int count = parsenl(s,&nlist);
-	printf("count : %d\n",count);
+	dbg(3,"count : %d",count);
 	for (int i = 0;i < count;i++) {
 		char* key = strtok(nlist[i],"=");
 		char* value = strtok(NULL,"=");
@@ -244,14 +242,13 @@ int create(const char* path,struct package* pkg)
 	for (int i = 0;i < sizeof(list) / sizeof(list[0]);i++ )
 	{
 		if (list[i][1] == NULL) {
-			printf("Empty section\n");
 			continue;
 		}
 
 		//printf("%d - [%s]\n",i,(char*)list[i][0]);
 		if (list[i][2] == NULL) {
 
-			printf("[%s] -> %p\n",(char*)list[i][0],(char*)list[i][0]);
+			dbg(2,"[%s] -> %p",(char*)list[i][0],(char*)list[i][0]);
 			fprintf(ecmp,"[%s]\n",(char*)list[i][0]);
 			if ((char*)list[i][1] != NULL) {
 				fprintf(ecmp,"%s\n",(char*)list[i][1]);
@@ -261,7 +258,6 @@ int create(const char* path,struct package* pkg)
 		else {
 			if (*(int*)(list[i][2]) != 0) {
 				fprintf(ecmp,"[%s]\n",(char*)list[i][0]);
-				printf("%d - [%s]\n",i,(char*)list[i][0]);
 				for (int j = 0;j< *(int*)(list[i][2]);j++) {
 					fprintf(ecmp,"%s\n",((char**)list[i][1])[j]);
 				}

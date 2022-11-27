@@ -26,11 +26,14 @@ long get_locations(char ***locations, char *loc_dir) {
   msg(DBG2, "Got locations : '%s'", res);
   
   // print the locations
-  unsigned int max_count = ncountc(res,strlen(res),'\n');
-  *locations = malloc(sizeof(char*) * max_count);
+  unsigned int max_count = countc(res,'\n') + 256;
+  *locations = calloc(sizeof(char*),max_count);
   printf("Found %d files\n", max_count);
-  int count = splitm(res, '\n', *locations, max_count+1);
-
+  int count = splitm(res, '\n', *locations, max_count);
+  if (count == -1) {
+    msg(ERROR, "Failed to split locations");
+    quit(1);
+  }
 
   printf("Got %d locations\n", count);
 

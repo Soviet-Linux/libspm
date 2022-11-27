@@ -21,7 +21,7 @@ So dont touch this , except if there are a critical bug or an important missing 
 // this function is for uninstaling packages
 int uninstall(char* name)
 {       
-    char dataSpmPath[strlen(SPM_DIR)+strlen(name)+strlen(DEFAULT_FORMAT)+3];
+    char dataSpmPath[MAX_PATH];
     sprintf(dataSpmPath,"%s/%s.%s",SPM_DIR,name,DEFAULT_FORMAT);
     // verify if the package is installed
     msg(DBG3, "Verifying if the package is installed at %s" , dataSpmPath);

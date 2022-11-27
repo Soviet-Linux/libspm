@@ -29,7 +29,8 @@ unsigned int splitm (char* string,char delim,char** dest,unsigned max) {
     }
     if (count >= max)
     {
-        msg(DBG3,"Splitm: Max reached");
+        msg(ERROR,"max reached : %d >= %d",count,max);
+        msg(ERROR,"Last token : %s",token);
         return -1;
     }
     return count;
@@ -37,16 +38,18 @@ unsigned int splitm (char* string,char delim,char** dest,unsigned max) {
 
 
 
-unsigned int ncountc(const char* string,unsigned int len,char c)
+unsigned int countc(const char* string,char c)
 {
     unsigned int count = 0;
-    for (int i = 0; i < len; i++)
+    unsigned int i;
+    for (i = 0;string[i] != '\0'; i++)
     {
         if (string[i] == c)
         {
             count++;
         }
     }
+
     return count;
 }
 

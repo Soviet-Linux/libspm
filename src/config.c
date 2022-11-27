@@ -17,7 +17,7 @@ TODO: Rework it !
 */
 int readConfig(char* configFilePath)
 {
-    msg(DBG2,"Reading config file %s",configFilePath);
+    dbg(2,"config: %s",configFilePath);
     FILE* file = fopen(configFilePath, "r"); /* should check the result */
     char line[1024];
     char* kvlist[2];
@@ -36,7 +36,7 @@ int readConfig(char* configFilePath)
             return 1;
         }
 
-        msg(DBG3,"Key: %s Value: %s",key,value);
+        dbg(3,"Key: %s Value: %s",key,value);
 
         if (strcmp(key,"ROOT") == 0)
         {
@@ -74,13 +74,9 @@ int readConfig(char* configFilePath)
         }
         else if (strcmp(key,"FORMATS") == 0)
         {
-            msg(DBG3,"FORMATS: %s",value);
+            dbg(3,"FORMATS: %s",value);
             strcpy(REPO_ALLOC,value);
             FORMAT_COUNT = splitm(REPO_ALLOC,' ',FORMATS,MAX_FORMATS);
-            for (int i = 0; i < FORMAT_COUNT; i++)
-            {
-                msg(DBG3,"FORMATS: %s",FORMATS[i]);
-            }
         }
         else {
             msg(ERROR,"Unknown key in config file : %s",key);
