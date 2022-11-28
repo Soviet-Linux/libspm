@@ -72,7 +72,7 @@ int make (char* package_dir,struct package* pkg)
             " NAME=%s && VERSION=%s && URL=%s && cd %s && %s",
             pkg->name,pkg->version,pkg->url,MAKE_DIR,pkg->info.download);
 
-        msg(DBG2,"Downloading sources with %s",sources_cmd);
+        dbg(2,"Downloading sources with %s",sources_cmd);
         if (system(sources_cmd) != 0) {
             msg(ERROR,"Failed to download sources for %s",pkg->name);
             return -1;
@@ -92,17 +92,17 @@ int make (char* package_dir,struct package* pkg)
             BUILD_DIR,package_dir,pkg->info.prepare,cmd_params);
 
         //Printing the command to the terminal
-        msg(DBG2,"Executing prepare command : %s",prepare_cmd);
+        dbg(2,"Executing prepare command : %s",prepare_cmd);
         //executing the command
         // We add the extra command parameters to the command , so that the user can add extra parameters to the command
         if (system(prepare_cmd) != 0) {
             return 1;
         }
         //debug
-        msg(DBG1,"prepare command executed !");
+        dbg(1,"prepare command executed !");
 
     }
-    msg(DBG3,"Make command is %s",pkg->info.make);
+    dbg(3,"Make command is %s",pkg->info.make);
     if (pkg->info.make != NULL && strlen(pkg->info.make) > 0) 
     {
         //formatting the prepare command
@@ -116,14 +116,14 @@ int make (char* package_dir,struct package* pkg)
             BUILD_DIR,package_dir,pkg->info.make,cmd_params);
 
         //Printing the command to the terminal
-        msg(DBG2,"Executing make command : %s",make_cmd);
+        dbg(2,"Executing make command : %s",make_cmd);
         //executing the command
         // We add the extra command parameters to the command , so that the user can add extra parameters to the command
         if (system(make_cmd) != 0) {
             return 1;
         }
         //debug
-        msg(DBG1,"make command executed !");
+        dbg(1,"make command executed !");
 
 
         
@@ -142,14 +142,14 @@ int make (char* package_dir,struct package* pkg)
 
 
         //Printing the command to the terminal
-        msg(DBG2,"Executing test command : %s",test_cmd);
+        dbg(2,"Executing test command : %s",test_cmd);
         //executing the command
         // We add the extra command parameters to the command , so that the user can add extra parameters to the command
         if (system(test_cmd) != 0) {
             return 1;
         };
         //debug
-        msg(DBG1,"make command executed !");
+        dbg(1,"make command executed !");
     }
     printf("install : %s\n",pkg->info.install);
     if (pkg->info.install != NULL && strlen(pkg->info.install) > 0) 
@@ -164,7 +164,7 @@ int make (char* package_dir,struct package* pkg)
             BUILD_DIR,package_dir,pkg->info.install,cmd_params);
 
         //Printing the command to the terminal
-        msg(DBG2,"Executing Install command : %s",install_cmd);
+        dbg(2,"Executing Install command : %s",install_cmd);
         //executing the command
         // We add the extra command parameters to the command , so that the user can add extra parameters to the command
         if (system(install_cmd) != 0) 
@@ -173,7 +173,7 @@ int make (char* package_dir,struct package* pkg)
             return -2;
         }
         //debug
-        msg(DBG1,"install command executed !");
+        dbg(1,"install command executed !");
 
     }
     else {
@@ -185,7 +185,7 @@ int make (char* package_dir,struct package* pkg)
 }
 int exec_special(char* cmd,char* package_dir)
 {
-    msg(DBG2,"Executing special command : %s",cmd);
+    dbg(2,"Executing special command : %s",cmd);
     char* special_cmd = calloc(
         64 +strlen(package_dir) + strlen(cmd), 
         sizeof(char));
@@ -195,6 +195,6 @@ int exec_special(char* cmd,char* package_dir)
         return 1;
     }
     free(special_cmd);
-    msg(DBG1,"special command executed !");
+    dbg(1,"special command executed !");
     return 0;
 }

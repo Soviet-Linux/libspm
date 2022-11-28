@@ -6,7 +6,7 @@
 #define MAX_FORMATS 64
 
 
-#define MAX_PATH 256
+#define MAX_PATH 1024
 
 // this field may cause buffer overflow
 #define MAX_CMD 64
@@ -34,7 +34,7 @@ extern char WORK_DIR[MAX_PATH];
 // the dir where the data is stored
 extern char DATA_DIR[MAX_PATH];
 // where spm files of installed packages are stored
-extern char SPM_DIR[MAX_PATH];
+extern char SPM_DIR[MAX_PATH]; 
 //where we store test and logs
 extern char LOG_DIR[MAX_PATH];
 // Dir where built binaries are stored after making or after uncompressing

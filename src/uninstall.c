@@ -24,7 +24,7 @@ int uninstall(char* name)
     char dataSpmPath[MAX_PATH];
     sprintf(dataSpmPath,"%s/%s.%s",SPM_DIR,name,DEFAULT_FORMAT);
     // verify if the package is installed
-    msg(DBG3, "Verifying if the package is installed at %s" , dataSpmPath);
+    dbg(3, "Verifying if the package is installed at %s" , dataSpmPath);
     // check if SPM_FILE exists
     if ((access(dataSpmPath,F_OK) != 0)) {
         msg(ERROR, "Package %s is not installed!" , name);
@@ -35,13 +35,13 @@ int uninstall(char* name)
     open_pkg(dataSpmPath,&r_pkg,NULL);
 
 
-    msg(DBG3,"Found %d locations",r_pkg.locationsCount);
+    dbg(3,"Found %d locations",r_pkg.locationsCount);
     //remove all the files in the data["locations"]
     for (int i = 0; i < r_pkg.locationsCount; i++)
     {
         // debug
-        msg(DBG3,"Removing %s",r_pkg.locations[i]);
-        msg(DBG3,"Remove exited with code %d",remove(r_pkg.locations[i]));   
+        dbg(3,"Removing %s",r_pkg.locations[i]);
+        dbg(3,"Remove exited with code %d",remove(r_pkg.locations[i]));   
     }
     //removing the entries in packages.json
     remove_data(INSTALLED_DB,r_pkg.name);

@@ -10,13 +10,13 @@
 
 int open_pkg(char* path, struct package* pkg,char* format)
 {
-    msg(DBG2,"Setting everything to NULL"); 
+    dbg(2,"Setting everything to NULL"); 
     //set all varibales t NULL
     memset(pkg,0,sizeof(struct package));
 
 
     // print make dependencies count
-    msg(DBG3,"make dependencies count : %d",pkg->makedependenciesCount);
+    dbg(3,"make dependencies count : %d",pkg->makedependenciesCount);
 
     // check if file exists
     if (access(path,F_OK) != 0)
@@ -31,9 +31,9 @@ int open_pkg(char* path, struct package* pkg,char* format)
 
     if (format == NULL)
     {
-        msg(DBG2,"Getting format from file extension");
+        dbg(2,"Getting format from file extension");
         format = strrchr( path, '.' ) + 1;
-        printf("Format : %s\n",format);
+        dbg(1,"Format : %s\n",format);
     }  
     
     if (format != NULL)
@@ -44,7 +44,7 @@ int open_pkg(char* path, struct package* pkg,char* format)
             printf("format : %s = %s\n",format,FORMATS[i]);
             if (strcmp(format,FORMATS[i]) == 0)
             {
-                msg(DBG2,"Opening package with %s format",FORMATS[i]);
+                dbg(2,"Opening package with %s format",FORMATS[i]);
                 runFormatLib(FORMATS[i],"open",path,pkg);
                 return 0;
             }
@@ -79,7 +79,7 @@ int create_pkg(char* path,struct package* pkg,char* format)
         {
             if (strcmp(format,FORMATS[i]) == 0)
             {
-                msg(DBG2,"Opening package with %s format",FORMATS[i]);
+                dbg(2,"Opening package with %s format",FORMATS[i]);
                 runFormatLib(FORMATS[i],"create",path,pkg);
                 return 0;
             }
@@ -93,7 +93,7 @@ int runFormatLib (char* format,char* fn,char* pkg_path,struct package* pkg)
 {
     char lib_path[MAX_PATH];
     sprintf(lib_path,"%s/%s.so",PLUGIN_DIR,format);
-    msg(DBG2,"Loading %s",lib_path);
+    dbg(2,"Loading %s",lib_path);
 
     if (access(lib_path,F_OK) != 0)
     {

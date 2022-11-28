@@ -10,15 +10,15 @@
 // This function will check if all dependencies of a package are installed
 int check_dependencies (char ** dependencies,int dependenciesCount) 
 {
-    msg(DBG1,"Checking dependencies...");
+    dbg(1,"Checking dependencies...");
 
 
     for (int i = 0; i < dependenciesCount; i++)
     {
-        msg(DBG3,"Checking if %s is installed",dependencies[i]);
+        dbg(3,"Checking if %s is installed",dependencies[i]);
         if (!is_installed(dependencies[i]))
         {
-            msg(DBG3, "Dependency %s is not installed",dependencies[i]);
+            dbg(3, "Dependency %s is not installed",dependencies[i]);
             // TODO: we need to install the dependencie
             msg(INFO,"Installing %s",dependencies[i]);
 
@@ -31,7 +31,7 @@ int check_dependencies (char ** dependencies,int dependenciesCount)
         }
         else 
         {
-            msg(DBG3, "Dependency %s is installed",dependencies[i]);
+            dbg(3, "Dependency %s is installed",dependencies[i]);
         }
     }
 

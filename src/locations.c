@@ -17,13 +17,13 @@ long get_locations(char ***locations, char *loc_dir) {
   This way of getting locations is pretty bad , i should wite a proper way to do
   it But it works so its ok for now
   */
-  msg(DBG2, "Getting files locations with %s ", files_location_cmd);
+  dbg(2, "Getting files locations with %s ", files_location_cmd);
 
   // execute the commands
   // WARING : this is a memory leak
   char* res = exec(files_location_cmd);
 
-  msg(DBG2, "Got locations : '%s'", res);
+  dbg(2, "Got locations : '%s'", res);
   
   // print the locations
   unsigned int max_count = countc(res,'\n') + 256;
@@ -35,7 +35,7 @@ long get_locations(char ***locations, char *loc_dir) {
     quit(1);
   }
 
-  printf("Got %d locations\n", count);
+  dbg(2, "Got %d locations", count);
 
   /* WARNING : This is a bad way to do it , i should use a proper way to do it
    */

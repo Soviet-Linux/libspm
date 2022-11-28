@@ -31,7 +31,7 @@ char* get(struct package *i_pkg,char* out_path)
         msg(ERROR,"Global package data file not found, to download it use -s option!");
         return NULL;
     }
-    msg(DBG1,"Loading %s\n",  ALL_DB);
+    dbg(1,"Loading %s\n",  ALL_DB);
     
 
     char* pkg_format = calloc(64,sizeof(char));
@@ -44,7 +44,7 @@ char* get(struct package *i_pkg,char* out_path)
     // if not , we need to update the database*
 
 
-    msg(DBG1,"Downloading %s %s %s",i_pkg->name,i_pkg->version,i_pkg->type);
+    dbg(1,"Downloading %s %s %s",i_pkg->name,i_pkg->version,i_pkg->type);
 
     // loop through REPOS
     char* url = calloc(64+strlen(i_pkg->type)+strlen(i_pkg->name)+strlen(pkg_format),sizeof(char));

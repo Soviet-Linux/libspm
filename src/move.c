@@ -13,7 +13,7 @@ void move_binaries(char** locations,long loc_size)
     /*
 
     // check if all locations are empty
-    msg(DBG1,"Checking if all locations are empty");Z
+    dbg(1,"Checking if all locations are empty");Z
      For now , this checking part is completely useless 
      i plan to use it to do some checks on the system.
      I will leave it like that for now 
@@ -34,11 +34,11 @@ void move_binaries(char** locations,long loc_size)
             //printf("[%d/%ld] - %s/%s to => %s\n",i,loc_size, BUILD_DIR,locations[i],dest_loc);
             //fflush(stdout);
             // now that we know it is empty , mov the stuff
-            //msg(DBG1,"Moving %s/%s to %s",BUILD_DIR,locations[i],dest_loc);
+            //dbg(1,"Moving %s/%s to %s",BUILD_DIR,locations[i],dest_loc);
             
             mvsp(build_loc,dest_loc);
             
-            //smsg(DBG1,"Moved %s/%s to %s",BUILD_DIR,locations[i],dest_loc);
+            //sdbg(1,"Moved %s/%s to %s",BUILD_DIR,locations[i],dest_loc);
         }
         else 
         {

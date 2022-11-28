@@ -31,7 +31,7 @@ int installSpmFile(char* spm_path,int as_dep)
 
     PACKAGE_QUEUE[QUEUE_COUNT] = pkg.name; // add this shit to the PKG_QUEUE ARRAY
     QUEUE_COUNT++;
-    msg(DBG1,"Added %s to the queue",pkg.name);
+    dbg(1,"Added %s to the queue",pkg.name);
 
     /*
         the following code is pretty bad.
@@ -46,20 +46,20 @@ int installSpmFile(char* spm_path,int as_dep)
     // check if package is already installed
     if (is_installed(pkg.name))
     {
-        msg(DBG1,"Package %s is already installed, reinstalling",pkg.name);
+        dbg(1,"Package %s is already installed, reinstalling",pkg.name);
         uninstall(pkg.name);
     }
 
     if (pkg.dependencies != NULL && pkg.dependenciesCount > 0 && strlen(pkg.dependencies[0]) > 0)
 
     {
-        msg(DBG1,"Checking dependencies...");
+        dbg(1,"Checking dependencies...");
         check_dependencies(pkg.dependencies,pkg.dependenciesCount);
     }
     // checking makedeps
     if (pkg.makedependencies != NULL && pkg.makedependenciesCount > 0 && strlen(pkg.makedependencies[0]) > 0)
     {
-        msg(DBG3,"Checking makedeps : %s",pkg.makedependencies);
+        dbg(3,"Checking makedeps : %s",pkg.makedependencies);
         check_dependencies(pkg.makedependencies,pkg.makedependenciesCount);
 
     }
@@ -80,19 +80,18 @@ int installSpmFile(char* spm_path,int as_dep)
 
 
     // making the package
-    msg(DBG1,"Making %s",pkg.name);
+    dbg(1,"Making %s",pkg.name);
     make(legacy_dir,&pkg);
-    msg(DBG1,"Making %s done",pkg.name);
+    dbg(1,"Making %s done",pkg.name);
 
 
     // getting locations
-    msg(DBG1,"Getting locations for %s",pkg.name);
+    dbg(1,"Getting locations for %s",pkg.name);
     pkg.locationsCount = get_locations(&pkg.locations,BUILD_DIR);
     
     // moving binaries
-    msg(DBG1,"Moving binaries for %s",pkg.name);
+    dbg(1,"Moving binaries for %s",pkg.name);
     move_binaries(pkg.locations,pkg.locationsCount);
-    msg(DBG1,"Moving binaries for %s done",pkg.name);
 
     
 
@@ -100,9 +99,8 @@ int installSpmFile(char* spm_path,int as_dep)
     // check if pkg.info.special is not empty or NULL
     if (pkg.info.special != NULL && strlen(pkg.info.special) > 0)
     {
-        msg(DBG1,"Executing post install script for %s",pkg.name);
+        dbg(1,"Executing post install script for %s",pkg.name);
         exec_special(pkg.info.special,BUILD_DIR);
-        msg(DBG1,"Executing post install script for %s done",pkg.name);
     }
    
     // remove the deprecated unsafe format function call
@@ -152,14 +150,13 @@ int installSpmBinary(char* archivePath,int as_dep)
 
     PACKAGE_QUEUE[QUEUE_COUNT] = pkg.name; // add this shit to the PKG_QUEUE ARRAY
     QUEUE_COUNT++;
-    msg(DBG1,"Added %s to the queue",pkg.name);
+    dbg(1,"Added %s to QUEUE[%d]",pkg.name,QUEUE_COUNT-1);
 
     check_dependencies(pkg.dependencies,pkg.dependenciesCount);
 
         // moving binaries
-    msg(DBG1,"Moving binaries for %s",pkg.name);
+    dbg(1,"Moving binaries for %s",pkg.name);
     move_binaries(pkg.locations,pkg.locationsCount);
-    msg(DBG1,"Moving binaries for %s done",pkg.name);
 
     
 

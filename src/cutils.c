@@ -17,12 +17,12 @@
 
 
 unsigned int splitm (char* string,char delim,char** dest,unsigned max) {
-    //msg(DBG3,"Splitting \"%s\" with delim '%c' and max %d",string,delim,max);
+    //dbg(3,"Splitting \"%s\" with delim '%c' and max %d",string,delim,max);
     char* token = strtok(string, &delim);
     unsigned int count = 0;
     while (token != NULL && count < max)
     {
-        //msg(DBG3,"Token: %s",token);
+        //dbg(3,"Token: %s",token);
         dest[count] = token;
         count++;
         token = strtok(NULL, &delim);
@@ -74,7 +74,7 @@ long rdfile(const char* filePath,char** buffer)
 
     if ((*buffer))
     {
-        msg(DBG3,"Read %ld bytes from %s ==> %s",length,filePath,*buffer);
+        dbg(3,"Read %ld bytes from %s ==> %s",length,filePath,*buffer);
         return length;
     }
     else
@@ -84,7 +84,7 @@ long rdfile(const char* filePath,char** buffer)
 }
 int wrfile(const char* filePath,char* buffer,long size)
 {
-    msg(DBG3,"Writing %ld bytes to %s",size,filePath);
+    dbg(3,"Writing %ld bytes to %s",size,filePath);
     FILE *fp;
     printf("fp declared\n");
     fp = fopen(filePath , "wb" );
@@ -99,7 +99,7 @@ int strinarr( char* val, char** arr,long arrsize)
 {
     int i;
     for(i = 0; i < arrsize; i++){
-        //msg(DBG3,"Comparing %s with %s",val,arr[i]);
+        //dbg(3,"Comparing %s with %s",val,arr[i]);
         if (strcmp(arr[i],val) == 0) return i;
     }
     return -1;
@@ -197,7 +197,7 @@ int pmkdir (const char *dir)
 
 int mvsp(char* old_path,char* new_path)
 {
-    msg(DBG3,"MVSP : Moving %s to %s",old_path,new_path);
+    dbg(3,"MVSP : Moving %s to %s",old_path,new_path);
     char* parent_path = calloc(strlen(new_path)+1,sizeof(char));
     strncpy(parent_path,new_path,strrchr(new_path, '/')-new_path);
 
@@ -213,7 +213,7 @@ int mvsp(char* old_path,char* new_path)
         case -2:
             msg(FATAL,"mvsp : not a directory");
         case 0:
-            msg(DBG3,"Prent exists , all good");
+            dbg(3,"Parent exists , all good");
             break;
     }
     free(parent_path);
@@ -223,7 +223,7 @@ int mvsp(char* old_path,char* new_path)
 
 int free_pkg(struct package* pkg)
 {
-    msg(DBG3,"Freeing pkg %s",pkg->name);
+    dbg(3,"Freeing pkg %s",pkg->name);
 
     free(pkg->name);
     free(pkg->version);
@@ -256,7 +256,7 @@ int free_pkg(struct package* pkg)
 
 int printPkg(struct package* pkg)
 {
-    msg(DBG3,"Printing pkg %s",pkg->name);
+    dbg(3,"Printing pkg %s",pkg->name);
     printf("Name : %s\n",pkg->name);
     printf("Type : %s\n",pkg->type);
     printf("Version : %s\n",pkg->version);

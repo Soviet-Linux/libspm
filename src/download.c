@@ -77,7 +77,7 @@ int downloadFile(const char* url,const char* file_path)
     FILE *fp;
     CURLcode res;
     curl = curl_easy_init();      
-    msg(DBG3,"curl_easy_init() returned %p",curl);                                                                                                                                                                                                                                                     
+    dbg(3,"curl_easy_init() returned %p",curl);                                                                                                                                                                                                                                                     
     if (!curl)
     {
         msg(ERROR,"curl_easy_init() failed");
@@ -92,7 +92,7 @@ int downloadFile(const char* url,const char* file_path)
     // Internal CURL progressmeter must be disabled if we provide our own callback
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
     // Install the callback function
-    msg(DBG3,"launching progress func");
+    dbg(3,"launching progress func");
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, NULL); 
     
     res = curl_easy_perform(curl);
