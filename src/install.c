@@ -24,13 +24,23 @@ Binary packages are archive files containing the compiled binary files of the pa
 
 int installSpmFile(char* spm_path,int as_dep)
 {
-    struct package pkg;
+    if (spm_path == NULL) {
+        msg(ERROR,"spm_path is NULL");
+        return -1;
+    }
 
-    open_pkg(spm_path, &pkg,NULL);
+    struct package pkg = {0};
+
+    if (open_pkg(spm_path, &pkg,NULL) != 0) {
+        msg(ERROR,"Failed to open package");
+        return -1;
+    }
+    
     msg(INFO, "Installing %s", pkg.name);
 
     PACKAGE_QUEUE[QUEUE_COUNT] = pkg.name; // add this shit to the PKG_QUEUE ARRAY
     QUEUE_COUNT++;
+
     dbg(1,"Added %s to the queue",pkg.name);
 
     /*
@@ -81,7 +91,10 @@ int installSpmFile(char* spm_path,int as_dep)
 
     // making the package
     dbg(1,"Making %s",pkg.name);
-    make(legacy_dir,&pkg);
+    if (make(legacy_dir,&pkg) != 0) {
+        msg(ERROR,"Failed to make %s",pkg.name);
+        return -1;
+    }
     dbg(1,"Making %s done",pkg.name);
 
 

@@ -21,7 +21,7 @@ int open_pkg(char* path, struct package* pkg,char* format)
     // check if file exists
     if (access(path,F_OK) != 0)
     {
-        printf("File %s does not exist\n",path);
+        msg(ERROR,"File %s does not exist\n",path);
         return 1;
     }
     //check file extension

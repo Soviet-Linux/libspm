@@ -28,6 +28,7 @@ ODIR = obj
 SDIR = src
 
 
+
 CFLAGS = -Wall -g -fPIC -O2 -Wextra -fPIC -L./bin -Iinclude
 
 LIBS = -lcurl -lsqlite3 -lm 
@@ -37,6 +38,8 @@ SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
 INCDIR   = include
+
+DEVDIR = dev
 
 
 SOURCES  := $(wildcard $(SRCDIR)/*.c)
@@ -64,7 +67,10 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 
 
 test:
-	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* tests/test.c $(LIBS) -o bin/spm-test -lspm -L./bin
+	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin
+
+cccp:
+	$(CC) $(CFLAGS) ${DEVDIR}/cccp.c $(LIBS) -o bin/cccp -lspm -L./bin
 
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -shared -fPIC -o $(LIBOUT)
@@ -85,7 +91,6 @@ clean:
 	rm -f $(ODIR)/*.o $(BINDIR)/$(LIBOUT) $(BINDIR)/plugins/*.so 
 
 install:
-	
 	find include/ -type f -exec install -vDm 555 {} $(DESTDIR)/{} \;
 	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib/$(LIBOUT) 
 	install  $(BINDIR)/plugins/* -vDm 755 $(DESTDIR)/var/cccp/plugins 
