@@ -93,7 +93,7 @@ clean:
 install:
 	find include/ -type f -exec install -vDm 555 {} $(DESTDIR)/{} \;
 	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib/$(LIBOUT) 
-	install  $(BINDIR)/plugins/* -vDm 755 $(DESTDIR)/var/cccp/plugins 
+	install  $(BINDIR)/plugins/* -vDm 755 $(DESTDIR)/var/cccp/plugins/
 
 
 	
