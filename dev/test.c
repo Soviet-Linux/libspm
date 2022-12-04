@@ -234,6 +234,7 @@ int test_data ()
     init();
     int EXIT = EXIT_SUCCESS;
 
+    strcpy(ALL_DB,"dev/all.db");
 
     printf("Removing test.db\n");
     remove(ALL_DB);

@@ -14,27 +14,27 @@ Exit code signification :
 2 = Package is corrupted (package data file is here but with no location info)
 3 = Package is corrupted (Some locations arent here)
 */
-int check (char* dataSpmPath, char* locations[], int locationsCount)
+int check(const char* name)
 {
+    char dataSpmPath[MAX_PATH];
+    sprintf(dataSpmPath,"%s/%s/%s",DATA_DIR,SPM_DIR,name);
+
     // checkinig if package data file exists
     if (access(dataSpmPath,F_OK) != 0){
         return 1;
     }
-    else if (locationsCount == 0)
-    {
+    struct package pkg;
+    open_pkg(dataSpmPath,&pkg,DEFAULT_FORMAT);
+    if (pkg.locationsCount == 0) {
         return 2;
     }
-    else
-    {
-        for (int i = 0; i < locationsCount; i++)
-        {
-            if (access(locations[i],F_OK) != 0)
-            {
-                return 3;
-            }
+
+    for (int i = 0; i < pkg.locationsCount; i++) {
+        if (access(pkg.locations[i],F_OK) != 0) {
+            return 3;
         }
-        return 0;
     }
+    return 0;
 }
 // simpler check that also verifies f the package is being installed 
 

@@ -91,7 +91,7 @@ clean:
 	rm -f $(ODIR)/*.o $(BINDIR)/$(LIBOUT) $(BINDIR)/plugins/*.so 
 
 install:
-	find include/ -type f -exec install -vDm 555 {} $(DESTDIR)/{} \;
+	for i in include/*; do install -vDm 755 $$i /usr/include/spm/; done
 	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib/$(LIBOUT) 
 	install  $(BINDIR)/plugins/ecmp.so -vDm 755 $(DESTDIR)/var/cccp/plugins/ecmp.so
 

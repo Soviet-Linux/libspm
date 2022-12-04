@@ -28,7 +28,7 @@ long get_locations(char ***locations, char *loc_dir) {
   // print the locations
   unsigned int max_count = countc(res,'\n') + 256;
   *locations = calloc(sizeof(char*),max_count);
-  printf("Found %d files\n", max_count);
+  dbg(3,"allocating for %d locations\n", max_count);
   int count = splitm(res, '\n', *locations, max_count);
   if (count == -1) {
     msg(ERROR, "Failed to split locations");

@@ -3,7 +3,7 @@
 
 #include "globals.h"
 
-#define LIBSPM_VERSION 0.404
+#define LIBSPM_VERSION 0.502
 
 #define SOURCE "src"
 #define BINARY "bin"
@@ -65,7 +65,7 @@ float version();
 // Remove packages
 int uninstall(char* name);
 // Check packages
-int check (char* dataSpmPath, char* locations[], int locationsCount);
+int check (const char* name);
 
 
 //get a package 
