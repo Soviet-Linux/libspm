@@ -81,8 +81,16 @@ int msg(enum level msgLevel, const char* message,...)
 }
 
 // the debug function is bad
-int f_dbg__(int level,int line,const char* function,const char* file,char* message,...)
-{
+int f_dbg__(int level,int line,const char* function,const char* file,char* message,...) {
+
+    file = strrchr(file,'/')+1;
+    /* WARNING : EXPERIMENTAL */
+    if (DEBUG_UNIT != NULL) {
+        if (strcmp(DEBUG_UNIT,file) != 0) {
+            return 1;
+        }
+    }
+
     //declare char* strDest
     char* strDest;
 
@@ -100,8 +108,6 @@ int f_dbg__(int level,int line,const char* function,const char* file,char* messa
 
     //initialize va_end
     va_end(args);
-
-    file = basename(file);
 
     if (DEBUG >= level)
     {

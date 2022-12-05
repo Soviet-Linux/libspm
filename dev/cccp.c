@@ -1,45 +1,87 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "libspm.h"
-#include "utils.h"
-#include "hashtable.h"
+#include "../include/libspm.h"
+#include "../include/utils.h"
+#include "../include/hashtable.h"
 
-int DEBUG=3;
 
-int _install_(char** args);
-int _remove_(char** args);
+
+int _install_(unsigned int* index);
+int _remove_(unsigned int* index);
+
+int _set_debug_level_(unsigned int* i);
+int _set_debug_unit(unsigned int* i);
+int _set_verbose_(unsigned int* i);
+int _set_overwrite_(unsigned int* i);
+
 
 void* args[][2] = {
     {"install",_install_},
-    {"remove",_remove_}
+    {"remove",_remove_},
+    {"debug",_set_debug_level_},
+    {"unit",_set_debug_unit},
+    {"verbose", _set_verbose_},
+    {"overwrite", _set_overwrite_}
 };
+
+char** ARGV;
 
 int main(int argc, char** argv) {
 
-    if (argc < 3) {
+    if (argc < 2) {
         msg(ERROR, "No command specified");
         return 1;
     }
-    dbg(1, "Command: %s", argv[1]);
+
     hashtable* hm = hm_init(args, sizeof(args)/sizeof(args[0]));
-    //hm_visualize(hm);
-    // function pointer
-    int (*func)(char**);
-    // get function pointer
-    func = hm_get(hm, argv[1]);
-    if (func == NULL) {
-        msg(ERROR, "Invalid command");
-        return 1;
-    }
+
+    ARGV = argv;
+
     init();
-    // call function
-    return func(&argv[2]);
+
+    int (*func)(int*);
+    for (int i = 1; i < argc; i++) {
+        dbg(1, "argv[%d] = %s", i, argv[i]);
+
+        //hm_visualize(hm);
+        // function pointer
+
+        // get function pointer
+        func = hm_get(hm, argv[i]);
+        if (func == NULL) {
+            msg(ERROR, "Invalid argument %s", argv[i]);
+            return 1;
+        }
+
+        // call function
+        func(&i);
+    }
+
 
 }
 
-int _install_(char** args) {
-    return installSpmFile(args[0],0);
+int _install_(unsigned int* i) {
+    exit(install_package_source(ARGV[++(*i)],0));
 }
-int _remove_(char** args) {
-    return uninstall(args[0]);
+int _remove_(unsigned int* i) {
+    exit(uninstall(ARGV[++(*i)]));
+}
+
+
+int _set_debug_level_(unsigned int* i) {
+    DEBUG = atoi(ARGV[++(*i)]);
+    return 0;
+}
+int _set_debug_unit(unsigned int* i) {
+    DEBUG_UNIT = ARGV[++(*i)];
+    return 0;
+}
+int _set_verbose_(unsigned int* i) {
+    QUIET = false;
+    return 0;
+}
+int _set_overwrite_(unsigned int* i) {
+    OVERWRITE = true;
+    return 0;
 }

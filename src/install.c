@@ -22,7 +22,11 @@ Binary packages are archive files containing the compiled binary files of the pa
 
 // parsing data and installing package archive (with sources)
 
-int installSpmFile(char* spm_path,int as_dep)
+__attribute__((unused)) int install_package_source(const char* spm_path,int as_dep) {
+    f_install_package_source(spm_path,as_dep,NULL);
+}
+
+int f_install_package_source(const char* spm_path,int as_dep,const char* format)
 {
     if (spm_path == NULL) {
         msg(ERROR,"spm_path is NULL");
@@ -31,7 +35,7 @@ int installSpmFile(char* spm_path,int as_dep)
 
     struct package pkg = {0};
 
-    if (open_pkg(spm_path, &pkg,NULL) != 0) {
+    if (open_pkg(spm_path, &pkg,format) != 0) {
         msg(ERROR,"Failed to open package");
         return -1;
     }
@@ -134,7 +138,7 @@ int installSpmFile(char* spm_path,int as_dep)
     return 0;
 }
 
-int installSpmBinary(char* archivePath,int as_dep)
+__attribute__((unused)) int install_package_binary(char* archivePath,int as_dep)
 {
     struct package pkg;
 
@@ -199,22 +203,16 @@ int installSpmBinary(char* archivePath,int as_dep)
 int uncompress_binary(char* bin_path,char* dest_dir)
 {
     // format the path using sprintf
-    char* untar_cmd = calloc(strlen(bin_path)+strlen(dest_dir)+64,sizeof(char));
+    char untar_cmd[strlen(bin_path)+strlen(dest_dir)+64];
     sprintf(untar_cmd,"tar -xvf %s -C %s",bin_path,dest_dir);
 
-    int EXIT = system(untar_cmd);
-
-    free(untar_cmd);
-    return EXIT;
+    return system(untar_cmd);
 }
 int get_bin_name(char* bin_path,char* name)
 {
     char* file_name = basename(bin_path);
-    for (int i = 0; i < strlen(file_name); i++)
-    {
-        if (file_name[i] == '.')
-        {
-
+    for (int i = 0; i < (int)strlen(file_name); i++) {
+        if (file_name[i] == '.') {
             sprintf(name,"%.*s",i,file_name);
             return 0;
         }

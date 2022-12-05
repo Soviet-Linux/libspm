@@ -76,7 +76,7 @@ int main(int argc, char const *argv[])
     else if (strcmp(argv[1],"install") == 0)
     {
         init();
-        installSpmFile(argv[2],0);
+        install_package_source(argv[2],0);
         return 0;
     }
     else if (strcmp(argv[1],"uninstall") == 0)

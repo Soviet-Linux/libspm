@@ -4,10 +4,10 @@
 #include "unistd.h"
 #include "malloc.h"
 
-#include "libspm.h"
-#include "utils.h"
+#include "../../include/libspm.h"
+#include "../../include/utils.h"
 
-#include "hashtable.h"
+#include "../../include/hashtable.h"
 #include <stdio.h>
 
 #define uint unsigned int
@@ -112,6 +112,10 @@ int open(char* path,struct package* pkg)
 		}
 	}
 	dbg(2,"done parsing | returning");
+
+    hm_destroy(hm);
+    hm_destroy(infohm);
+
 	return 0;
 }
 
@@ -123,9 +127,10 @@ unsigned int parsenl(char* s,char*** dest)
 	char* str;
 	// the parseraw below is useless but i'll keep since in case
 	parseraw(s,&str);
-	unsigned int count = countc(s,'\n');
-	*dest = calloc(sizeof(char*),count+2);
-	return splitm(str,'\n',*dest,count+2);
+	unsigned int count = countc(s,'\n') + 64;
+	*dest = calloc(sizeof(char*),count+1);
+    dbg(3,"count : %d",count);
+	return splitm(str,'\n',*dest,count+1);
 }
 unsigned int parseraw(char* s, char** dest)
 {	

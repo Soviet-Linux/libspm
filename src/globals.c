@@ -13,6 +13,8 @@ START OF THE (sort of) CONSTANTS DECALRATIONS
 */
 
 int DEBUG = 0;
+char* DEBUG_UNIT = NULL;
+
 bool TESTING = false;
 
 bool OVERWRITE = false;

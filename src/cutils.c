@@ -175,7 +175,7 @@ int pmkdir (const char *dir)
     strncpy(parent_path,dir,strrchr(dir, '/')-dir);
 
     
-    printf("Parent path : %s\n",parent_path);
+    //printf("Parent path : %s\n",parent_path);
 
     // if parent dir does not exist, create it
     switch (xis_dir(parent_path))
@@ -202,7 +202,7 @@ int mvsp(char* old_path,char* new_path)
     strncpy(parent_path,new_path,strrchr(new_path, '/')-new_path);
 
     
-    printf("Parent path : %s\n",parent_path);
+    //printf("Parent path : %s\n",parent_path);
 
 
     switch (xis_dir(parent_path))

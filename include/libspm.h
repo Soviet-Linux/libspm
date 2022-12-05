@@ -60,8 +60,11 @@ float version();
 
 // install packages
 //main exec function
-/*-->*/int installSpmFile(char* spm_path,int as_dep);
-/*-->*/int installSpmBinary(char* archivePath,int as_dep);
+/*-->*/int f_install_package_source(const char* spm_path,int as_dep,const char* format); // install a package file with a provided format
+/*-->*/ __attribute__((unused)) int install_package_source(const char* spm_path,int as_dep); // install a package file with the format provided in the file
+//
+/*-->*/int f_install_package_binary(const char* spm_path,int as_dep,const char* format); // install a package file with a provided format
+/*-->*/ __attribute__((unused)) int install_package_binary(char* archivePath,int as_dep);
 // Remove packages
 int uninstall(char* name);
 // Check packages
@@ -86,10 +89,10 @@ int readConfig(char* configFilePath);
 
 
 //open a pkg file (can be spm or ecmp)
-int open_pkg(char* path, struct package* pkg,char* format);
-int create_pkg(char* path,struct package* pkg,char* format);
+int open_pkg(const char* path, struct package* pkg,const char* format);
+int create_pkg(const char* path,struct package* pkg,const char* format);
 
-int runFormatLib (char* format,char* fn,char* pkg_path,struct package* pkg);
+int runFormatLib (const char* format,const char* fn,const char* pkg_path,struct package* pkg);
 
 
 

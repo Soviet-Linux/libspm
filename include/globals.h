@@ -16,12 +16,17 @@ START OF THE (sort of) CONSTANTS DECALRATIONS
 (They are not mean to be modified a lot)
 */
 
-
+// debug level
 extern int DEBUG;
+// choos the files to debug
+extern char* DEBUG_UNIT;
+// enable testing mode
 extern bool TESTING;
-
+// overwrite file when installing
 extern bool OVERWRITE;
+// enable verbose mode
 extern bool QUIET;
+
 // The filesystem root
 extern char ROOT[MAX_PATH];
 // For real use it must be set to "/"

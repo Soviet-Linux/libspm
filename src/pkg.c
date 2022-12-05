@@ -8,10 +8,10 @@
 #include <stdlib.h>
 
 
-int open_pkg(char* path, struct package* pkg,char* format)
+int open_pkg(const char* path, struct package* pkg,const char* format)
 {
     dbg(2,"Setting everything to NULL"); 
-    //set all varibales t NULL
+    //set all variables t NULL
     memset(pkg,0,sizeof(struct package));
 
 
@@ -60,7 +60,7 @@ int open_pkg(char* path, struct package* pkg,char* format)
 
 }
 
-int create_pkg(char* path,struct package* pkg,char* format)
+int create_pkg(const char* path,struct package* pkg,const char* format)
 {
     msg(INFO,"Creating package %s",path);
 
@@ -89,7 +89,7 @@ int create_pkg(char* path,struct package* pkg,char* format)
     return -1;
 }
 
-int runFormatLib (char* format,char* fn,char* pkg_path,struct package* pkg)
+int runFormatLib (const char* format,const char* fn,const char* pkg_path,struct package* pkg)
 {
     char lib_path[MAX_PATH];
     sprintf(lib_path,"%s/%s.so",PLUGIN_DIR,format);
