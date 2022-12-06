@@ -36,6 +36,7 @@ I really dont like that code so i wont comment.
 
 int find_data_installed(char* DB_PATH,struct package* pkg,int* as_dep)
 {
+    dbg(3,"Getting %s data from %s DB",pkg->name,DB_PATH);
     sqlite3 *db;
     char *err_msg = 0;
     sqlite3_stmt *res;
@@ -49,8 +50,9 @@ int find_data_installed(char* DB_PATH,struct package* pkg,int* as_dep)
         
         return -1;
     }
+    //dbg(3,"Databased opened with %d",rc);
     
-    char* sql = calloc(256,sizeof(char));
+    char sql[1024] = {0};
     sprintf(sql,"SELECT Version, Type, AsDep FROM Packages WHERE Name = '%s'",pkg->name);
         
     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
@@ -68,13 +70,13 @@ int find_data_installed(char* DB_PATH,struct package* pkg,int* as_dep)
     if (step == SQLITE_ROW) {
         pkg->version = strdup((char*)sqlite3_column_text(res, 0));
         pkg->type = strdup((char*)sqlite3_column_text(res, 1));
-        *as_dep = sqlite3_column_int(res, 2);
+
+        if (as_dep != NULL) *as_dep = sqlite3_column_int(res, 2);
         
     } 
 
     sqlite3_finalize(res);
     sqlite3_close(db);
-    free(sql);
     
     return 0;
 }

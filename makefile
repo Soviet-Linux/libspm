@@ -69,6 +69,20 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 test:
 	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin
 
+
+check-data:
+	bin/spm-test data
+	@echo "Data test passed"
+
+check-ecmp:
+	bin/spm-test ecmp
+	@echo "ECMP test passed"
+
+check: test check-data check-ecmp
+	@echo "All Tests Passed"
+
+
+
 cccp:
 	$(CC) $(CFLAGS) ${DEVDIR}/cccp.c $(LIBS) -o bin/cccp -lspm -L./bin
 

@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include "dirent.h"
-#include <errno.h>
 #include <dlfcn.h>
 
 #include "libspm.h"
@@ -20,15 +19,14 @@ unsigned int splitm (char* string,char delim,char** dest,unsigned max) {
     //dbg(3,"Splitting \"%s\" with delim '%c' and max %d",string,delim,max);
     char* token = strtok(string, &delim);
     unsigned int count = 0;
-    while (token != NULL && count < max)
-    {
+    while (token != NULL && count < max) {
         //dbg(3,"Token: %s",token);
         dest[count] = token;
         count++;
         token = strtok(NULL, &delim);
     }
-    if (count >= max)
-    {
+
+    if (count >= max) {
         msg(ERROR,"max reached : %d >= %d",count,max);
         msg(ERROR,"Last token : %s",token);
         return -1;

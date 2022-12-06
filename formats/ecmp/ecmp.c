@@ -233,16 +233,21 @@ int create(const char* path,struct package* pkg)
 	};
 
 	FILE* ecmp = fopen(path,"w");
+    if (ecmp == NULL) {
+        msg(FATAL,"Cannot open file %s",path);
+    }
 
+    dbg(3,"Writing info to %s",path);
 	// print info
 	fprintf(ecmp,"[info]\n");
+
 	// add  NULL check before each line
 	if (pkg->name != NULL) fprintf(ecmp,"name = %s\n",pkg->name);
 	if (pkg->version != NULL) fprintf(ecmp,"version = %s\n",pkg->version);
 	if (pkg->type != NULL) fprintf(ecmp,"type = %s\n",pkg->type);
 	if (pkg->license != NULL) fprintf(ecmp,"license = %s\n",pkg->license);
 	if (pkg->url != NULL) fprintf(ecmp,"url = %s\n",pkg->url);
-	fprintf(ecmp,"\n"); // for impoved readability
+	fprintf(ecmp,"\n"); // for improved readability
 
 	for (int i = 0;i < sizeof(list) / sizeof(list[0]);i++ )
 	{
@@ -271,6 +276,7 @@ int create(const char* path,struct package* pkg)
 		
 	}
 
+    fclose(ecmp);
 	return 0;
 
 } 

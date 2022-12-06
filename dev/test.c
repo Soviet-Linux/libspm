@@ -54,6 +54,7 @@ int main(int argc, char const *argv[])
     DEBUG = 3;
     QUIET = false;
     OVERWRITE = true;
+    DEBUG_UNIT = NULL;
 
     
 
@@ -215,7 +216,7 @@ int test_get()
 
     struct package t_pkg;
     t_pkg.name = "test";
-    t_pkg.type = "src";
+
 
     char* fmt = get(&t_pkg,"test");
     
@@ -231,7 +232,7 @@ int test_get()
 }
 int test_data ()
 {
-    init();
+    //init();
     int EXIT = EXIT_SUCCESS;
 
     strcpy(ALL_DB,"dev/all.db");
@@ -246,7 +247,7 @@ int test_data ()
     printf("Adding data to test database...\n");
     for (int i = 0; i < 5; i++)
     {
-        struct package a_pkg;
+        struct package a_pkg = {0};
         a_pkg.name = names[i];
         a_pkg.version = versions[i];
         a_pkg.type = types[i];
@@ -258,7 +259,7 @@ int test_data ()
     printf("Checking data in test database...\n");
     for (int i = 0; i < 5; i++)
     {
-        struct package a_pkg;
+        struct package a_pkg = {0};
         a_pkg.name = names[i];
         printf("Checking %s...\n",a_pkg.name);
         find_data_installed(ALL_DB,&a_pkg,NULL);
@@ -293,8 +294,6 @@ int test_data ()
             EXIT = -1;
         }
     }
-    printf("listing all data from test database...\n");
-    get_all_data(ALL_DB);
 
     return EXIT;
 }
@@ -303,22 +302,34 @@ int test_data ()
 
 int test_ecmp(int type)
 {
-    init();
+    FORMATS[0] = "ecmp";
     int EXIT = EXIT_SUCCESS;
 
-    struct package pkg = {0};
+    struct package old_pkg = {0};
 
-    open_ecmp("tests/vim.ecmp",&pkg);
+    EXIT += open_ecmp("dev/vim.ecmp",&old_pkg);
     
     // print the pkg
-    printf("  %s => %s %s\n",pkg.name,pkg.version,pkg.type);
+    printf("old_pkg: %s => %s %s\n",old_pkg.name,old_pkg.version,old_pkg.type);
 
     msg(INFO,"Creating ecmp package file");
 
-    create_ecmp("tests/vim-test.ecmp", &pkg);
+    EXIT += create_ecmp("dev/vim.mod.ecmp", &old_pkg);
 
-    //free_pkg(&pkg);
-    
+    // now reopen package and compare
+    struct package new_pkg = {0};
+
+    EXIT += open_ecmp("dev/vim.mod.ecmp",&new_pkg);
+
+    // print the pkg
+    printf("new_pkg: %s => %s %s\n",new_pkg.name,new_pkg.version,new_pkg.type);
+
+    // compare packages
+    EXIT += new_pkg.name ? strcmp(new_pkg.name,old_pkg.name) : 1;
+    EXIT += new_pkg.version ? strcmp(new_pkg.version,old_pkg.version) : 1;
+    EXIT += new_pkg.type ? strcmp(new_pkg.type,old_pkg.type) : 1;
+
+    dbg(3,"Exiting with %d",EXIT);
 
     return EXIT;
 }
