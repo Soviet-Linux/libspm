@@ -16,10 +16,12 @@ build:
 
   script:
 #   - mkdir obj bin
-    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE sh -c "
-      make clean &&
-      make && 
-      make formats"
+    - docker run -v `pwd`:`pwd` -w `pwd` $IMAGE sh -c " \
+      make clean && \
+      make && \
+      make formats && \
+      make test && \
+      make check "
 
 
 
