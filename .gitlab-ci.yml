@@ -21,6 +21,7 @@ build:
       make && 
       make formats && 
       make test && 
+      make install &&
       make check "
 
 
