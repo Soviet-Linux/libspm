@@ -104,7 +104,7 @@ formats:
 clean:
 	rm -f $(ODIR)/*.o $(BINDIR)/$(LIBOUT) $(BINDIR)/plugins/*.so 
 
-install: /usr/lib/$(LIBOUT)
+install: $(BINDIR)/$(LIBOUT) formats 
 	@if [ ! -d /usr/include/spm ]; then mkdir /usr/include/spm; fi
 	for i in include/*; do install -vDm 755 $$i /usr/include/spm/; done
 	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib/$(LIBOUT) 
