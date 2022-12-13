@@ -60,16 +60,18 @@ extern sqlite3* ALL_DB;
 extern char CONFIG_FILE[MAX_PATH];
 // This is a fucking string array..., i know
 extern char* REPOS[MAX_REPOS];
-extern char REPO_ALLOC[MAX_REPOS*32];
+extern char REPO_ALLOC[MAX_REPOS*64];
+extern int REPO_COUNT;
 // OKAY my guys , i just relized that well need an allocated string for all the fuckign formats
 // So here we're gonne declare it.
 
-extern int REPO_COUNT;
+
 
 extern char TEST_LOG[MAX_PATH];
 
 // list of all formats supported by spm
 extern char* FORMATS[MAX_FORMATS];
+extern char FORMAT_ALLOC[MAX_FORMATS*16];
 extern int FORMAT_COUNT;
 
 // default format

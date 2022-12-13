@@ -209,16 +209,21 @@ int test_config()
 
 int test_get()
 {
-    strcpy(ALL_DB,"tests/all.db");
+    dbg(2,"Getting 'test' package\n");
+
+    strcpy(ALL_DB_PATH,"dev/get_test.db");
+
 
     init();
     int EXIT = 0;
+
+    
 
     struct package t_pkg;
     t_pkg.name = "test";
 
 
-    char* fmt = get(&t_pkg,"test");
+    char* fmt = get(&t_pkg,"dev/test");
     
     // print fmt and all package info
     printf("fmt: %s\n",fmt);
@@ -226,6 +231,7 @@ int test_get()
     printf("version: %s\n",t_pkg.version);
     printf("type: %s\n",t_pkg.type);
 
+    free(fmt);
 
     return 0;
 

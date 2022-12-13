@@ -69,14 +69,14 @@ int readConfig(char* configFilePath)
         }
         else if (strcmp(key,"REPOS") == 0)
         {
-                
-            REPO_COUNT = splitm(value,' ',REPOS,MAX_REPOS);
-            
+            dbg(3,"REPOS: %s",value);
+            strcpy(REPO_ALLOC,value);
+            REPO_COUNT = splitm(REPO_ALLOC,' ',REPOS,MAX_REPOS);  
         }
         else if (strcmp(key,"FORMATS") == 0)
         {
             dbg(3,"FORMATS: %s",value);
-            strcpy(REPO_ALLOC,value);
+            strcpy(FORMAT_ALLOC,value);
             FORMAT_COUNT = splitm(REPO_ALLOC,' ',FORMATS,MAX_FORMATS);
         }
         else {

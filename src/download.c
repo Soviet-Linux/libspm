@@ -53,7 +53,7 @@ int downloadRepo(const char* url_path,const char* file_path)
     {
         // get the url
         char* repo = REPOS[i];
-        printf("repo is %s\n",repo);
+        printf("REPOS[%d] is '%s'\n",i,repo);
 
         char* url = calloc(strlen(repo)+strlen(url_path)+1,sizeof(char));
         sprintf(url,"%s/%s",repo,url_path);
@@ -93,7 +93,7 @@ int downloadFile(const char* url,const char* file_path)
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
     // Install the callback function
     dbg(3,"launching progress func");
-    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, NULL); 
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progress_func); 
     
     res = curl_easy_perform(curl);
     curl_easy_cleanup(curl);

@@ -51,13 +51,14 @@ sqlite3* ALL_DB = NULL;
 char CONFIG_FILE[MAX_PATH]  = "/etc/cccp.conf";
 // This is a fucking string array..., i know
 char* REPOS[MAX_REPOS] = {NULL};
+char REPO_ALLOC[MAX_REPOS*64] = {0};
 int REPO_COUNT = 0;
 
 char TEST_LOG[MAX_PATH] = "/var/cccp/log/test.log";
 
 // formats
 char* FORMATS[MAX_FORMATS] = {NULL};
-char REPO_ALLOC[MAX_REPOS*32];
+char FORMAT_ALLOC[MAX_FORMATS*16] = {0};
 int FORMAT_COUNT = 0;
 
 // default format

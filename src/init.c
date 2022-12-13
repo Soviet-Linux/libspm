@@ -32,7 +32,7 @@ void init()
     create_table_installed(INSTALLED_DB);
 
 
-
+    dbg(3,"ALL_DB_PATH: %s",ALL_DB_PATH);
     if (access(ALL_DB_PATH, F_OK) != 0) {
         msg(ERROR, "Global package data file not found, to download it use -s option!");
     } else {

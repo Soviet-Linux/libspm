@@ -18,7 +18,7 @@ int connect_db(sqlite3 **db,char* DB_PATH) {
 
 int create_table_installed(sqlite3 *db) {
     char *err_msg = NULL;
-    int rc = sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS packages (Name TEXT, Version TEXT, Type TEXT, AsDep INT)", 0, 0, &err_msg);
+    int rc = sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS Packages (Name TEXT, Version TEXT, Type TEXT, AsDep INT)", 0, 0, &err_msg);
 
     if (rc != SQLITE_OK) {
         msg(ERROR, "SQL error: %s\n", err_msg);
