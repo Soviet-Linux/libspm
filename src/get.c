@@ -31,14 +31,16 @@ char* get(struct package *i_pkg,char* out_path)
         msg(ERROR,"Global package data file not found, to download it use -s option!");
         return NULL;
     }
-    dbg(1,"Loading %s\n",  ALL_DB);
+    dbg(1,"Loading %s\n",  ALL_DB_PATH);
     
 
     char* pkg_format = calloc(64,sizeof(char));
+    char* pkg_section = calloc(64,sizeof(char));
     
 
-    retrieve_data_repo(ALL_DB,i_pkg,&pkg_format);
-    printf("format is %s\n",pkg_format);
+    retrieve_data_repo(ALL_DB,i_pkg,&pkg_format,&pkg_section);
+    dbg(3,"format is %s\n",pkg_format);
+    dbg(3,"section is %s\n",pkg_section);
 
     // we need to add a way to check if the repo that we are using is on the same version as the one in the database
     // if not , we need to update the database*
@@ -48,7 +50,7 @@ char* get(struct package *i_pkg,char* out_path)
 
     // loop through REPOS
     char url[64+strlen(i_pkg->type)+strlen(i_pkg->name)+strlen(pkg_format)];
-    sprintf(url,"base/%s/%s.%s",i_pkg->type,i_pkg->name,pkg_format);
+    sprintf(url,"%s/%s/%s.%s",pkg_section,i_pkg->type,i_pkg->name,pkg_format);
 
     if (downloadRepo(url, out_path) != 0)
     {
@@ -56,6 +58,7 @@ char* get(struct package *i_pkg,char* out_path)
         return NULL;
     } 
 
+    free(pkg_section);
     return pkg_format;
 }
 

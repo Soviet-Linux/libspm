@@ -8,7 +8,7 @@ int retrieve_data_installed (sqlite3 *db, struct package *pkg,int* as_dep);
 int store_data_installed (sqlite3 *db, struct package *pkg,int as_dep);
 int remove_data_installed (sqlite3* db,char* name);
 
-int retrieve_data_repo(sqlite3 *db, struct package *pkg,char** format);
+int retrieve_data_repo(sqlite3 *db, struct package *pkg,char** format,char** section);
 
 // list everything in the database
 int print_all_data(sqlite3 *db);
