@@ -27,17 +27,18 @@ void init()
 
     // init data
     // TODO: do some stuff for the data
-    if (access(INSTALLED_DB,F_OK) != 0) init_data(INSTALLED_DB);
+    // init the databases
+    connect_db(&INSTALLED_DB,INSTALLED_DB_PATH);
+    create_table_installed(INSTALLED_DB);
 
 
-    if (access(ALL_DB, F_OK))
-    {
+
+    if (access(ALL_DB_PATH, F_OK) != 0) {
         msg(ERROR, "Global package data file not found, to download it use -s option!");
+    } else {
+        connect_db(&ALL_DB,ALL_DB_PATH);
     }
+
     
     // Do other stuff if you want
-    
-
-
-    
 }

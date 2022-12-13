@@ -1,4 +1,5 @@
 #include "stdbool.h"
+#include <sqlite3.h>
 
 #define QUEUE_MAX 64
 
@@ -50,8 +51,11 @@ extern char MAKE_DIR[MAX_PATH];
 extern char PLUGIN_DIR[MAX_PATH];
 
 //The file where a lot of data are stored
-extern char INSTALLED_DB[MAX_PATH];
-extern char ALL_DB[MAX_PATH];
+extern char INSTALLED_DB_PATH[MAX_PATH];
+extern sqlite3* INSTALLED_DB;
+extern char ALL_DB_PATH[MAX_PATH];
+extern sqlite3* ALL_DB;
+
 // configuraton file
 extern char CONFIG_FILE[MAX_PATH];
 // This is a fucking string array..., i know

@@ -14,6 +14,7 @@
 This readconfig fucntion takes a config file path as agument and initianlize global variable with it.
 The current implementation is stupid and bloated.
 TODO: Rework it !
+ // USE THE HASHMAP TO STORE THE CONFIG VALUES
 */
 int readConfig(char* configFilePath)
 {
@@ -52,14 +53,14 @@ int readConfig(char* configFilePath)
 
             strcpy(WORK_DIR,value);
         }
-        else if (strcmp(key,"INSTALLED_FILE") == 0)
+        else if (strcmp(key,"INSTALLED_DB") == 0)
         {
 
-            strcpy(INSTALLED_DB,value);
+            strcpy(INSTALLED_DB_PATH,value);
         }
-        else if (strcmp(key,"ALL_FILE") == 0)
+        else if (strcmp(key,"ALL_DB") == 0)
         {
-            strcpy(ALL_DB,value);
+            strcpy(ALL_DB_PATH,value);
         }
         else if (strcmp(key,"CONFIG_FILE") == 0)
         {

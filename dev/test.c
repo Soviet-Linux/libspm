@@ -235,58 +235,59 @@ int test_data ()
     //init();
     int EXIT = EXIT_SUCCESS;
 
-    strcpy(ALL_DB,"dev/all.db");
+    strcpy(ALL_DB_PATH,"dev/all.db");
 
     printf("Removing test.db\n");
-    remove(ALL_DB);
+    remove(ALL_DB_PATH);
 
-    printf("Creating test database...\n");
+    dbg(2,"Creating test database...\n");
 
-    init_data(ALL_DB);
+    sqlite3 *db;
+    connect_db(&db,ALL_DB_PATH);
+    create_table_installed(db);
+
     
-    printf("Adding data to test database...\n");
-    for (int i = 0; i < 5; i++)
-    {
+    dbg(2,"Adding data to test database...\n");
+    for (int i = 0; i < 5; i++) {
         struct package a_pkg = {0};
         a_pkg.name = names[i];
         a_pkg.version = versions[i];
         a_pkg.type = types[i];
-        store_data(ALL_DB,&a_pkg,0);
+        store_data_installed(db,&a_pkg,0);
     }
     
-    printf("Print all data from test database...\n");
-    get_all_data(ALL_DB);
-    printf("Checking data in test database...\n");
+    dbg(2,"Print all data from test database...\n");
+    print_all_data(db);
+    dbg(2,"Checking data in test database...\n");
     for (int i = 0; i < 5; i++)
     {
         struct package a_pkg = {0};
         a_pkg.name = names[i];
         printf("Checking %s...\n",a_pkg.name);
-        find_data_installed(ALL_DB,&a_pkg,NULL);
-        printf("  %s => %s %s\n",a_pkg.name,a_pkg.version,a_pkg.type);
-        if (strcmp(a_pkg.version,versions[i]) != 0 | strcmp(a_pkg.type,types[i]) !=0 )
-        {
+        retrieve_data_installed(db,&a_pkg,NULL);
+        msg(INFO,"  %s => %s %s\n",a_pkg.name,a_pkg.version,a_pkg.type);
+        if (strcmp(a_pkg.version,versions[i]) != 0 |
+            strcmp(a_pkg.type,types[i]) !=0 ) {
             msg(ERROR,"Invalid return values , database check failed");
             EXIT = -1;
         }
         
     }
     printf("Removing data from test database...\n");
-    for (int i = 0; i < 5; i++)
-    {
+    for (int i = 0; i < 5; i++) {
         printf("Removing %s\n",names[i]);
-        remove_data(ALL_DB,names[i]);
+        remove_data_installed(db,names[i]);
     }
     
 
     printf("Checking data in test database...\n");
-    for (int i = 0; i < 5; i++)
-    {
+    for (int i = 0; i < 5; i++) {
         struct package a_pkg;
         a_pkg.name = names[i];
         a_pkg.version = NULL;
         a_pkg.type = NULL;
-        find_data_installed(ALL_DB,&a_pkg,NULL);
+        retrieve_data_installed(db,&a_pkg,NULL);
+
         printf("  %s => %s %s\n",a_pkg.name,a_pkg.version,a_pkg.type);
         if (a_pkg.type != NULL | a_pkg.version != NULL)
         {
@@ -294,6 +295,11 @@ int test_data ()
             EXIT = -1;
         }
     }
+
+    printf("Closing test database...\n");
+    sqlite3_close(db);
+    printf("Removing test database...\n");
+    remove(ALL_DB);
 
     return EXIT;
 }

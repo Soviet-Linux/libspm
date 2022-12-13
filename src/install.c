@@ -126,7 +126,7 @@ int f_install_package_source(const char* spm_path,int as_dep,const char* format)
     sprintf(file_path,"%s/%s.%s",SPM_DIR,pkg.name,DEFAULT_FORMAT);
     create_pkg(file_path,&pkg,NULL);
 
-    store_data(INSTALLED_DB,&pkg ,as_dep);
+    store_data_installed(INSTALLED_DB,&pkg ,as_dep);
 
     // now we need to clean everything 
     clean();
@@ -180,15 +180,21 @@ __attribute__((unused)) int install_package_binary(char* archivePath,int as_dep)
     //  executing post install scripts
     exec_special(pkg.info.special,BUILD_DIR);
 
-    // format the path using sprintf
-    char create_path[MAX_PATH];
-    sprintf(create_path,"%s/%s.%s",SPM_DIR,pkg.name,DEFAULT_FORMAT);
-    create_pkg(create_path,&pkg,NULL);
 
-    // format
-    char store_path[MAX_PATH];
-    sprintf(store_path,"%s/%s.%s",SPM_DIR,pkg.name,DEFAULT_FORMAT);
-    store_data(store_path,&pkg ,as_dep);
+    char file_path[MAX_PATH];
+    sprintf(file_path,"%s/%s.%s",SPM_DIR,pkg.name,DEFAULT_FORMAT);
+    create_pkg(file_path,&pkg,NULL);
+
+    store_data_installed(INSTALLED_DB,&pkg ,as_dep);
+
+    // now we need to clean everything
+    clean();
+    // remove package from the queue
+    QUEUE_COUNT--;
+    PACKAGE_QUEUE[QUEUE_COUNT] = NULL;
+
+    //free_pkg(&pkg);
+    return 0;
 
     // now we need to clean everything 
     clean();

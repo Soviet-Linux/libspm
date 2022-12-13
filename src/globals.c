@@ -42,9 +42,12 @@ char MAKE_DIR[MAX_PATH] = "/var/cccp/work/make";
 char PLUGIN_DIR[MAX_PATH] = "/var/cccp/plugins";
 
 //The file where a lot of data are stored
-char INSTALLED_DB[MAX_PATH] = "/var/cccp/data/installed.db";
-char ALL_DB[MAX_PATH] = "/var/cccp/data/all.db";
-// configuraton file
+char INSTALLED_DB_PATH[MAX_PATH] = "/var/cccp/data/installed.db";
+sqlite3* INSTALLED_DB = NULL;
+char ALL_DB_PATH[MAX_PATH] = "/var/cccp/data/all.db";
+sqlite3* ALL_DB = NULL;
+
+// configuration file
 char CONFIG_FILE[MAX_PATH]  = "/etc/cccp.conf";
 // This is a fucking string array..., i know
 char* REPOS[MAX_REPOS] = {NULL};

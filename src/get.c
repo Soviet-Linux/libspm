@@ -26,7 +26,7 @@ char* get(struct package *i_pkg,char* out_path)
         return NULL;
     }
 
-    if (access((ALL_DB),F_OK)!=0)
+    if (access((ALL_DB_PATH),F_OK)!=0)
     {
         msg(ERROR,"Global package data file not found, to download it use -s option!");
         return NULL;
@@ -37,7 +37,7 @@ char* get(struct package *i_pkg,char* out_path)
     char* pkg_format = calloc(64,sizeof(char));
     
 
-    find_data_repo(ALL_DB,i_pkg,&pkg_format);
+    retrieve_data_repo(ALL_DB,i_pkg,&pkg_format);
     printf("format is %s\n",pkg_format);
 
     // we need to add a way to check if the repo that we are using is on the same version as the one in the database
