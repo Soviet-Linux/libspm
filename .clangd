@@ -1,4 +1,4 @@
 CompileFlags: # Tweak the parse settings
   Add: 
-    - "-I=./include"
+    - "--include-directory=./include"
 

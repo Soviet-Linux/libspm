@@ -77,7 +77,7 @@ int readConfig(char* configFilePath)
         {
             dbg(3,"FORMATS: %s",value);
             strcpy(FORMAT_ALLOC,value);
-            FORMAT_COUNT = splitm(REPO_ALLOC,' ',FORMATS,MAX_FORMATS);
+            FORMAT_COUNT = splitm(FORMAT_ALLOC,' ',FORMATS,MAX_FORMATS);
         }
         else {
             msg(ERROR,"Unknown key in config file : %s",key);

@@ -34,7 +34,8 @@ void init()
 
     dbg(3,"ALL_DB_PATH: %s",ALL_DB_PATH);
     if (access(ALL_DB_PATH, F_OK) != 0) {
-        msg(ERROR, "Global package data file not found, to download it use -s option!");
+        msg(WARNING, "Global package data file not found, downloading...");
+        sync();
     } else {
         connect_db(&ALL_DB,ALL_DB_PATH);
     }

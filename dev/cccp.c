@@ -7,8 +7,9 @@
 
 
 
-int _install_(unsigned int* index);
+int _install_source_(unsigned int* index);
 int _remove_(unsigned int* index);
+int _install_repo_(unsigned int* index);
 
 int _set_debug_level_(unsigned int* i);
 int _set_debug_unit(unsigned int* i);
@@ -17,7 +18,8 @@ int _set_overwrite_(unsigned int* i);
 
 
 void* args[][2] = {
-    {"install",_install_},
+    {"package",_install_source_},
+    {"install",_install_repo_},
     {"remove",_remove_},
     {"debug",_set_debug_level_},
     {"unit",_set_debug_unit},
@@ -61,11 +63,25 @@ int main(int argc, char** argv) {
 
 }
 
-int _install_(unsigned int* i) {
+int _install_source_(unsigned int* i) {
     exit(install_package_source(ARGV[++(*i)],0));
 }
 int _remove_(unsigned int* i) {
     exit(uninstall(ARGV[++(*i)]));
+}
+int _install_repo_(unsigned int* i) {
+    struct package* pkg = calloc(1, sizeof(struct package));
+    pkg->name = ARGV[++(*i)];
+
+    char* format = get(pkg, pkg->name);
+
+    if (format == NULL) {
+        msg(ERROR, "Failed to download package %s", pkg->name);
+        return 1;
+    }
+
+    f_install_package_source(pkg->name, 0, format);
+    return 0;
 }
 
 

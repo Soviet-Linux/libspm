@@ -1,8 +1,9 @@
 #include <sqlite3.h>
+#include "libspm.h"
 
 // create the database and the table
 int connect_db(sqlite3 **db,char* DB_PATH);
-int create_table(sqlite3 *db);
+int create_table_installed(sqlite3 *db);
 
 int retrieve_data_installed (sqlite3 *db, struct package *pkg,int* as_dep);
 int store_data_installed (sqlite3 *db, struct package *pkg,int as_dep);

@@ -138,15 +138,15 @@ int remove_data_installed(sqlite3* db,char* name)
 
 int retrieve_data_repo(sqlite3 *db, struct package *pkg,char** format,char** section) {
     sqlite3_stmt *stmt;
-    char *zErrMsg = 0;
-    int rc;
+    int rc; 
+
+    dbg(1,"Retrieving %s data from repo DB",pkg->name);
 
     // Prepare the SQL query
     const char *sql = "SELECT Version, Type, Format, Section FROM Packages WHERE Name = ?";
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if( rc != SQLITE_OK ){
-        msg(ERROR, "SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(db));
         return 1;
     }
 
@@ -162,8 +162,7 @@ int retrieve_data_repo(sqlite3 *db, struct package *pkg,char** format,char** sec
 
     // Check if the SQL query was successful
     if( rc != SQLITE_DONE ){
-        msg(ERROR, "SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(db));
         return -1;
     }
 

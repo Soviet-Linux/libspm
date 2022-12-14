@@ -87,3 +87,6 @@ char** ls(char* path);
 int free_pkg(struct package* pkg);
 // print a package struct
 int printPkg(struct package* pkg);
+
+// download remote db
+void sync ();

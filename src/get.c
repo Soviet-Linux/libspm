@@ -28,8 +28,8 @@ char* get(struct package *i_pkg,char* out_path)
 
     if (access((ALL_DB_PATH),F_OK)!=0)
     {
-        msg(ERROR,"Global package data file not found, to download it use -s option!");
-        return NULL;
+        msg(WARNING,"Database not found, downloading...");
+        sync();
     }
     dbg(1,"Loading %s\n",  ALL_DB_PATH);
     
@@ -62,4 +62,8 @@ char* get(struct package *i_pkg,char* out_path)
     return pkg_format;
 }
 
+void sync ()
+{
+    downloadRepo("all.db", ALL_DB_PATH);
+}
 
