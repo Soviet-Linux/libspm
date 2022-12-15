@@ -4,6 +4,7 @@
 
 // class stuff
 #include "libspm.h"
+#include "utils.h"
 
 
 //checking if package is installed and untouched
@@ -29,12 +30,16 @@ int check(const char* name)
         return 2;
     }
 
-    for (int i = 0; i < pkg.locationsCount; i++) {
-        if (access(pkg.locations[i],F_OK) != 0) {
-            return 3;
+    return check_locations(pkg.locations,pkg.locationsCount);
+}
+
+int check_locations(char** locations,int locationsCount)
+{
+    for (int i = 0; i < locationsCount; i++) {
+        if (access(locations[i],F_OK) != 0) {
+            return 3; // this is according to the check() spec
         }
     }
     return 0;
 }
-// simpler check that also verifies f the package is being installed 
 

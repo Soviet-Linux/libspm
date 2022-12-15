@@ -90,3 +90,5 @@ int printPkg(struct package* pkg);
 
 // download remote db
 void sync ();
+//check locations
+int check_locations(char** locations,int locationsCount);

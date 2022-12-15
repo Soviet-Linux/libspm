@@ -56,14 +56,6 @@ int f_install_package_source(const char* spm_path,int as_dep,const char* format)
     */
 
 
-
-    // check if package is already installed
-    if (is_installed(pkg.name))
-    {
-        dbg(1,"Package %s is already installed, reinstalling",pkg.name);
-        uninstall(pkg.name);
-    }
-
     if (pkg.dependencies != NULL && pkg.dependenciesCount > 0 && strlen(pkg.dependencies[0]) > 0)
 
     {
@@ -105,12 +97,21 @@ int f_install_package_source(const char* spm_path,int as_dep,const char* format)
     // getting locations
     dbg(1,"Getting locations for %s",pkg.name);
     pkg.locationsCount = get_locations(&pkg.locations,BUILD_DIR);
+    if (pkg.locationsCount <= 0) {
+        msg(ERROR,"Failed to get locations for %s",pkg.name);
+        return -1;
+    }
+
+    // check if package is already installed
+    if (is_installed(pkg.name))
+    {
+    msg(WARNING,"Package %s is already installed, reinstalling",pkg.name);
+        uninstall(pkg.name);
+    }
     
     // moving binaries
     dbg(1,"Moving binaries for %s",pkg.name);
     move_binaries(pkg.locations,pkg.locationsCount);
-
-    
 
     //  executing post install scripts
     // check if pkg.info.special is not empty or NULL
