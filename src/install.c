@@ -108,6 +108,9 @@ int f_install_package_source(const char* spm_path,int as_dep,const char* format)
     msg(WARNING,"Package %s is already installed, reinstalling",pkg.name);
         uninstall(pkg.name);
     }
+    else {
+        dbg(3,"Package %s is not installed",pkg.name);
+    }
     
     // moving binaries
     dbg(1,"Moving binaries for %s",pkg.name);
