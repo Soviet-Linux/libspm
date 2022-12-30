@@ -23,7 +23,7 @@ Binary packages are archive files containing the compiled binary files of the pa
 // parsing data and installing package archive (with sources)
 
 __attribute__((unused)) int install_package_source(const char* spm_path,int as_dep) {
-    f_install_package_source(spm_path,as_dep,NULL);
+    return f_install_package_source(spm_path,as_dep,NULL);
 }
 
 int f_install_package_source(const char* spm_path,int as_dep,const char* format)
@@ -101,6 +101,7 @@ int f_install_package_source(const char* spm_path,int as_dep,const char* format)
         msg(ERROR,"Failed to get locations for %s",pkg.name);
         return -1;
     }
+    dbg(1,"Got %d locations for %s",pkg.locationsCount,pkg.name);
 
     // check if package is already installed
     if (is_installed(pkg.name))
@@ -138,7 +139,7 @@ int f_install_package_source(const char* spm_path,int as_dep,const char* format)
     QUEUE_COUNT--;
     PACKAGE_QUEUE[QUEUE_COUNT] = NULL;
 
-    //free_pkg(&pkg);
+    free_pkg(&pkg);
     return 0;
 }
 

@@ -18,7 +18,7 @@ int downloadRepo(const char* url_path,const char* file_path)
         char* repo = REPOS[i];
         printf("REPOS[%d] is '%s'\n",i,repo);
 
-        char* url = calloc(strlen(repo)+strlen(url_path)+1,sizeof(char));
+        char* url = calloc(strlen(repo)+strlen(url_path)+8,sizeof(char));
         sprintf(url,"%s/%s",repo,url_path);
 
         msg(INFO, "Downloading %s", url);

@@ -1,3 +1,5 @@
+#define MEMCHECK
+
 #include "stdio.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -11,6 +13,7 @@
 #include "../include/data.h"
 #include "../include/utils.h"
 #include "../include/libspm.h"
+#include "../include/mem.h"
 
 
 #define STATIC
@@ -39,6 +42,7 @@ int test_move();
 int test_get();
 int test_split();
 int test_config();
+int test_make(char* spm_path);
 
 char* assemble(char** list,int count);
 
@@ -51,7 +55,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    DEBUG = 3;
+    DEBUG = 4;
     QUIET = false;
     OVERWRITE = true;
     DEBUG_UNIT = NULL;
@@ -74,10 +78,18 @@ int main(int argc, char const *argv[])
         ret += test_ecmp();
         return ret;
     }
+    else if (strcmp(argv[1],"make") == 0)
+    {
+        int EXIT = 0;
+        EXIT += test_make(argv[2]);
+        printf("Leaks: %d",dbg_leaks());
+        return EXIT;
+    }
     else if (strcmp(argv[1],"install") == 0)
     {
         init();
         install_package_source(argv[2],0);
+        printf("Leaks: %d\n",dbg_leaks());
         return 0;
     }
     else if (strcmp(argv[1],"uninstall") == 0)
@@ -170,40 +182,93 @@ int test_move()
     move_binaries(end_locations,8);
     free(*end_locations);
     free(end_locations);
-    //freearr((void***)&end_locations,end_count+1);
+
+    printf("Testing move : done\n");
+
+    printf("Leaks: %d\n",dbg_leaks());
 
     quit(0);
     return 0;
 }
 
+int test_make(char* spm_path) {
+
+    init();
+
+    struct package p = {0};
+
+    open_pkg(spm_path, &p,NULL);
+
+    printf("Testing make\n");
+
+    char* legacy_dir = calloc(2048,1);
+    sprintf(legacy_dir,"%s/%s-%s",MAKE_DIR,p.name,p.version);
+
+    dbg(1,"Legacy dir: %s",legacy_dir);
+
+    make(legacy_dir,&p);
+
+    dbg(1,"Getting locations for %s",p.name);
+    p.locationsCount = get_locations(&p.locations,BUILD_DIR);
+    if (p.locationsCount <= 0) {
+        msg(ERROR,"Failed to get locations for %s",p.name);
+        return -1;
+    }
+    dbg(1,"Got %d locations for %s",p.locationsCount,p.name);
+
+    return 0;
+}
 
 int test_split()
 {
-    char split_str[] = "Hello,World,This,is,a,test";
+    char* split_str;
+    rdfile("dev/split.txt",&split_str);
 
     printf("cutils test\n");
 
     printf("Testing split\n");
-    char** split_list =calloc(16, sizeof(char*));
-    int count = split(split_str,',',split_list);
+    char **split_list = NULL;
+    int count = splita(strdup(split_str),',',&split_list);
+    printf("split : %d\n",count);
+    printf("list[0] : %s\n",split_list[0]);
+    printf("list[1] : %s\n",split_list[1]);
 
         // print list
     printf("split : printing list\n");
-    for (int i = 0; i < count; i++)
-    {
-        printf("  %s\n",split_list[i]);
-    }
+    char* str_split = assemble(split_list,count);
+    free(*split_list);
     free(split_list);
+
+
+    if (strcmp(str_split,split_str) != 0)
+    {
+        printf("split : failed\n");
+        printf("splitted/assembled string : %s\n",str_split);
+        printf("OG string : %s\n",split_str);
+        return 1;
+    }
+    else
+    {
+        printf("split : passed\n");
+    }
+
+    free(split_str);
+    free(str_split);
+
+    printf("%d Leaks\n",dbg_leaks());
     return 0;
 }
 
 int test_config()
 {
+    int EXIT = EXIT_SUCCESS;
     printf("cutils test\n");
 
     printf("Testing config\n");
-    return readConfig(CONFIG_FILE);
+    EXIT += readConfig(CONFIG_FILE);
 
+    printf("%d Leaks\n",dbg_leaks());
+    return EXIT;
 }
 
 
@@ -277,6 +342,8 @@ int test_data ()
             msg(ERROR,"Invalid return values , database check failed");
             EXIT = -1;
         }
+        free(a_pkg.version);
+        free(a_pkg.type);
         
     }
     printf("Removing data from test database...\n");
@@ -300,12 +367,17 @@ int test_data ()
             msg(ERROR,"Database supression failed ");
             EXIT = -1;
         }
+
     }
 
     printf("Closing test database...\n");
     sqlite3_close(db);
     printf("Removing test database...\n");
-    remove(ALL_DB);
+    remove(ALL_DB_PATH);
+
+
+
+    printf("%d Leaks\n",dbg_leaks());
 
     return EXIT;
 }
@@ -343,17 +415,40 @@ int test_ecmp(int type)
 
     dbg(3,"Exiting with %d",EXIT);
 
+    // free packages
+    free(old_pkg.name);
+    free(old_pkg.version);
+    free(old_pkg.type);
+    free(old_pkg.url);
+    free(old_pkg.info.download);
+    free(old_pkg.info.install);
+    free(old_pkg.info.special);
+    free(old_pkg.license);
+    
+    free(new_pkg.name);
+    free(new_pkg.version);
+    free(new_pkg.type);
+    free(new_pkg.url);
+    free(new_pkg.info.download);
+    free(new_pkg.info.install);
+    free(new_pkg.info.special);
+    free(new_pkg.license);
+
+    printf("%d leaks\n",dbg_leaks());
+
     return EXIT;
 }
 
 char* assemble(char** list,int count)
 {
-    char* string = calloc(256,sizeof(char));
+    dbg(3,"Assembling %d strings",count);
+    char* string = calloc(32*count,sizeof(char));
     int i;
     for (i = 0; i < count-1; i++)
     {
         strcat(string,list[i]);
         strcat(string,",");
+        
     }
     strcat(string,list[i]);
     return string;

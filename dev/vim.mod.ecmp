@@ -9,7 +9,6 @@ url = https://anduin.linuxfromscratch.org/BLFS/vim/vim-9.0.0228.tar.gz
 curl $URL | tar -xz 
 
 [install]
-sh autogen.sh
 ./configure --prefix=/usr
 make
 make DESTDIR=$BUILD_ROOT install

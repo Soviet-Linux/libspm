@@ -1,13 +1,14 @@
 #pragma once
 
-
 #include "globals.h"
+#include "debug.h"
+
+#include "mem.h"
 
 #define LIBSPM_VERSION 0.502
 
 #define SOURCE "src"
 #define BINARY "bin"
-
 
 
 

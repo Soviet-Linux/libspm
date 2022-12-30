@@ -8,6 +8,7 @@
 #include <dlfcn.h>
 
 #include "libspm.h"
+#include "hashtable.h"
 
 
 
@@ -34,7 +35,34 @@ unsigned int splitm (char* string,char delim,char** dest,unsigned max) {
     return count;
 }
 
+unsigned int splita (char* string,char delim,char*** dest) {
+    unsigned int count = 0;
+    unsigned int alloced = 16 * sizeof(char*);
+    *dest = calloc(16,sizeof(char*));
+    
+    char sdelim[2];
+    sdelim[0] = delim;
+    sdelim[1] = 0;
 
+    dbg(3,"Splitting with delim '%c' == '%s' ",delim,sdelim);
+
+    char* token = strtok(string, sdelim);
+
+    while (token != NULL) {
+        dbg(3,"Token: %s",token);
+
+        (*dest)[count++] = token;
+        token = strtok(NULL, sdelim);
+
+        if (count*sizeof(char*) >= alloced) {
+            alloced *= 1.5;
+            dbg(3,"Reallocating to %d",alloced);
+            *dest = realloc(*dest,alloced);
+        }
+    }
+
+    return count;
+}
 
 unsigned int countc(const char* string,char c)
 {
@@ -44,10 +72,10 @@ unsigned int countc(const char* string,char c)
     {
         if (string[i] == c)
         {
+            
             count++;
         }
     }
-
     return count;
 }
 
@@ -222,33 +250,41 @@ int mvsp(char* old_path,char* new_path)
 int free_pkg(struct package* pkg)
 {
     dbg(3,"Freeing pkg %s",pkg->name);
+    
+    // add a null check before every free
+    if (pkg->name != NULL) free(pkg->name);
+    if (pkg->type != NULL) free(pkg->type);
+    if (pkg->version != NULL) free(pkg->version);
+    if (pkg->url != NULL) free(pkg->url);
+    printf("license : %s\n",pkg->license);
+    if (pkg->license != NULL) free(pkg->license);
 
-    free(pkg->name);
-    free(pkg->version);
-    free(pkg->url);
-    free(pkg->license);
+    
+    if (pkg->dependencies != NULL) {
+        if (*pkg->dependencies != NULL) free(*pkg->dependencies);
+        free(pkg->dependencies);
+    } 
 
-    free(*pkg->dependencies);
-    free(pkg->dependencies);
+    if (pkg->makedependencies != NULL) {
+        if (*pkg->makedependencies != NULL) free(*pkg->makedependencies);
+        free(pkg->makedependencies);
+    } 
 
-    free(*pkg->makedependencies);
-    free(pkg->makedependencies);
+    if (pkg->optionaldependencies != NULL) {
+        if (*pkg->optionaldependencies != NULL) free(*pkg->optionaldependencies);
+        free(pkg->optionaldependencies);
+    } 
 
-    free(*pkg->optionaldependencies);
-    free(pkg->optionaldependencies);
+    if (pkg->info.prepare != NULL) free(pkg->info.prepare);
+    if (pkg->info.install != NULL) free(pkg->info.install);
+    if (pkg->info.make != NULL) free(pkg->info.make);
+    if (pkg->info.test != NULL) free(pkg->info.test);
 
-    free(pkg->info.download);
-    free(pkg->info.install);
-    free(pkg->info.prepare);
-    free(pkg->info.make);
-    free(pkg->info.test);
+    if (*pkg->locations != NULL) free(*pkg->locations);
+    if (pkg->locations != NULL) free(pkg->locations);    
 
-    free(*pkg->locations);
-    free(pkg->locations);
-
-
-
-    pkg = NULL;
+    //if (pkg != NULL) free(pkg);
+    
     return 0;
 }
 

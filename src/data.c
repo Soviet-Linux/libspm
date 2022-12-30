@@ -88,8 +88,8 @@ int retrieve_data_installed(sqlite3 *db, struct package *pkg,int* as_dep) {
     sqlite3_bind_text(stmt, 1, pkg->name, -1, SQLITE_STATIC);
 
     while( (rc = sqlite3_step(stmt)) == SQLITE_ROW ){
-        pkg->version = strdup((const char*)sqlite3_column_text(stmt, 0));
-        pkg->type  = strdup((const char*)sqlite3_column_text(stmt, 1));
+        pkg->version = strdup((char*)sqlite3_column_text(stmt, 0));
+        pkg->type  = strdup((char*)sqlite3_column_text(stmt, 1));
         if (as_dep != NULL) *as_dep = sqlite3_column_int(stmt, 2);
     }
 

@@ -3,16 +3,7 @@
 #include "libspm.h"
 #include <limits.h> 
 
-enum level {
-    DBG1,
-    DBG2,
-    DBG3,
-    INFO,
-    ERROR,
-    WARNING,
-    FATAL,
-    DOWNLOAD
-};
+
 // like the rm -rf command
 int rmrf(char *path);
 // a little wrapper that make strcpy easier
@@ -20,14 +11,12 @@ int rmrf(char *path);
 // to split strings into arrays  with a delimiter
 unsigned int splitm (char* string,char delim,char** dest,unsigned max);
 #define split(string,delim,dest) splitm(string,delim,dest,INT_MAX)
+// split and alloc
+unsigned int splita (char* string,char delim,char*** dest);
 
 // to count the number of occurences of a char in a string
 unsigned int countc(const char* string,char c);
 
-// a tool to have cool terminal output
-int msg(enum level msgLevel, const char* message,...);
-int f_dbg__(int level,int line,const char* function,const char* file,char* message,...);
-#define dbg(level,message,...) f_dbg__(level,__LINE__,__func__,__FILE__,message,##__VA_ARGS__)
 
 // a small helper function to free an array
 //int freearr(void*** arr,unsigned long count);

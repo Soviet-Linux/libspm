@@ -1,3 +1,5 @@
+#define MEMCHECK
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -73,14 +75,16 @@ int open(char* path,struct package* pkg)
 		{"dependencies",parsers[6]},
 		{"makedependencies",parsers[7]},
 		{"optionaldependencies",parsers[8]},
-		{"locations",parsers[9]}
+		{"locations",parsers[9]},
+		{NULL,NULL}
 	};
 	void* infodict[][2] = {
 		{"name",&pkg->name},
 		{"version",&pkg->version},
 		{"type",&pkg->type},
 		{"url",&pkg->url},
-		{"license",&pkg->license}	
+		{"license",&pkg->license},
+		{NULL,NULL}
 	};
 	hm = hm_init(pairs,sizeof(pairs)/sizeof(pairs[0]));
 	infohm = hm_init(infodict,sizeof(infodict)/sizeof(infodict[0]));
@@ -96,6 +100,7 @@ int open(char* path,struct package* pkg)
 		void** options = hm_get(hm,sections[i]->name);
 		if (options == NULL) {
 			msg(WARNING,"Unknown section : %s",sections[i]->name);
+			free(sections[i]->buff);
 			continue;
 		}
 		parser = options[0];
@@ -112,6 +117,13 @@ int open(char* path,struct package* pkg)
 		}
 	}
 	dbg(2,"done parsing | returning");
+
+	// free sections
+	for (int i = 0; i < count; i++) {
+		free(sections[i]->name);
+		free(sections[i]);
+	}
+	free(sections);
 
     hm_destroy(hm);
     hm_destroy(infohm);
@@ -165,9 +177,12 @@ unsigned int parseinfo(char *s, struct package* dest)
 			msg(WARNING,"Unknown key : '%s'",key);
 			continue;
 		}
-		*destbuff = value;
+		*destbuff = strdup(value);
+		dbg(3,"Setting destbuff to %p - %s",*destbuff,*destbuff);
 
 	}
+	free(nlist);
+	free(s);
 	return 0;
 }
 
@@ -193,6 +208,7 @@ unsigned int getsections(char* path,section*** sections) {
 			sec->name = strdup(strtok(line,"[]"));
 
 			sec->buff = calloc(256,sizeof(char));
+			dbg(3,"allocating %d bytes at %p for section %s",256,sec->buff,sec->name);
 			(*sections)[sectionscount++] = sec;
 
 			alloc = 256;

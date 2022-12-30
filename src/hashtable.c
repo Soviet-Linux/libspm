@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "hashtable.h"
-
+#include "mem.h"
 
 hashtable* hm_create(int capacity)
 {
@@ -27,6 +27,7 @@ void hm_destroy(hashtable *hm)
         }
     }
     free(hm->items);
+    free(hm);
 }
 
 int hm_add(hashtable *hm, char *key, void *value)
@@ -113,6 +114,8 @@ int hm_visualize(hashtable *hm)
 
 unsigned int hm_hash(hashtable *hm, char *key)
 {
+    if (key == NULL) return 0;
+
     unsigned int len = strlen(key); 
 
     unsigned char *p = (unsigned char*) key;

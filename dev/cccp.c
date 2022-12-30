@@ -81,6 +81,8 @@ int _install_repo_(unsigned int* i) {
     }
 
     f_install_package_source(pkg->name, 0, format);
+
+    remove(pkg->name);
     return 0;
 }
 

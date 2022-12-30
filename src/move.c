@@ -28,8 +28,7 @@ void move_binaries(char** locations,long loc_size)
         if (!(access(dest_loc,F_OK) == 0))
         {   if (locations[i] == NULL)
             {
-                msg(ERROR,"Location is NULL");
-                exit(1);
+                msg(FATAL,"Location is NULL");
             }
             //printf("[%d/%ld] - %s/%s to => %s\n",i,loc_size, BUILD_DIR,locations[i],dest_loc);
             //fflush(stdout);
@@ -38,7 +37,7 @@ void move_binaries(char** locations,long loc_size)
             
             mvsp(build_loc,dest_loc);
             
-            //sdbg(1,"Moved %s/%s to %s",BUILD_DIR,locations[i],dest_loc);
+            //dbg(1,"Moved %s/%s to %s",BUILD_DIR,locations[i],dest_loc);
         }
         else 
         {

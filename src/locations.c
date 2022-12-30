@@ -23,17 +23,9 @@ long get_locations(char ***locations, char *loc_dir) {
   // WARING : this is a memory leak
   char* res = exec(files_location_cmd);
 
-  dbg(2, "Got locations : '%s'", res);
+  dbg(3, "Got locations : '%s'", res);
   
-  // print the locations
-  unsigned int max_count = countc(res,'\n') + 256;
-  *locations = calloc(sizeof(char*),max_count);
-  dbg(3,"allocating for %d locations\n", max_count);
-  int count = splitm(res, '\n', *locations, max_count);
-  if (count == -1) {
-    msg(ERROR, "Failed to split locations");
-    quit(1);
-  }
+  unsigned int count = splita(res, '\n', locations);
 
   dbg(2, "Got %d locations", count);
 

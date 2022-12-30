@@ -1,15 +1,10 @@
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "unistd.h"
+#include "stdarg.h"
+#include "stdio.h"
+#include "stdlib.h"
 #include "string.h"
-#include "libgen.h"
 
-// class stuff
-#include "libspm.h"
-#include "utils.h"
-
+#include "debug.h"
+#include "globals.h"
 
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
@@ -29,18 +24,14 @@
 #define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 #define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
 
-int msg(enum level msgLevel, const char* message,...)
-{
-        //declare char* strDest
-    char* strDest;
-
+int msg(enum level msgLevel, const char* message,...) {
     va_list args;
     //initialize va_list args
     va_start(args, message);
     //declare size_t size
     size_t size = vsnprintf(NULL, 0, message, args);
     //allocate memory for strDest
-    strDest = (char*) calloc(size +2 ,sizeof(char));
+    char strDest[size+2];
     //initialize va_list args
     va_start(args,message);
     //initialize vsnprintf
@@ -63,18 +54,11 @@ int msg(enum level msgLevel, const char* message,...)
             break;
         case FATAL:
             printf("%sFATAL: %s%s%s%s\n",BOLDBLUE,RESET,BLUE,strDest,RESET);
-            free(strDest);
-            quit(1);
-        case DOWNLOAD:
-            printf("%sDOWNLOAD: %s%s%s%s\r",BOLDBLUE,RESET,BLUE,strDest,RESET);
-            fflush(stdin);
-            break;
+            exit(1);
         default:
             printf("UNKNOWN: %s\n",strDest);
             break;
     }
-    //free memory
-    free(strDest);
     
 
     return 0;
@@ -86,13 +70,10 @@ int f_dbg__(int level,int line,const char* function,const char* file,char* messa
     file = strrchr(file,'/')+1;
     /* WARNING : EXPERIMENTAL */
     if (DEBUG_UNIT != NULL) {
-        if (strcmp(DEBUG_UNIT,file) != 0) {
+        if (strcmp(DEBUG_UNIT,function) != 0) {
             return 1;
         }
     }
-
-    //declare char* strDest
-    char* strDest;
 
     va_list args;
     //initialize va_list args
@@ -100,7 +81,7 @@ int f_dbg__(int level,int line,const char* function,const char* file,char* messa
     //declare size_t size
     size_t size = vsnprintf(NULL, 0, message, args);
     //allocate memory for strDest
-    strDest = (char*) calloc(size +2 ,sizeof(char));
+    char strDest[size+2];
     //initialize va_list args
     va_start(args,message);
     //initialize vsnprintf
@@ -113,7 +94,5 @@ int f_dbg__(int level,int line,const char* function,const char* file,char* messa
     {
         printf("%s[%s:%d|%s()] %s%s%s%s\n",BOLDCYAN,file,line,function,RESET,GREEN,strDest,RESET);
     }
-    //free memory
-    free(strDest);
     return 0;
 }
