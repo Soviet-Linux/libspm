@@ -82,10 +82,11 @@ int retrieve_data_installed(sqlite3 *db, struct package *pkg,int* as_dep) {
         msg(ERROR, "SQL error: %s -- %d \n", sqlite3_errmsg(db),rc);
         return -1;
     }
-    dbg(2,"SQL query: %s - exit : %d",sql,rc);
 
     // Bind the value for the parameter in the SQL query
     sqlite3_bind_text(stmt, 1, pkg->name, -1, SQLITE_STATIC);
+
+    dbg(2,"SQL query: %s - exit : %d",sql,rc);
 
     while( (rc = sqlite3_step(stmt)) == SQLITE_ROW ){
         pkg->version = strdup((char*)sqlite3_column_text(stmt, 0));

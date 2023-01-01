@@ -10,7 +10,7 @@ char* dbg_strdup(char* str,char* file,int line);
 
 void dbg_free(void* ptr,char* file,int line);
 
-//#define MEMCHECK
+#define MEMCHECK
 
 #ifdef MEMCHECK // only define these if we're doing memory checking
     #define malloc(size) dbg_malloc(size,__FILE__,__LINE__)

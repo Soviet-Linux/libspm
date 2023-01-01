@@ -10,6 +10,7 @@
 int _install_source_(unsigned int* index);
 int _remove_(unsigned int* index);
 int _install_repo_(unsigned int* index);
+int _create_binary_from_file(unsigned int* i);
 
 int _set_debug_level_(unsigned int* i);
 int _set_debug_unit(unsigned int* i);
@@ -24,7 +25,8 @@ void* args[][2] = {
     {"debug",_set_debug_level_},
     {"unit",_set_debug_unit},
     {"verbose", _set_verbose_},
-    {"overwrite", _set_overwrite_}
+    {"overwrite", _set_overwrite_},
+    {"create", _create_binary_from_file}
 };
 
 char** ARGV;
@@ -101,5 +103,14 @@ int _set_verbose_(unsigned int* i) {
 }
 int _set_overwrite_(unsigned int* i) {
     OVERWRITE = true;
+    return 0;
+}
+
+int _create_binary_from_file(unsigned int* i) {
+    char* file = ARGV[++(*i)];
+    char* binary = ARGV[++(*i)];
+
+    create_binary_from_source(file,binary);
+
     return 0;
 }

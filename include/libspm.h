@@ -62,15 +62,17 @@ float version();
 // install packages
 //main exec function
 /*-->*/int f_install_package_source(const char* spm_path,int as_dep,const char* format); // install a package file with a provided format
-/*-->*/ __attribute__((unused)) int install_package_source(const char* spm_path,int as_dep); // install a package file with the format provided in the file
+/*-->*/ int install_package_source(const char* spm_path,int as_dep); // install a package file with the format provided in the file
 //
 /*-->*/int f_install_package_binary(const char* spm_path,int as_dep,const char* format); // install a package file with a provided format
-/*-->*/ __attribute__((unused)) int install_package_binary(char* archivePath,int as_dep);
+/*-->*/int install_package_binary(char* archivePath,int as_dep);
 // Remove packages
 int uninstall(char* name);
 // Check packages
 int check (const char* name);
 
+int f_create_binary_from_source(char* src_path,char* bin_path,char* in_format,char* out_format);
+int create_binary_from_source(char* spm_path,char* bin_path);
 
 //get a package 
 /* the return value is a package format*/

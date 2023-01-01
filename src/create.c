@@ -5,11 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-int createBinary(char* spm_path,char* bin_path)
+
+int create_binary_from_source(char* spm_path,char* bin_path) {
+    // i din't created a macro since i might add logic
+
+    return f_create_binary_from_source(spm_path,bin_path,NULL,DEFAULT_FORMAT);
+}
+
+int f_create_binary_from_source(char* src_path,char* bin_path,char* in_format,char* out_format)
 {
     struct package pkg;
 
-    open_pkg(spm_path, &pkg,NULL);
+    open_pkg(src_path, &pkg,NULL);
 
     PACKAGE_QUEUE[QUEUE_COUNT] = pkg.name; // add this shit to the PKG_QUEUE ARRAY
     QUEUE_COUNT++;

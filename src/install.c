@@ -22,7 +22,7 @@ Binary packages are archive files containing the compiled binary files of the pa
 
 // parsing data and installing package archive (with sources)
 
-__attribute__((unused)) int install_package_source(const char* spm_path,int as_dep) {
+int install_package_source(const char* spm_path,int as_dep) {
     return f_install_package_source(spm_path,as_dep,NULL);
 }
 
