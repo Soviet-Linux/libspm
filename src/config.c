@@ -1,14 +1,10 @@
 #include "stdio.h"
-
-#include "libspm.h"
-#include "globals.h"
-
-#include <utils.h>
 #include <stdlib.h>
 #include <string.h>
 
-
-
+#include "libspm.h"
+#include "globals.h"
+#include "cutils.h"
 
 /* 
 This readconfig fucntion takes a config file path as agument and initianlize global variable with it.
@@ -16,7 +12,7 @@ The current implementation is stupid and bloated.
 TODO: Rework it !
  // USE THE HASHMAP TO STORE THE CONFIG VALUES
 */
-int readConfig(char* configFilePath)
+int readConfig(const char* configFilePath)
 {
     dbg(2,"config: %s",configFilePath);
     FILE* file = fopen(configFilePath, "r"); /* should check the result */
@@ -41,43 +37,39 @@ int readConfig(char* configFilePath)
 
         if (strcmp(key,"ROOT") == 0)
         {
-            strcpy(ROOT,value);
+            setenv("SOVIET_ROOT",value,1);
         }
         else if (strcmp(key,"MAIN_DIR") == 0)
         {
 
-            strcpy(MAIN_DIR,value);
+            setenv("SOVIET_MAIN_DIR",value,1);
         }
         else if (strcmp(key,"WORK_DIR") == 0)
         {
-
-            strcpy(WORK_DIR,value);
+            setenv("SOVIET_WORK_DIR",value,1);   
         }
         else if (strcmp(key,"INSTALLED_DB") == 0)
         {
 
-            strcpy(INSTALLED_DB_PATH,value);
+            setenv("SOVIET_INSTALLED_DB_PATH",value,1);
         }
         else if (strcmp(key,"ALL_DB") == 0)
         {
-            strcpy(ALL_DB_PATH,value);
+            setenv("SOVIET_ALL_DB",value,1);
         }
         else if (strcmp(key,"CONFIG_FILE") == 0)
         {
 
-            strcpy(CONFIG_FILE,value);
+            setenv("SOVIET_CONFIG_FILE",value,1);
         }
         else if (strcmp(key,"REPOS") == 0)
         {
             dbg(3,"REPOS: %s",value);
-            strcpy(REPO_ALLOC,value);
-            REPO_COUNT = splitm(REPO_ALLOC,' ',REPOS,MAX_REPOS);  
+            setenv("CCCP_REPOS",value,1);
         }
         else if (strcmp(key,"FORMATS") == 0)
         {
-            dbg(3,"FORMATS: %s",value);
-            strcpy(FORMAT_ALLOC,value);
-            FORMAT_COUNT = splitm(FORMAT_ALLOC,' ',FORMATS,MAX_FORMATS);
+            setenv("CCCP_FORMATS",value,1);
         }
         else {
             msg(ERROR,"Unknown key in config file : %s",key);

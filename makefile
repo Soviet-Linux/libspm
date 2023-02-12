@@ -31,7 +31,7 @@ SDIR = src
 
 CFLAGS = -Wall -g -fPIC -O2 -Wextra -fPIC -L./bin -Iinclude
 
-LIBS = -lcurl -lsqlite3 -lm 
+LIBS = lib/* -lcurl -lsqlite3 -lm 
 
 # change these to proper directories where each file should be
 SRCDIR   = src
@@ -48,6 +48,8 @@ OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 FMT_DIR = formats
 
+MEMCHECK = 0
+
 
 all: $(BINDIR)/$(LIBOUT)
 	@echo "BUILD SUCESSFUL"
@@ -61,7 +63,7 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	@if [ ! -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
 	@if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
 
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ -D MEMCHECK=$(MEMCHECK)
 	@echo "Compiled "$<" successfully!"
 
 

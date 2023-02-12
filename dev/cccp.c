@@ -1,11 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "../include/libspm.h"
-#include "../include/utils.h"
+#include "../include/cutils.h"
 #include "../include/hashtable.h"
 
+#define C_FRONTEND_VERSION 0.1
 
+char* ART = "\033[31;1;5m"
+    "    ⠀⠀⠀⠀⠀⠀⠀⠀⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ \n"
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⢹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n"
+    "⠀⠀⠀⠀⠀⠀⠀⠙⠿⣟⠛⠃⠀⠛⢛⡿⠟⠁⠀⠀⠀⠀⠀⠀       |============================|\n"
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡗⠀⡀⠐⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀\n"
+    "⠀⠀⠀⣀⣴⠊⠀⠀⠀⣸⡵⠋⠉⠳⣽⡀⠀⠀⠙⢦⣄⡀⠀⠀          CCCP C Frontend Version : \n"
+    "⠀⢠⣾⣼⠕⠀⠀⠀⠀⠁⠀⠀⠠⣀⠈⠁⠀⠀⠀⠹⣗⢳⢆⠀                      %.3f\n"
+    "⠀⣧⣟⡕⠀⠀⠀⠀⠀⢀⣤⡤⠀⠈⠻⣦⡀⠀⠀⠀⢹⣿⢸⡀\n"
+    "⢸⢻⣿⠀⠀⠀⠀⠀⣴⣿⢿⡀⠀⠀⠀⠘⣿⡄⠀⠀⠀⡿⡾⣠\n"
+    "⢸⣎⡾⡀⠀⠀⠀⠀⠈⠁⠀⠙⣦⣄⠀⠀⣿⡇⠀⠀⠀⣽⣴⣇          C LibSPM Version : \n"
+    "⢰⣝⣇⡇⠀⠀⠀⠀⣠⣄⣀⠀⠈⠻⣷⣼⣿⠃⠀⠀⢀⡏⢏⡞                      %.3f\n"
+    "⠀⢝⢮⣇⣆⠀⢠⣶⠋⠈⠙⠻⠿⠿⠿⠿⣷⡄⠀⢰⢻⡷⣫⠀\n"
+    "⠀⠈⠳⣯⣽⡖⣌⠁⠀⠀⠀⠀⠀⠀⠀⠀⠈⣠⢾⣟⣽⡞⠁⠀       |============================|\n"
+    "⠀⠀⠀⠑⠯⣭⣼⡷⠤⣄⡠⢄⣠⢤⣀⡤⠾⣯⣭⡽⠊⠀⠀⠀\n"
+    "⠀⠀⠀⠀⠀⠑⠒⠚⠛⣩⠞⠁⠀⠙⢮⠛⠛⠒⠊⠀⠀⠀⠀⠀\n"
+    "\033[0m";
+
+int _print_version_(unsigned int* i);
 
 int _install_source_(unsigned int* index);
 int _remove_(unsigned int* index);
@@ -19,6 +39,7 @@ int _set_overwrite_(unsigned int* i);
 
 
 void* args[][2] = {
+    {"version",_print_version_},
     {"package",_install_source_},
     {"install",_install_repo_},
     {"remove",_remove_},
@@ -37,16 +58,25 @@ int main(int argc, char** argv) {
         msg(ERROR, "No command specified");
         return 1;
     }
+    // root check
+    if (getuid() != 0) {
+        msg(ERROR, "You need to be root to run this program");
+        return 1;
+    }
 
     hashtable* hm = hm_init(args, sizeof(args)/sizeof(args[0]));
 
     ARGV = argv;
 
-    init();
-
+    init(); 
     int (*func)(int*);
     for (int i = 1; i < argc; i++) {
-        dbg(1, "argv[%d] = %s", i, argv[i]);
+        dbg(3, "argv[%d] = %s", i, argv[i]);
+
+        // removz beginning -- in args
+        if (argv[i][0] == '-' && argv[i][1] == '-') {
+            argv[i] += 2;
+        }
 
         //hm_visualize(hm);
         // function pointer
@@ -63,6 +93,11 @@ int main(int argc, char** argv) {
     }
 
 
+}
+
+int _print_version_(unsigned int* i) {
+    printf(ART,C_FRONTEND_VERSION,version());
+    exit(0);
 }
 
 int _install_source_(unsigned int* i) {

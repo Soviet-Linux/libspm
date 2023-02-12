@@ -5,7 +5,7 @@
 #include "malloc.h"
 
 #include "../../include/libspm.h"
-#include "../../include/utils.h"
+#include "../../include/cutils.h"
 
 #include "../../include/hashtable.h"
 #include <stdio.h>
@@ -137,10 +137,7 @@ unsigned int parsenl(char* s,char*** dest)
 	char* str;
 	// the parseraw below is useless but i'll keep since in case
 	parseraw(s,&str);
-	unsigned int count = countc(s,'\n') + 64;
-	*dest = calloc(sizeof(char*),count+1);
-    dbg(3,"count : %d",count);
-	return splitm(str,'\n',*dest,count+1);
+	return splita(str,'\n',dest);
 }
 unsigned int parseraw(char* s, char** dest)
 {	
@@ -155,16 +152,23 @@ unsigned int parseraw(char* s, char** dest)
 
 unsigned int parseinfo(char *s, struct package* dest)
 {
+
+
 	char* p = s;
 	while (*p!='\0') {
 		if (*p == ' ') {
-			popcharn(s,strlen(s),p-s);
+			int index = p-s;
+			dbg(3,"Removing space '%c']'%c'['%c' at %p (index=%d)",*(p-1),*p,*(p+1),p,index);
+			popchar(s,index);
+			p--;
 		}
 		p++;
 	}
+	printf("s : %s",s);
 	// split with nl
 	char** nlist;
 	int count = parsenl(s,&nlist);
+	
 	dbg(3,"count : %d",count);
 	for (int i = 0;i < count;i++) {
 		char* key = strtok(nlist[i],"=");
@@ -214,7 +218,9 @@ unsigned int getsections(char* path,section*** sections) {
 
 			continue;
 		}
-		if (strlen((*sections)[sectionscount-1]->buff) + strlen(line) >= alloc) {
+		int bufflen = strlen((*sections)[sectionscount-1]->buff);
+		int linelen = strlen(line);
+		if ( bufflen + linelen + 2 >= alloc) {
 			alloc += strlen(line) + 64;
 			(*sections)[sectionscount-1]->buff = realloc((*sections)[sectionscount-1]->buff,alloc);
 		}

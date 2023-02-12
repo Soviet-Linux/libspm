@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "hashtable.h"
-#include "mem.h"
+#include "cutils.h"
 
 hashtable* hm_create(int capacity)
 {

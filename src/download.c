@@ -7,11 +7,13 @@
 
 // class stuff
 #include "libspm.h"
-#include "utils.h"
+#include "cutils.h"
 
 
 int downloadRepo(const char* url_path,const char* file_path)
 {
+    char** REPOS;
+    int REPO_COUNT = splita(strdup(getenv("SOVIET_REPOS")), ' ', &REPOS);
     for (int i = 0;i < REPO_COUNT;i++)
     {
         // get the url
@@ -26,11 +28,15 @@ int downloadRepo(const char* url_path,const char* file_path)
         if (downloadFile(url,file_path) == 0)
         {
             free(url);
+            free(*REPOS);
+            free(REPOS);
             return 0;
         }
         free(url);
     
     }
+    free(*REPOS);
+    free(REPOS);
     return 1;
     
 } 

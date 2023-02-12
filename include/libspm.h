@@ -1,9 +1,9 @@
 #pragma once
 
+#include "cutils.h"
 #include "globals.h"
-#include "debug.h"
 
-#include "mem.h"
+
 
 #define LIBSPM_VERSION 0.502
 
@@ -65,37 +65,68 @@ float version();
 /*-->*/ int install_package_source(const char* spm_path,int as_dep); // install a package file with the format provided in the file
 //
 /*-->*/int f_install_package_binary(const char* spm_path,int as_dep,const char* format); // install a package file with a provided format
-/*-->*/int install_package_binary(char* archivePath,int as_dep);
+/*-->*/int install_package_binary(const char* archivePath,int as_dep);
 // Remove packages
 int uninstall(char* name);
 // Check packages
 int check (const char* name);
 
-int f_create_binary_from_source(char* src_path,char* bin_path,char* in_format,char* out_format);
-int create_binary_from_source(char* spm_path,char* bin_path);
+int f_create_binary_from_source(const char* src_path,const char* bin_path,const char* in_format,const char* out_format);
+int create_binary_from_source(const char* spm_path,const char* bin_path);
 
 //get a package 
 /* the return value is a package format*/
-char* get(struct package *i_pkg,char* out_path);
+char* get(struct package *i_pkg,const char* out_path);
+
+// move program file to /
+void move_binaries(char** locations,long loc_size);
+// build a package from source
+int make (char* package_dir,struct package* pkg);
+// execute post install scripts
+int exec_special(const char* cmd,const char* package_dir);
+
 
 // update the system
 int update();
 // clean the work dirs
 int clean();
+// download remote db
+void sync();
 
 // init the system
 void init();
 // free everything and quit
 void quit(int status);
 
-int readConfig(char* configFilePath);
+int readConfig(const char* configFilePath);
 
+//check locations
+int check_locations(char** locations,int locationsCount);
 
 //open a pkg file (can be spm or ecmp)
 int open_pkg(const char* path, struct package* pkg,const char* format);
 int create_pkg(const char* path,struct package* pkg,const char* format);
 
 int runFormatLib (const char* format,const char* fn,const char* pkg_path,struct package* pkg);
+
+// get package name from binray file
+int get_bin_name(const char* bin_path,char* name);
+//check if  a package is installed
+bool is_installed(const char* name);
+
+// free a package struct
+int free_pkg(struct package* pkg);
+
+// donwnload a file 
+int downloadFile(const char* url,const char* file_path);
+//download package from repo
+int downloadRepo(const char* url_path,const char* file_path);
+
+// get package locations 
+long get_locations(char*** locations, const char* loc_dir);
+// check and install dependencies for a package
+int check_dependencies (char ** dependencies,int dependenciesCount);
+
 
 
 

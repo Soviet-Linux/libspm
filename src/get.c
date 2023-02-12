@@ -9,12 +9,12 @@
  // class stuff
 #include "libspm.h"
 #include "globals.h"
-#include "utils.h"
+#include "cutils.h"
 #include "data.h"
 
 
 
-char* get(struct package *i_pkg,char* out_path)
+char* get(struct package *i_pkg,const char* out_path)
 {
     // I commented this part because the soviet system im working on right now doesnt support curl 
     // I will add it later whan the rest of the stuff is ready 
@@ -26,12 +26,7 @@ char* get(struct package *i_pkg,char* out_path)
         return NULL;
     }
 
-    if (access((ALL_DB_PATH),F_OK)!=0)
-    {
-        msg(WARNING,"Database not found, downloading...");
-        sync();
-    }
-    dbg(1,"Loading %s\n",  ALL_DB_PATH);
+    dbg(3,"Loading package %s from ALL_DB\n",i_pkg->name);
     
 
     char* pkg_format = calloc(64,sizeof(char));
@@ -39,12 +34,16 @@ char* get(struct package *i_pkg,char* out_path)
     
 
     retrieve_data_repo(ALL_DB,i_pkg,&pkg_format,&pkg_section);
-    dbg(3,"format is %s\n",pkg_format);
-    dbg(3,"section is %s\n",pkg_section);
+    if (pkg_format == NULL || pkg_section == NULL)
+    {
+        msg(FATAL,"Failed to retrieve data from ALL_DB");
+        return NULL;
+    }
+    dbg(3,"format is '%s'\n",pkg_format);
+    dbg(3,"section is '%s'\n",pkg_section);
 
     // we need to add a way to check if the repo that we are using is on the same version as the one in the database
     // if not , we need to update the database*
-
 
     dbg(1,"Downloading %s %s %s",i_pkg->name,i_pkg->version,i_pkg->type);
 
@@ -64,6 +63,6 @@ char* get(struct package *i_pkg,char* out_path)
 
 void sync ()
 {
-    downloadRepo("all.db", ALL_DB_PATH);
+    downloadRepo("all.db", getenv("ALL_DB_PATH"));
 }
 

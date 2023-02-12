@@ -3,9 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "libspm.h"
-#include "globals.h"
-#include "utils.h"
+#include "cutils.h"
 
 
 void quit(int status)

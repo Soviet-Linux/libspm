@@ -4,7 +4,11 @@
 #include "stdio.h"
 
 #include "libspm.h"
-#include "utils.h"
+#include "cutils.h"
+
+
+// soething for sql stuff
+int callback(void *NotUsed, int argc, char **argv, char **azColName);
 
 int connect_db(sqlite3 **db,char* DB_PATH) {
     int rc = sqlite3_open(DB_PATH, db);
@@ -155,10 +159,10 @@ int retrieve_data_repo(sqlite3 *db, struct package *pkg,char** format,char** sec
     sqlite3_bind_text(stmt, 1, pkg->name, -1, SQLITE_STATIC);
 
     while( (rc = sqlite3_step(stmt)) == SQLITE_ROW ){
-        pkg->version = strdup((const char*)sqlite3_column_text(stmt, 0));
-        pkg->type  = strdup((const char*)sqlite3_column_text(stmt, 1));
-        if (format != NULL) (*format) = strdup((const char*)sqlite3_column_text(stmt, 2));
-        if (section != NULL) (*section) = strdup((const char*)sqlite3_column_text(stmt, 3));
+        pkg->version = strdup((char*)sqlite3_column_text(stmt, 0));
+        pkg->type  = strdup((char*)sqlite3_column_text(stmt, 1));
+        if (format != NULL) (*format) = strdup((char*)sqlite3_column_text(stmt, 2));
+        if (section != NULL) (*section) = strdup((char*)sqlite3_column_text(stmt, 3));
     }
 
     // Check if the SQL query was successful

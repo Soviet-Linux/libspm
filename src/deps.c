@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "limits.h"
 
 // class stuff
 #include "libspm.h"
-#include "utils.h"
+#include "cutils.h"
 
 // This function will check if all dependencies of a package are installed
 int check_dependencies (char ** dependencies,int dependenciesCount) 

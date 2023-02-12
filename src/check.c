@@ -1,10 +1,12 @@
-#include "unistd.h"
-#include "stdio.h"
-
-
 // class stuff
 #include "libspm.h"
-#include "utils.h"
+
+#include "unistd.h"
+#include "stdio.h"
+#include <stdlib.h>
+
+
+
 
 
 //checking if package is installed and untouched
@@ -18,14 +20,14 @@ Exit code signification :
 int check(const char* name)
 {
     char dataSpmPath[MAX_PATH];
-    sprintf(dataSpmPath,"%s/%s/%s",DATA_DIR,SPM_DIR,name);
+    sprintf(dataSpmPath,"%s/%s",getenv("SOVIET_SPM_DIR"),name);
 
     // checkinig if package data file exists
     if (access(dataSpmPath,F_OK) != 0){
         return 1;
     }
     struct package pkg;
-    open_pkg(dataSpmPath,&pkg,DEFAULT_FORMAT);
+    open_pkg(dataSpmPath,&pkg,getenv("SOVIET_DEFAULT_FORMAT"));
     if (pkg.locationsCount == 0) {
         return 2;
     }

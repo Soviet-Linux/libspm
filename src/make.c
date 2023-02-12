@@ -7,12 +7,12 @@
 
 //class stuff
 #include "libspm.h"
-#include "utils.h"
+#include "cutils.h"
 #include "globals.h"
 
 /*
     All the complexity in this function and really in this entire project if just because we need to track  files installed by a makefile
-    For now we juste install in a separate directory (BUILD_DIR) and then move it to the correct location (The real filesystem)
+    For now we juste install in a separate directory (getenv("BUILD_DIR")) and then move it to the correct location (The real filesystem)
     I tried many solutions to do this like installwatch , checkinstall , but none of them worked for me.
     If you have an idea PLEASE , I beg you tell me or write it directly here .
     IDEAS :
@@ -25,9 +25,12 @@
 */
 int make (char* package_dir,struct package* pkg)
 {
+    char* build_dir = getenv("BUILD_DIR");
+    char* make_dir = getenv("MAKE_DIR");
+
+
 
     char *cmd_params;
-    
     //If debug is not enabled , reidrecting all command output to /dev/null
     if (QUIET) {
         cmd_params = "&> /dev/null";
@@ -61,35 +64,45 @@ int make (char* package_dir,struct package* pkg)
     // TODO: find someone intelligent to ameliorate this code
 
     // Idk why i havent done this before , but i moved the downloading here
-    printf("url is  : %s\n",pkg->url);
+    
     if (pkg->info.download != NULL && strlen(pkg->info.download) > 0) {
+        //expand the url    
+        char excmd[256 + strlen(pkg->url)];
+        sprintf(excmd,"VERSION=%s && NAME=%s && echo -n %s",pkg->version,pkg->name,pkg->url);
+        char* exurl = exec(excmd);
+        printf("url is  : %s\n",pkg->url);
+
         char sources_cmd[
-            64 + strlen(pkg->name) + strlen(pkg->version) + strlen(pkg->url) + 
-            strlen(MAKE_DIR) + strlen(pkg->info.download)
+            64 + strlen(pkg->name) + strlen(pkg->version) + strlen(exurl) + 
+            strlen(make_dir) + strlen(pkg->info.download)
             ];
 
         sprintf(sources_cmd,
-            " NAME=%s && VERSION=%s && URL=%s && cd %s && %s",
-            pkg->name,pkg->version,pkg->url,MAKE_DIR,pkg->info.download);
+            "NAME=%s &&  VERSION=%s && URL=%s && cd %s && %s",
+            pkg->name,pkg->version,exurl,make_dir,pkg->info.download);
 
         dbg(2,"Downloading sources with %s",sources_cmd);
-        if (system(sources_cmd) != 0) {
+        int res = system(sources_cmd);
+        free(exurl);
+
+        if ( res != 0) {
             msg(ERROR,"Failed to download sources for %s",pkg->name);
             return -1;
         }
+
     }
     //checking is the command are used and formatting and executing them
     if (pkg->info.prepare != NULL && strlen(pkg->info.prepare) > 0) 
     {
         //formatting the prepare command
         char prepare_cmd[
-            64 + strlen(BUILD_DIR) + strlen(package_dir) + 
+            64 + strlen(build_dir) + strlen(package_dir) + 
             strlen(pkg->info.prepare) + strlen(cmd_params)
             ];
 
         sprintf(prepare_cmd,
             "BUILD_ROOT=%s; ( cd %s && %s ) %s",
-            BUILD_DIR,package_dir,pkg->info.prepare,cmd_params);
+            getenv("SOVIET_BUILD_DIR"),package_dir,pkg->info.prepare,cmd_params);
 
         //Printing the command to the terminal
         dbg(2,"Executing prepare command : %s",prepare_cmd);
@@ -107,13 +120,13 @@ int make (char* package_dir,struct package* pkg)
     {
         //formatting the prepare command
         char make_cmd[
-            64 + strlen(BUILD_DIR) + strlen(package_dir) + 
+            64 + strlen(getenv("SOVIET_BUILD_DIR")) + strlen(package_dir) + 
             strlen(pkg->info.make) + strlen(cmd_params)
             ];
 
         sprintf(make_cmd,
             "BUILD_ROOT=%s; ( cd %s && %s ) %s",
-            BUILD_DIR,package_dir,pkg->info.make,cmd_params);
+            getenv("SOVIET_BUILD_DIR"),package_dir,pkg->info.make,cmd_params);
 
         //Printing the command to the terminal
         dbg(2,"Executing make command : %s",make_cmd);
@@ -132,13 +145,13 @@ int make (char* package_dir,struct package* pkg)
     {
         //formatting the  command
         char test_cmd[
-            64 + strlen(BUILD_DIR) + strlen(package_dir) + 
+            64 + strlen(getenv("SOVIET_BUILD_DIR")) + strlen(package_dir) + 
             strlen(pkg->info.test) + strlen(cmd_params) 
             ];
 
         sprintf(test_cmd,
             "BUILD_ROOT=%s; ( cd %s && %s ) %s",
-            BUILD_DIR,package_dir,pkg->info.test,cmd_params);
+            getenv("SOVIET_BUILD_DIR"),package_dir,pkg->info.test,cmd_params);
 
 
         //Printing the command to the terminal
@@ -156,12 +169,12 @@ int make (char* package_dir,struct package* pkg)
     {
         //formatting the prepare command
         char install_cmd[
-            64 + strlen(BUILD_DIR) + strlen(package_dir) + 
+            64 + strlen(getenv("BUILD_DIR")) + strlen(package_dir) + 
             strlen(pkg->info.install) + strlen(cmd_params)];
 
         sprintf(install_cmd,
             "BUILD_ROOT=%s; ( cd %s && %s ) %s",
-            BUILD_DIR,package_dir,pkg->info.install,cmd_params);
+            getenv("BUILD_DIR"),package_dir,pkg->info.install,cmd_params);
 
         //Printing the command to the terminal
         dbg(2,"Executing Install command : %s",install_cmd);
@@ -177,13 +190,14 @@ int make (char* package_dir,struct package* pkg)
 
     }
     else {
-        msg(FATAL,"No install command !");
+        msg(ERROR,"No install command !");
+        return -3;
     }
     
     return 0;
 
 }
-int exec_special(char* cmd,char* package_dir)
+int exec_special(const char* cmd,const char* package_dir)
 {
     dbg(2,"Executing special command : %s",cmd);
     char* special_cmd = calloc(

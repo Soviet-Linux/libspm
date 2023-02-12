@@ -1,18 +1,17 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include <linux/limits.h>
 
 // class stuff
 #include "globals.h"
 #include "libspm.h"
-#include "utils.h"
-#include <linux/limits.h>
-#include <stdlib.h>
+#include "cutils.h"
 
-long get_locations(char ***locations, char *loc_dir) {
+long get_locations(char*** locations, const char *loc_dir) {
   // Get package file location
   char files_location_cmd[PATH_MAX + 64];
-  sprintf(files_location_cmd,"( cd %s && find . -type f | cut -c2- ) ", BUILD_DIR);
+  sprintf(files_location_cmd,"( cd %s && find . -type f | cut -c2- ) ", getenv("BUILD_DIR"));
   /*
   This way of getting locations is pretty bad , i should wite a proper way to do
   it But it works so its ok for now

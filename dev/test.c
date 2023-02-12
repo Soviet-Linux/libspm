@@ -9,9 +9,8 @@
 #include "../include/globals.h"
 #include "../include/libspm.h"
 #include "../include/data.h"
-#include "../include/utils.h"
+#include "../include/cutils.h"
 #include "../include/libspm.h"
-#include "../include/mem.h"
 
 
 #define STATIC
@@ -80,14 +79,14 @@ int main(int argc, char const *argv[])
     {
         int EXIT = 0;
         EXIT += test_make(argv[2]);
-        printf("Leaks: %d",dbg_leaks());
+        printf("Leaks: %d",check_leaks());
         return EXIT;
     }
     else if (strcmp(argv[1],"install") == 0)
     {
         init();
         install_package_source(argv[2],0);
-        printf("Leaks: %d\n",dbg_leaks());
+        printf("Leaks: %d\n",check_leaks());
         return 0;
     }
     else if (strcmp(argv[1],"uninstall") == 0)
@@ -132,14 +131,14 @@ int test_move()
     
     init();
     printf("Testing move\n");
-    strcpy(ROOT,"/tmp/spm-testing");
-    strcpy(BUILD_DIR,"/tmp/spm-testing/old");
+    setenv("SOVIET_ROOT","/tmp/spm-testing",1);
+    setenv("SOVIET_BUILD_DIR","/tmp/spm-testing/old",1);
     printf("Creating directories\n");
-    rmrf(ROOT);
+    rmrf("/tmp/spm-testing");
     printf("Creating directories\n");
-    mkdir(ROOT,0777);
+    mkdir("/tmp/spm-testing",0777);
     printf("Creating directories\n");
-    mkdir(BUILD_DIR,0777);
+    mkdir("/tmp/spm-testing/old",0777);
     printf("Creating directories\n");
 
     printf("Creating test dirs\n");
@@ -148,7 +147,7 @@ int test_move()
     {
         printf("Creating %s\n",l_dirs[i]);
         char* dir = malloc(256);
-        sprintf(dir,"%s/%s",BUILD_DIR,l_dirs[i]);
+        sprintf(dir,"%s/%s","/tmp/spm-testing/old",l_dirs[i]);
         mkdir(dir,0777);
         free(dir);
     }
@@ -158,7 +157,7 @@ int test_move()
     {
         printf("Creating %s\n",l_files[i]);
         char* path = malloc(256);
-        sprintf(path,"%s/%s",BUILD_DIR,l_files[i]);
+        sprintf(path,"%s/%s","/tmp/spm-testing/old",l_files[i]);
         printf("Path: %s\n",path);
         FILE* f = fopen(path,"w");
         fclose(f);
@@ -167,7 +166,7 @@ int test_move()
 
     // get all the files with get_locatins
     char** end_locations;
-    int end_count = get_locations(&end_locations,BUILD_DIR);
+    int end_count = get_locations(&end_locations,"/tmp/spm-testing/old");
 
     // print end locations
     printf("End locations:\n");
@@ -183,7 +182,7 @@ int test_move()
 
     printf("Testing move : done\n");
 
-    printf("Leaks: %d\n",dbg_leaks());
+    printf("Leaks: %d\n",check_leaks());
 
     quit(0);
     return 0;
@@ -200,14 +199,14 @@ int test_make(char* spm_path) {
     printf("Testing make\n");
 
     char* legacy_dir = calloc(2048,1);
-    sprintf(legacy_dir,"%s/%s-%s",MAKE_DIR,p.name,p.version);
+    sprintf(legacy_dir,"%s/%s-%s",getenv("SOVIET_MAKE_DIR"),p.name,p.version);
 
     dbg(1,"Legacy dir: %s",legacy_dir);
 
     make(legacy_dir,&p);
 
     dbg(1,"Getting locations for %s",p.name);
-    p.locationsCount = get_locations(&p.locations,BUILD_DIR);
+    p.locationsCount = get_locations(&p.locations,getenv("SOVIET_BUILD_DIR"));
     if (p.locationsCount <= 0) {
         msg(ERROR,"Failed to get locations for %s",p.name);
         return -1;
@@ -253,7 +252,7 @@ int test_split()
     free(split_str);
     free(str_split);
 
-    printf("%d Leaks\n",dbg_leaks());
+    printf("%d Leaks\n",check_leaks());
     return 0;
 }
 
@@ -263,9 +262,9 @@ int test_config()
     printf("cutils test\n");
 
     printf("Testing config\n");
-    EXIT += readConfig(CONFIG_FILE);
+    EXIT += readConfig(getenv("SOVIET_CONFIG_FILE"));
 
-    printf("%d Leaks\n",dbg_leaks());
+    printf("%d Leaks\n",check_leaks());
     return EXIT;
 }
 
@@ -274,7 +273,7 @@ int test_get()
 {
     dbg(2,"Getting 'test' package\n");
 
-    strcpy(ALL_DB_PATH,"dev/get_test.db");
+    setenv("ALL_DB_PATH","dev/get_test.db",1);
 
 
     init();
@@ -304,15 +303,15 @@ int test_data ()
     //init();
     int EXIT = EXIT_SUCCESS;
 
-    strcpy(ALL_DB_PATH,"dev/all.db");
+    setenv("ALL_DB_PATH","dev/all.db",1);
 
     printf("Removing test.db\n");
-    remove(ALL_DB_PATH);
+    remove("dev/all.db");
 
     dbg(2,"Creating test database...\n");
 
     sqlite3 *db;
-    connect_db(&db,ALL_DB_PATH);
+    connect_db(&db,"dev/all.db");
     create_table_installed(db);
 
     
@@ -371,11 +370,11 @@ int test_data ()
     printf("Closing test database...\n");
     sqlite3_close(db);
     printf("Removing test database...\n");
-    remove(ALL_DB_PATH);
+    remove("dev/all.db");
 
 
 
-    printf("%d Leaks\n",dbg_leaks());
+    printf("%d Leaks\n",check_leaks());
 
     return EXIT;
 }
@@ -384,7 +383,7 @@ int test_data ()
 
 int test_ecmp(int type)
 {
-    FORMATS[0] = "ecmp";
+    setenv("FORMATS","ecmp",1);
     int EXIT = EXIT_SUCCESS;
 
     struct package old_pkg = {0};
@@ -432,7 +431,7 @@ int test_ecmp(int type)
     free(new_pkg.info.special);
     free(new_pkg.license);
 
-    printf("%d leaks\n",dbg_leaks());
+    printf("%d leaks\n",check_leaks());
 
     return EXIT;
 }

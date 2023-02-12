@@ -1,11 +1,12 @@
 #include "unistd.h"
 #include "stdio.h"
 #include "string.h"
-
-#include "utils.h"
-#include "libspm.h"
 #include <dlfcn.h>
 #include <stdlib.h>
+
+#include "cutils.h"
+#include "libspm.h"
+
 
 
 int open_pkg(const char* path, struct package* pkg,const char* format)
@@ -36,6 +37,9 @@ int open_pkg(const char* path, struct package* pkg,const char* format)
         dbg(1,"Format : %s\n",format);
     }  
     
+    char** FORMATS;
+    int FORMAT_COUNT = splita(getenv("SOVIET_FORMATS"),' ',&FORMATS); 
+
     if (format != NULL)
     {
         // this is experimental
@@ -64,7 +68,8 @@ int create_pkg(const char* path,struct package* pkg,const char* format)
 {
     msg(INFO,"Creating package %s",path);
 
-    int type;
+    char** FORMATS;
+    int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")),' ',&FORMATS);
 
     // get file extension
     if (format == NULL)
@@ -81,18 +86,22 @@ int create_pkg(const char* path,struct package* pkg,const char* format)
             {
                 dbg(2,"Opening package with %s format",FORMATS[i]);
                 runFormatLib(FORMATS[i],"create",path,pkg);
+                free(*FORMATS);
+                free(FORMATS);
                 return 0;
             }
         }
     }
     msg(ERROR,"File %s is not a valid package file, or the format plugin isn't loaded",path);
+    free(*FORMATS);
+    free(FORMATS);
     return -1;
 }
 
 int runFormatLib (const char* format,const char* fn,const char* pkg_path,struct package* pkg)
 {
     char lib_path[MAX_PATH];
-    sprintf(lib_path,"%s/%s.so",PLUGIN_DIR,format);
+    sprintf(lib_path,"%s/%s.so",getenv("SOVIET_PLUGIN_DIR"),format);
     dbg(2,"Loading %s",lib_path);
 
     if (access(lib_path,F_OK) != 0)
@@ -108,7 +117,7 @@ int runFormatLib (const char* format,const char* fn,const char* pkg_path,struct 
         fprintf(stderr,"%s\n",dlerror());
         return 1;
     }
-    int (*func)(char*,struct package*) = dlsym(handle,fn);
+    int (*func)(const char*,struct package*) = dlsym(handle,fn);
     char* error = dlerror();
     if (error != NULL)
     {

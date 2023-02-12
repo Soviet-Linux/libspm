@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "limits.h"
 // class stuff
 
 #include "globals.h"
-#include "utils.h"
+#include "cutils.h"
 
 // This function is moving the binaries to the correct locations
 void move_binaries(char** locations,long loc_size)
@@ -21,9 +22,9 @@ void move_binaries(char** locations,long loc_size)
     for (int i = 0; i < loc_size; i++)
     {
         char dest_loc[PATH_MAX];
-        sprintf(dest_loc,"%s/%s",ROOT,locations[i]);
+        sprintf(dest_loc,"%s/%s",getenv("SOVIET_ROOT"),locations[i]);
         char build_loc[PATH_MAX];
-        sprintf(build_loc,"%s/%s",BUILD_DIR,locations[i]);
+        sprintf(build_loc,"%s/%s",getenv("SOVIET_BUILD_DIR"),locations[i]);
 
         if (!(access(dest_loc,F_OK) == 0))
         {   if (locations[i] == NULL)
