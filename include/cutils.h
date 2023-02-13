@@ -3,13 +3,13 @@ The CUtils Library is a collection of C functions.
 It can be used for any C project, but it was originally made for the Libspm/CCCP project.
 It is licensed under the GNU General Public License v3.0.
 
- * Copyright (C) 2019-2020  PKD <pkd@sovietlinux.ml>
+ * Copyright (C) 2019-2020  PKD <pkd@sovietlinxu.ml>
 
 */
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "string.h"
+#include "stdlib.h"
+#include "stdio.h"
+#include "malloc.h"
 
 
 #ifndef CUTILS_H
@@ -17,28 +17,6 @@ It is licensed under the GNU General Public License v3.0.
 
 
 // Path: cutils.c
-
-// memory safety and debugging
-void* dbg_malloc(unsigned long size,char* file,int line);
-void* dbg_calloc(unsigned long nmemb,unsigned long size,char* file,int line);
-void* dbg_realloc(void* ptr,unsigned long size,char* file,int line);
-char* dbg_strdup(char* str,char* file,int line);
-
-void dbg_free(void* ptr,char* file,int line);
-
-#if MEMCHECK == 1 // only define these if we're doing memory checking
-
-    #define malloc(size) dbg_malloc(size,__FILE__,__LINE__)
-    #define calloc(nmemb,size) dbg_calloc(nmemb,size,__FILE__,__LINE__)
-    #define realloc(ptr,size) dbg_realloc(ptr,size,__FILE__,__LINE__)
-    #define strdup(str) dbg_strdup(str,__FILE__,__LINE__)
-
-    #define free(ptr) dbg_free(ptr,__FILE__,__LINE__)
-
-
-#endif
-
-int check_leaks();
 
 /*
 General system management
@@ -123,7 +101,26 @@ int f_dbg__(int level,int line,const char* function,const char* file,char* messa
 #define dbg(level,message,...) f_dbg__(level,__LINE__,__func__,__FILE__,message,##__VA_ARGS__)
 
 
+// memory safety and debugging
+void* dbg_malloc(size_t size,char* file,int line);
+void* dbg_calloc(size_t nmemb,size_t size,char* file,int line);
+void* dbg_realloc(void* ptr,size_t size,char* file,int line);
+char* dbg_strdup(char* str,char* file,int line);
 
+void dbg_free(void* ptr,char* file,int line);
 
+#if MEMCHECK == 1 // only define these if we're doing memory checking
+    #define malloc(size) dbg_malloc(size,__FILE__,__LINE__)
+    #define calloc(nmemb,size) dbg_calloc(nmemb,size,__FILE__,__LINE__)
+    #define realloc(ptr,size) dbg_realloc(ptr,size,__FILE__,__LINE__)
+    #define strdup(str) dbg_strdup(str,__FILE__,__LINE__)
+    #define free(ptr) dbg_free(ptr,__FILE__,__LINE__)
+#endif
+
+int check_leaks();
 
 #endif
+
+
+
+
