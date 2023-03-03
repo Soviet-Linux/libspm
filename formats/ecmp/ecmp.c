@@ -152,40 +152,50 @@ unsigned int parseraw(char* s, char** dest)
 
 unsigned int parseinfo(char *s, struct package* dest)
 {
+    char* p = s;
+    while (*p != '\0') {
+        if (*p == ' ') {
+            int index = p - s;
+            dbg(3, "Removing space '%c']'%c'['%c' at %p (index=%d)", *(p - 1), *p, *(p + 1), p, index);
+            popchar(s, index);
+            p--;
+        }
+        p++;
+    }
 
+    // split with nl
+    char** nlist;
+    int count = parsenl(s, &nlist);
 
-	char* p = s;
-	while (*p!='\0') {
-		if (*p == ' ') {
-			int index = p-s;
-			dbg(3,"Removing space '%c']'%c'['%c' at %p (index=%d)",*(p-1),*p,*(p+1),p,index);
-			popchar(s,index);
-			p--;
-		}
-		p++;
-	}
-	printf("s : %s",s);
-	// split with nl
-	char** nlist;
-	int count = parsenl(s,&nlist);
-	
-	dbg(3,"count : %d",count);
-	for (int i = 0;i < count;i++) {
-		char* key = strtok(nlist[i],"=");
-		char* value = strtok(NULL,"=");
-		// add to correspondng value in dict
-		char** destbuff =  hm_get(infohm,key);
-		if (destbuff == NULL) {
-			msg(WARNING,"Unknown key : '%s'",key);
-			continue;
-		}
-		*destbuff = strdup(value);
-		dbg(3,"Setting destbuff to %p - %s",*destbuff,*destbuff);
+    dbg(3, "count : %d", count);
+    for (int i = 0; i < count; i++) {
+        char* key = strtok(nlist[i], "=");
+        char* value = strtok(NULL, "=");
+        if (key == NULL || value == NULL) {
+            msg(WARNING, "Invalid key-value pair: '%s'", nlist[i]);
+            continue;
+        }
 
-	}
-	free(nlist);
-	free(s);
-	return 0;
+        // add to corresponding value in dict
+        char** destbuff = hm_get(infohm, key);
+        if (destbuff == NULL) {
+            msg(WARNING, "Unknown key : '%s'", key);
+            continue;
+        }
+
+        *destbuff = strdup(value);
+        if (*destbuff == NULL) {
+            msg(ERROR, "Error allocating memory for %s value", key);
+            free(nlist);
+            free(s);
+            return 0;
+        }
+        dbg(3, "Setting destbuff to %p - %s", *destbuff, *destbuff);
+    }
+
+    free(nlist);
+    free(s);
+    return 0;
 }
 
 

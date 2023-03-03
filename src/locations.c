@@ -11,7 +11,7 @@
 long get_locations(char*** locations, const char *loc_dir) {
   // Get package file location
   char files_location_cmd[PATH_MAX + 64];
-  sprintf(files_location_cmd,"( cd %s && find . -type f | cut -c2- ) ", getenv("BUILD_DIR"));
+  sprintf(files_location_cmd,"( cd %s && find . -type f | cut -c2- ) ", loc_dir);
   /*
   This way of getting locations is pretty bad , i should wite a proper way to do
   it But it works so its ok for now
@@ -28,11 +28,6 @@ long get_locations(char*** locations, const char *loc_dir) {
 
   dbg(2, "Got %d locations", count);
 
-  /* WARNING : This is a bad way to do it , i should use a proper way to do it
-   */
-  //count -= 1;
-  /* ARBITRARY NUMBER , i should find a better way to do it */
-  // THIS ABOVE IS SOME REAL SHIT
 
   return count;
 }

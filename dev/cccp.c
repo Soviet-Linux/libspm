@@ -5,8 +5,12 @@
 #include "../include/libspm.h"
 #include "../include/cutils.h"
 #include "../include/hashtable.h"
+#include "../include/globals.h"
+
 
 #define C_FRONTEND_VERSION 0.1
+
+
 
 char* ART = "\033[31;1;5m"
     "    ⠀⠀⠀⠀⠀⠀⠀⠀⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ \n"
@@ -53,6 +57,8 @@ void* args[][2] = {
 char** ARGV;
 
 int main(int argc, char** argv) {
+
+    dbg(2,"DEBUG Enabled!");
 
     if (argc < 2) {
         msg(ERROR, "No command specified");

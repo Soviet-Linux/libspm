@@ -29,7 +29,7 @@ SDIR = src
 
 
 
-CFLAGS = -Wall -g -fPIC -O2 -Wextra -fPIC -L./bin -Iinclude
+CFLAGS = -Wall -g -fPIC -O2 -Wextra -L./bin -Iinclude
 
 LIBS = lib/* -lcurl -lsqlite3 -lm 
 
@@ -90,7 +90,7 @@ cccp:
 	$(CC) $(CFLAGS) ${DEVDIR}/cccp.c $(LIBS) -o bin/cccp -lspm -L./bin
 
 direct:
-	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -shared -fPIC -o $(LIBOUT)
+	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)
 
 formats:
 	@echo "Building formats..."

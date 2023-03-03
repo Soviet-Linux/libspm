@@ -34,8 +34,8 @@ char* get(struct package *i_pkg,const char* out_path)
     
 
     retrieve_data_repo(ALL_DB,i_pkg,&pkg_format,&pkg_section);
-    if (pkg_format == NULL || pkg_section == NULL)
-    {
+    dbg(3,"Got %s %s %s %s from DB",pkg_format,pkg_section,i_pkg->version,i_pkg->type);
+    if (!pkg_format || !pkg_section || !i_pkg->version || !i_pkg->type) {
         msg(FATAL,"Failed to retrieve data from ALL_DB");
         return NULL;
     }

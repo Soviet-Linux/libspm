@@ -138,7 +138,12 @@ int f_install_package_source(const char* spm_path,int as_dep,const char* format)
     sprintf(file_path,"%s/%s.%s",getenv("SOVIET_SPM_DIR"),pkg.name,getenv("SOVIET_DEFAULT_FORMAT"));
     create_pkg(file_path,&pkg,NULL);
 
-    store_data_installed(INSTALLED_DB,&pkg ,as_dep);
+    if (store_data_installed(INSTALLED_DB,&pkg ,as_dep) != 0) {
+        msg(ERROR,"Failed to store data in %s",INSTALLED_DB);
+        msg(ERROR,"!! Package %s potentialy corrupted !!",pkg.name);
+        return -1;
+    }
+    dbg(1,"Package %s installed",pkg.name);
 
     // now we need to clean everything 
     clean();
@@ -212,23 +217,17 @@ __attribute__((unused)) int install_package_binary(const char* archivePath,int a
     sprintf(file_path,"%s/%s.%s",spm_dir,pkg.name,default_format);
     create_pkg(file_path,&pkg,NULL);
 
-    store_data_installed(INSTALLED_DB,&pkg ,as_dep);
-
+    if (store_data_installed(INSTALLED_DB,&pkg ,as_dep) != 0) {
+        msg(ERROR,"Failed to store data in %s",INSTALLED_DB);
+        msg(ERROR,"!! Package %s potentialy corrupted !!",pkg.name);
+        return -1;
+    }
+    dbg(1,"Package %s installed",pkg.name);
     // now we need to clean everything
     clean();
     // remove package from the queue
     QUEUE_COUNT--;
     PACKAGE_QUEUE[QUEUE_COUNT] = NULL;
-
-    //free_pkg(&pkg);
-    return 0;
-
-    // now we need to clean everything 
-    clean();
-
-
-
-    //free_pkg(&pkg);
 
     return 0;
 }
@@ -303,21 +302,24 @@ int free_pkg(struct package *pkg) {
     if (pkg->info.prepare != NULL) free(pkg->info.install);
     if (pkg->info.test != NULL) free(pkg->info.test);
 
-    if (*pkg->locations != NULL) free(*pkg->locations);
-    if (pkg->locations != NULL) free(pkg->locations);
+    
+    if (pkg->locations) {
+        if (*pkg->locations) free(*pkg->locations);
+        free(pkg->locations);
+    }
 
-    if (*pkg->dependencies != NULL) free(*pkg->dependencies);
-    if (pkg->dependencies != NULL) free(pkg->dependencies);
-
-    if (*pkg->makedependencies != NULL) free(*pkg->makedependencies);
-    if (pkg->makedependencies != NULL) free(pkg->makedependencies);
-
-    if (*pkg->makedependencies != NULL) free(*pkg->makedependencies);
-    if (pkg->makedependencies != NULL) free(pkg->makedependencies);
-
-    if (*pkg->optionaldependencies != NULL) free(*pkg->optionaldependencies);
-    if (pkg->optionaldependencies != NULL) free(pkg->optionaldependencies);
-
+    if (pkg->dependencies) {
+        if (*pkg->dependencies) free(*pkg->dependencies);
+        free(pkg->dependencies);
+    }
+    if (pkg->makedependencies) {
+        if (*pkg->makedependencies) free(*pkg->makedependencies);
+        free(pkg->makedependencies);
+    }
+    if (pkg->makedependencies) {
+        if (*pkg->makedependencies) free(*pkg->makedependencies);
+        free(pkg->makedependencies);
+    }
     return 0;
 }
 

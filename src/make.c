@@ -25,84 +25,49 @@
 */
 int make (char* package_dir,struct package* pkg)
 {
-    char* build_dir = getenv("BUILD_DIR");
-    char* make_dir = getenv("MAKE_DIR");
-
-
+    char* build_dir = getenv("SOVIET_BUILD_DIR");
+    char* make_dir = getenv("SOVIET_MAKE_DIR");
 
     char *cmd_params;
-    //If debug is not enabled , reidrecting all command output to /dev/null
-    if (QUIET) {
-        cmd_params = "&> /dev/null";
-    }
-    else {
-        cmd_params = "";
-    }
+    if (QUIET) { cmd_params = "&> /dev/null"; }
+    else { cmd_params = ""; }
+
+    setenv("BUILD_ROOT",build_dir,1);
+    setenv("NAME",pkg->name,1);
+    setenv("VERSION",pkg->version,1);
+
+    char excmd[ 64 + strlen(pkg->url)];
+    sprintf(excmd,"echo -n %s",pkg->url);
+    char* exurl = exec(excmd);
+    setenv("URL",exurl,1);
+    dbg(3,"url is  : %s\n",exurl);
+    free(exurl);
     
 
-    /*
-        We have some problems here , because some complex packages require advanced options to be installed 
-        (like glibc that wants a separate build dir )
-        For nom i resolved that by adding more complexity to the build commands , but its not pretty.
-        So i dont know i we should implement these options directly here and drop a lot of performance juste for a small number of packages 
-        or if we leave like that with some ugly command in the .spm file
-        If you come across this you can vote :
-
-        change -> 0
-        keep like that -> 1
-
-        Also this code is very bad so if you dont understand it dm me on discord : PKD667#9879 .
-    */
-    //TODO: resolve this issue (the original TODO was "fix this shit" , but i think "resolve this issue is better")
-
-    /*
-        So in this part we are foramtting and executing the commands to configure , compile , test and install the package.
-        The test command is executed if TESTING is set to true
-        The "BUILD_ROOT" part is pass the BUILD_DIR path (Where we will be installing the packages) to the command.
-        It is ment to be used in the install or configure command : make prefix=$BUILD_ROOT install or ./configure --prefix=$BUILD_ROOT or smth like that.
-    */
-    // TODO: find someone intelligent to ameliorate this code
-
-    // Idk why i havent done this before , but i moved the downloading here
-    
     if (pkg->info.download != NULL && strlen(pkg->info.download) > 0) {
-        //expand the url    
-        char excmd[256 + strlen(pkg->url)];
-        sprintf(excmd,"VERSION=%s && NAME=%s && echo -n %s",pkg->version,pkg->name,pkg->url);
-        char* exurl = exec(excmd);
-        printf("url is  : %s\n",pkg->url);
 
-        char sources_cmd[
-            64 + strlen(pkg->name) + strlen(pkg->version) + strlen(exurl) + 
-            strlen(make_dir) + strlen(pkg->info.download)
-            ];
+        char sources_cmd[ 64 + strlen(make_dir) + strlen(pkg->info.download) ];        
 
-        sprintf(sources_cmd,
-            "NAME=%s &&  VERSION=%s && URL=%s && cd %s && %s",
-            pkg->name,pkg->version,exurl,make_dir,pkg->info.download);
-
+        sprintf(sources_cmd,"(cd %s && %s) %s ",make_dir,pkg->info.download,cmd_params);
         dbg(2,"Downloading sources with %s",sources_cmd);
         int res = system(sources_cmd);
-        free(exurl);
 
         if ( res != 0) {
             msg(ERROR,"Failed to download sources for %s",pkg->name);
             return -1;
         }
-
     }
     //checking is the command are used and formatting and executing them
     if (pkg->info.prepare != NULL && strlen(pkg->info.prepare) > 0) 
     {
         //formatting the prepare command
         char prepare_cmd[
-            64 + strlen(build_dir) + strlen(package_dir) + 
+            64 + strlen(package_dir) + 
             strlen(pkg->info.prepare) + strlen(cmd_params)
             ];
+        
 
-        sprintf(prepare_cmd,
-            "BUILD_ROOT=%s; ( cd %s && %s ) %s",
-            getenv("SOVIET_BUILD_DIR"),package_dir,pkg->info.prepare,cmd_params);
+        sprintf(prepare_cmd,"( cd %s && %s ) %s",package_dir,pkg->info.prepare,cmd_params);
 
         //Printing the command to the terminal
         dbg(2,"Executing prepare command : %s",prepare_cmd);
@@ -116,17 +81,11 @@ int make (char* package_dir,struct package* pkg)
 
     }
     dbg(3,"Make command is %s",pkg->info.make);
-    if (pkg->info.make != NULL && strlen(pkg->info.make) > 0) 
+    if (pkg->info.make && strlen(pkg->info.make)) 
     {
         //formatting the prepare command
-        char make_cmd[
-            64 + strlen(getenv("SOVIET_BUILD_DIR")) + strlen(package_dir) + 
-            strlen(pkg->info.make) + strlen(cmd_params)
-            ];
-
-        sprintf(make_cmd,
-            "BUILD_ROOT=%s; ( cd %s && %s ) %s",
-            getenv("SOVIET_BUILD_DIR"),package_dir,pkg->info.make,cmd_params);
+        char make_cmd[ 64 + strlen(package_dir) + strlen(pkg->info.make) + strlen(cmd_params) ];
+        sprintf(make_cmd, "( cd %s && %s ) %s",package_dir,pkg->info.make,cmd_params);
 
         //Printing the command to the terminal
         dbg(2,"Executing make command : %s",make_cmd);
@@ -145,55 +104,40 @@ int make (char* package_dir,struct package* pkg)
     {
         //formatting the  command
         char test_cmd[
-            64 + strlen(getenv("SOVIET_BUILD_DIR")) + strlen(package_dir) + 
+            64 +  strlen(package_dir) + 
             strlen(pkg->info.test) + strlen(cmd_params) 
             ];
-
-        sprintf(test_cmd,
-            "BUILD_ROOT=%s; ( cd %s && %s ) %s",
-            getenv("SOVIET_BUILD_DIR"),package_dir,pkg->info.test,cmd_params);
-
+        sprintf(test_cmd,"( cd %s && %s ) %s",package_dir,pkg->info.test,cmd_params);
 
         //Printing the command to the terminal
         dbg(2,"Executing test command : %s",test_cmd);
         //executing the command
-        // We add the extra command parameters to the command , so that the user can add extra parameters to the command
         if (system(test_cmd) != 0) {
             return 1;
         };
-        //debug
         dbg(1,"make command executed !");
     }
-    printf("install : %s\n",pkg->info.install);
-    if (pkg->info.install != NULL && strlen(pkg->info.install) > 0) 
+    if (pkg->info.install == NULL && strlen(pkg->info.install) == 0) 
     {
-        //formatting the prepare command
-        char install_cmd[
-            64 + strlen(getenv("BUILD_DIR")) + strlen(package_dir) + 
-            strlen(pkg->info.install) + strlen(cmd_params)];
-
-        sprintf(install_cmd,
-            "BUILD_ROOT=%s; ( cd %s && %s ) %s",
-            getenv("BUILD_DIR"),package_dir,pkg->info.install,cmd_params);
-
-        //Printing the command to the terminal
-        dbg(2,"Executing Install command : %s",install_cmd);
-        //executing the command
-        // We add the extra command parameters to the command , so that the user can add extra parameters to the command
-        if (system(install_cmd) != 0) 
-        {
-            msg(FATAL,"Failed to install %s",pkg->name);
-            return -2;
-        }
-        //debug
-        dbg(1,"install command executed !");
-
-    }
-    else {
         msg(ERROR,"No install command !");
         return -3;
     }
-    
+
+    //formatting the prepare command
+    char install_cmd[ 64 + strlen(package_dir) + strlen(pkg->info.install) + strlen(cmd_params)];
+    sprintf(install_cmd, "( cd %s && %s ) %s",package_dir,pkg->info.install,cmd_params);
+
+    //Printing the command to the terminal
+    dbg(2,"Executing install command : %s",install_cmd);
+    //executing the command
+    if (system(install_cmd) != 0) 
+    {
+        msg(FATAL,"Failed to install %s",pkg->name);
+        return -2;
+    }
+    //debug
+    dbg(1,"install command executed !");
+
     return 0;
 
 }

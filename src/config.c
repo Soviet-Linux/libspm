@@ -65,11 +65,11 @@ int readConfig(const char* configFilePath)
         else if (strcmp(key,"REPOS") == 0)
         {
             dbg(3,"REPOS: %s",value);
-            setenv("CCCP_REPOS",value,1);
+            setenv("SOVIET_REPOS",value,1);
         }
         else if (strcmp(key,"FORMATS") == 0)
         {
-            setenv("CCCP_FORMATS",value,1);
+            setenv("SOVIET_FORMATS",value,1);
         }
         else {
             msg(ERROR,"Unknown key in config file : %s",key);
