@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install deps
+      run: apt install libcurl4-openssl-dev
     - name: make all
       run: make all
     - name: make check
