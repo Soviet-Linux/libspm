@@ -93,9 +93,9 @@ direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)
 
 formats:
-        mkdir bin/plugins
 	@echo "Building formats..."
 	@echo $(FMT_DIR)/*
+	mkdir $(BINDIR)/plugins
 	for i in $(FMT_DIR)/*; do \
 		echo "Building $$i"; \
 		if [ -d $$i ]; then \
