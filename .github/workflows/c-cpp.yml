@@ -17,6 +17,8 @@ jobs:
 
     - name: Make all
       run: make all
+    - name: Make formats
+      run: make formats
     - name: Make install
       run: make install
 
