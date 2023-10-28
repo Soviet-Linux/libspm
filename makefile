@@ -93,6 +93,7 @@ direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)
 
 formats:
+        mkdir bin/plugins
 	@echo "Building formats..."
 	@echo $(FMT_DIR)/*
 	for i in $(FMT_DIR)/*; do \
