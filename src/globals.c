@@ -2,7 +2,7 @@
 
 #include "stdbool.h"
 #include <stdlib.h>
-#include "utils.h"
+#include "cutils.h"
 #include "globals.h"
 
 #define QUEUE_MAX 64
