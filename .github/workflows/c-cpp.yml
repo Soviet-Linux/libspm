@@ -20,7 +20,7 @@ jobs:
     - name: Make formats
       run: make formats
     - name: Make install
-      run: make install
+      run: sudo make install
 
     - name: Make check
       run: make check
