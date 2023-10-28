@@ -1,23 +1,32 @@
-name: C/C++ CI
+name: Build and Test
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Install deps
-      run: apt install libcurl4-openssl-dev
-    - name: make all
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install libcurl-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev
+      if: runner.os == 'Linux' || runner.os == 'Ubuntu'
+
+    - name: Install libcurl-dev (macOS)
+      run: |
+        brew update
+        brew install libcurl
+      if: runner.os == 'macOS'
+
+    - name: Make all
       run: make all
-    - name: make check
+
+    - name: Make check
       run: make check
-    - name: make test
+
+    - name: Make test
       run: make test
