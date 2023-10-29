@@ -95,6 +95,7 @@ direct:
 formats:
 	@echo "Building formats..."
 	@echo $(FMT_DIR)/*
+	mkdir $(BINDIR)/plugins
 	for i in $(FMT_DIR)/*; do \
 		echo "Building $$i"; \
 		if [ -d $$i ]; then \
@@ -107,7 +108,7 @@ formats:
 clean:
 	rm -f $(ODIR)/*.o $(BINDIR)/$(LIBOUT) $(BINDIR)/plugins/*.so 
 
-install: $(BINDIR)/$(LIBOUT) formats
+install: $(BINDIR)/$(LIBOUT)
 	@if [ ! -d /usr/include/spm ]; then mkdir /usr/include/spm; fi
 	for i in include/*; do install -vDm 755 $$i /usr/include/spm/; done
 	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/lib/$(LIBOUT) 

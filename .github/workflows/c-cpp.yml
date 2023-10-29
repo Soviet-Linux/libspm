@@ -1,0 +1,29 @@
+name: Build and Test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install libcurl-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev
+
+    - name: Make all
+      run: make all
+    - name: Make formats
+      run: make formats
+    - name: Make install
+      run: sudo make install
+
+    - name: Make check
+      run: make check
+
+    - name: Make test
+      run: make test
