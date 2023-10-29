@@ -26,7 +26,7 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
         dbg(3, "Checking if %s is installed", dependencies[i]);
 
         if (!is_installed(dependencies[i])) {
-            dbg(3, "Dependency %s is not installed");
+            dbg(3, "Dependency %s is not installed", dependencies[i]);
             // TODO: We need to install the dependency
             msg(INFO, "Installing %s", dependencies[i]);
 
