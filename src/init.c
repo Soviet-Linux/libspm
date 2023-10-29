@@ -60,7 +60,7 @@ void init() {
     }
     setenv("SOVIET_DEFAULT_FORMAT", formats[0], 0);
 
-    free(*formats);
+    //free(*formats);
     free(formats);
     
     // verify if all the DIR exists
