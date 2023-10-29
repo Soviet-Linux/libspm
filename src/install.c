@@ -260,20 +260,19 @@ Returns:
 bool is_installed(const char* name) {
     char path[1024];
     char** FORMATS;
-    int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")), ' ', &FORMATS);
+    int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")),' ',&FORMATS);
 
-    // Loop through all formats
-    for (int i = 0; i < FORMAT_COUNT; i++) {
-        sprintf(path, "%s/%s.%s", getenv("SOVIET_SPM_DIR"), name, FORMATS[i]);
-        if (access(path, F_OK) == 0) {
-            free(*FORMATS);
+    // loop through all formats
+    for (int i = 0; i < FORMAT_COUNT; i++)
+    {
+        sprintf(path,"%s/%s.%s",getenv("SOVIET_SPM_DIR"),name,FORMATS[i]);
+        if (access(path,F_OK) == 0)
+        {
+            //free(*FORMATS);
             free(FORMATS);
             return true;
         }
     }
-
-    free(*FORMATS);
-    free(FORMATS);
     return false;
 }
 

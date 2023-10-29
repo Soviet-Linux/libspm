@@ -84,27 +84,31 @@ int create_pkg(const char* path, struct package* pkg, const char* format) {
     msg(INFO, "Creating package %s", path);
 
     char** FORMATS;
-    int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")), ' ', &FORMATS);
+    int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")),' ',&FORMATS);
 
-    // Get the file extension
-    if (format == NULL) {
-        format = strrchr(path, '.') + 1;
-    }
-
-    if (format != NULL) {
-        // This is experimental
-        for (int i = 0; i < FORMAT_COUNT; i++) {
-            if (strcmp(format, FORMATS[i]) == 0) {
-                dbg(2, "Opening package with %s format", FORMATS[i]);
-                runFormatLib(FORMATS[i], "create", path, pkg);
-                free(*FORMATS);
+    // get file extension
+    if (format == NULL)
+    {
+        format = strrchr( path, '.' ) + 1;
+    } 
+    /* This illustrates strrchr */
+    if (format != NULL)
+    {
+        // this is experimental
+        for (int i = 0; i < FORMAT_COUNT; i++)
+        {
+            if (strcmp(format,FORMATS[i]) == 0)
+            {
+                dbg(2,"Opening package with %s format",FORMATS[i]);
+                runFormatLib(FORMATS[i],"create",path,pkg);
+                //free(*FORMATS);
                 free(FORMATS);
                 return 0;
             }
         }
     }
-    msg(ERROR, "File %s is not a valid package file, or the format plugin isn't loaded", path);
-    free(*FORMATS);
+    msg(ERROR,"File %s is not a valid package file, or the format plugin isn't loaded",path);
+    //free(*FORMATS);
     free(FORMATS);
     return -1;
 }

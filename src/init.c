@@ -63,7 +63,7 @@ void init() {
         }
     }
 
-    free(*formats);
+    //free(*formats);
     free(formats);
 
     // Verify if required directories exist, and create them if not

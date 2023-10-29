@@ -48,7 +48,7 @@ int downloadRepo(const char* url_path, const char* file_path)
         {
             // Clean up and return success
             free(url);
-            free(*REPOS);
+            //free(*REPOS);
             free(REPOS);
             return 0;
         }
