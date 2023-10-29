@@ -1,4 +1,4 @@
-# Easy Communist Markup Package
+# Easy Communist Markup Package(ECMP)
 
 ## why ? 
 The actual package format used by the _libspm_ (json) , is not easy to parse and hard to read.  
