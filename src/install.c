@@ -262,12 +262,12 @@ bool is_installed(const char* name)
         sprintf(path,"%s/%s.%s",getenv("SOVIET_SPM_DIR"),name,FORMATS[i]);
         if (access(path,F_OK) == 0)
         {
-            free(*FORMATS);
+            //free(*FORMATS);
             free(FORMATS);
             return true;
         }
     }
-    free(*FORMATS);
+    //free(*FORMATS);
     free(FORMATS);
     return false;
 }

@@ -86,14 +86,14 @@ int create_pkg(const char* path,struct package* pkg,const char* format)
             {
                 dbg(2,"Opening package with %s format",FORMATS[i]);
                 runFormatLib(FORMATS[i],"create",path,pkg);
-                free(*FORMATS);
+                //free(*FORMATS);
                 free(FORMATS);
                 return 0;
             }
         }
     }
     msg(ERROR,"File %s is not a valid package file, or the format plugin isn't loaded",path);
-    free(*FORMATS);
+    //free(*FORMATS);
     free(FORMATS);
     return -1;
 }
