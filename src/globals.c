@@ -1,28 +1,27 @@
-// This file is basically a copy of globals.h
-
+// Include necessary headers
 #include "stdbool.h"
 #include <stdlib.h>
 #include "cutils.h"
 #include "globals.h"
 
+// Define a constant for the maximum queue size
 #define QUEUE_MAX 64
 
-/*
-START OF THE (sort of) CONSTANTS DECALRATIONS 
-(They are not mean to be modified a lot)
-*/
+// Declare global variables
 
-
-
+// Flag for testing mode
 bool TESTING = false;
 
+// Flag for overwriting files
 bool OVERWRITE = false;
-bool QUIET  = true;
 
+// Flag for quiet mode (no verbose output)
+bool QUIET = true;
+
+// Database handles for installed and all packages
 sqlite3* INSTALLED_DB = NULL;
 sqlite3* ALL_DB = NULL;
 
+// Array for package queue and its count
 char* PACKAGE_QUEUE[QUEUE_MAX];
 int QUEUE_COUNT;
-
-

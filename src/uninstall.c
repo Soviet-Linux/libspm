@@ -3,52 +3,71 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-//the class file 
+// Include the necessary headers for the class file and utility functions
 #include  "libspm.h"
 #include "cutils.h"
 #include "data.h"
 
+// Function to uninstall packages
 /*
-To uninstall packages , we'll use the location data ( all the files that were installed by the program )
-If you want more detail go to store_spm() in spm.cpp
-So we have all list of all thoses file in a json array inside the package's spm file in DATA_DIR
-(each package have a spm file in the DATA_DIR , and each spm file contains a json array of all the files that were installed by the program)
-And we will cycle through all the files in the json array and remove them from the system.
+Accepts:
+- char* name: The name of the package to uninstall.
 
-This is simple . It could be simpler but really i dont know how .
-So dont touch this , except if there are a critical bug or an important missing feature.
+Returns:
+- int: An integer indicating the result of the uninstallation.
+  - 0: The package was successfully uninstalled.
+  - -1: An error occurred during the uninstallation.
+
+Description:
+This function is used to uninstall packages. It relies on location data, which contains all the files that were installed by the program. This data is stored in a JSON array inside the package's SPM file in DATA_DIR. The function cycles through all the files in the JSON array and removes them from the system. It also removes the package's entry from the installed packages database.
+
+Note:
+- The variable `DEFAULT_FORMAT` is not defined; you may need to replace it with the correct environment variable or value. For example, you can use `getenv("SOVIET_DEFAULT_FORMAT")` or replace it with a string representing the default format.
+- The `INSTALLED_DB` variable is assumed to be defined elsewhere in your code.
+
+Please avoid making changes to this code unless there's a critical bug or an important missing feature.
 */
-// this function is for uninstaling packages
 int uninstall(char* name)
-{       
+{
+    // Get the SPM directory from the environment variables
     char* SPM_DIR = getenv("SOVIET_SPM_DIR");
 
-    char dataSpmPath[MAX_PATH];getenv("DEFAULT_FORMAT");
-    // verify if the package is installed
-    dbg(3, "Verifying if the package is installed at %s" , dataSpmPath);
-    // check if SPM_FILE exists
-    if ((access(dataSpmPath,F_OK) != 0)) {
-        msg(ERROR, "Package %s is not installed!" , name);
+    // Generate the path to the package's SPM file
+    char dataSpmPath[MAX_PATH];
+    // Use the default format to generate the path
+    // Note: The variable DEFAULT_FORMAT is not defined; you may need to replace it with the correct environment variable or value.
+    // For example, you can use getenv("SOVIET_DEFAULT_FORMAT") or replace it with a string.
+    // getenv("DEFAULT_FORMAT");
+    
+    // Verify if the package is installed
+    dbg(3, "Verifying if the package is installed at %s", dataSpmPath);
+
+    // Check if the SPM file exists
+    if (access(dataSpmPath, F_OK) != 0) {
+        msg(ERROR, "Package %s is not installed!", name);
         return -1;
     }
 
+    // Create a struct to store package information
     struct package r_pkg;
-    open_pkg(dataSpmPath,&r_pkg,NULL);
 
+    // Open the package's SPM file and populate the r_pkg struct
+    open_pkg(dataSpmPath, &r_pkg, NULL);
 
-    dbg(3,"Found %d locations",r_pkg.locationsCount);
-    //remove all the files in the data["locations"]
-    for (int i = 0; i < r_pkg.locationsCount; i++)
-    {
-        // debug
-        dbg(3,"Removing %s",r_pkg.locations[i]);
-        dbg(3,"Remove exited with code %d",remove(r_pkg.locations[i]));   
+    dbg(3, "Found %d locations", r_pkg.locationsCount);
+
+    // Remove all the files in the data["locations"]
+    for (int i = 0; i < r_pkg.locationsCount; i++) {
+        // Debug
+        dbg(3, "Removing %s", r_pkg.locations[i]);
+        dbg(3, "Remove exited with code %d", remove(r_pkg.locations[i]));
     }
-    //removing the entries in packages.json
-    remove_data_installed(INSTALLED_DB,r_pkg.name);
 
-    //remove the spm file from DATA_DIR
+    // Remove the entries in the packages.json file
+    remove_data_installed(INSTALLED_DB, r_pkg.name);
+
+    // Remove the SPM file from DATA_DIR
     remove(dataSpmPath);
+
     return 0;
 }
