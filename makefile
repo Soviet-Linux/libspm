@@ -95,7 +95,7 @@ direct:
 formats:
 	@echo "Building formats..."
 	@echo $(FMT_DIR)/*
-	mkdir $(BINDIR)/plugins
+	[ -d $(BINDIR)/plugins ] || mkdir $(BINDIR)/plugins
 	for i in $(FMT_DIR)/*; do \
 		echo "Building $$i"; \
 		if [ -d $$i ]; then \
