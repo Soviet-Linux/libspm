@@ -66,7 +66,7 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
 
             return 0;
         } else {
-            dbg(3, "Dependency %s is installed");
+            dbg(3, "Dependency %s is installed", dependencies[i]);
         }
     }
 
