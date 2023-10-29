@@ -3,58 +3,54 @@
 #include <string.h>
 #include <unistd.h>
 #include "limits.h"
-// class stuff
 
+// Include necessary headers
 #include "globals.h"
 #include "cutils.h"
 
-// This function is moving the binaries to the correct locations
-void move_binaries(char** locations,long loc_size)
-{
-    /*
+// Function to move binaries to the correct locations
+/*
+Accepts:
+- char** locations: An array of file locations.
+- long loc_size: The number of locations in the array.
 
-    // check if all locations are empty
-    dbg(1,"Checking if all locations are empty");Z
-     For now , this checking part is completely useless 
-     i plan to use it to do some checks on the system.
-     I will leave it like that for now 
-    */
-    for (int i = 0; i < loc_size; i++)
-    {
+Description:
+This function iterates through the given file locations and moves the binaries to their correct destinations.
+
+Notes:
+- It checks if the destination location is empty and moves files from the build directory to the destination.
+- If the destination location is not empty, it provides a warning and optionally renames the file in the build directory.
+
+Returns: None
+*/
+void move_binaries(char** locations, long loc_size) {
+    // Iterate through locations and move the binaries to their correct locations
+    for (int i = 0; i < loc_size; i++) {
         char dest_loc[PATH_MAX];
-        sprintf(dest_loc,"%s/%s",getenv("SOVIET_ROOT"),locations[i]);
+        sprintf(dest_loc, "%s/%s", getenv("SOVIET_ROOT"), locations[i]);
         char build_loc[PATH_MAX];
-        sprintf(build_loc,"%s/%s",getenv("SOVIET_BUILD_DIR"),locations[i]);
+        sprintf(build_loc, "%s/%s", getenv("SOVIET_BUILD_DIR"), locations[i]);
 
-        if (!(access(dest_loc,F_OK) == 0))
-        {   if (locations[i] == NULL)
-            {
-                msg(FATAL,"Location is NULL");
+        // Check if the destination location is empty
+        if (!(access(dest_loc, F_OK) == 0)) {
+            if (locations[i] == NULL) {
+                msg(FATAL, "Location is NULL");
             }
-            //printf("[%d/%ld] - %s/%s to => %s\n",i,loc_size, BUILD_DIR,locations[i],dest_loc);
-            //fflush(stdout);
-            // now that we know it is empty , mov the stuff
-            //dbg(1,"Moving %s/%s to %s",BUILD_DIR,locations[i],dest_loc);
-            
-            mvsp(build_loc,dest_loc);
-            
-            //dbg(1,"Moved %s/%s to %s",BUILD_DIR,locations[i],dest_loc);
-        }
-        else 
-        {
 
-            msg(WARNING,"%s is already here",dest_loc);
+            // Move the files from the build directory to the destination location
+            mvsp(build_loc, dest_loc);
 
-            if (OVERWRITE) 
-            {
-                rename(build_loc,dest_loc);
-            }
-            else {
+            msg(WARNING, "Moved %s/%s to %s", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+        } else {
+            msg(WARNING, "%s is already here");
+
+            if (OVERWRITE) {
+                // Rename the file in the build directory to the destination location
+                rename(build_loc, dest_loc);
+            } else {
                 msg(FATAL, "Terminating the program");
             }
         }
     }
     return;
-
-
 }
