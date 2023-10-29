@@ -3,7 +3,7 @@ The libspm is the core of the Soviet Linux package manager. It is a library that
 Its ment to be called by any other program that needs to install packages.
 
 The main frontend is the CCCP , the soviet llinux command line package manager.
-The CCCP is written in rust , and is used by the user to install and manager package.
+The CCCP is written in C , and is used by the user to install and manager package.
 The CCCP will have to parse user input and call the libspm.
 
 

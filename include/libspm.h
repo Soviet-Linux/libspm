@@ -59,13 +59,37 @@ float version();
 
 //# Package manipulation 
 
-// install packages
-//main exec function
-/*-->*/int f_install_package_source(const char* spm_path,int as_dep,const char* format); // install a package file with a provided format
-/*-->*/ int install_package_source(const char* spm_path,int as_dep); // install a package file with the format provided in the file
-//
-/*-->*/int f_install_package_binary(const char* spm_path,int as_dep,const char* format); // install a package file with a provided format
-/*-->*/int install_package_binary(const char* archivePath,int as_dep);
+// Function to install a package from source with a specific format
+/*
+Accepts:
+- const char* spm_path: Path to the package archive.
+- int as_dep: Flag indicating if the package is a dependency.
+- const char* format: Specific package format (optional).
+
+Returns:
+- int: An integer indicating the result of the installation.
+  - 0: Package installed successfully.
+  - -1: Installation failed.
+*/
+int f_install_package_source(const char* spm_path,int as_dep,const char* format);
+
+// Function to install a package from source with a specific format
+/*
+Accepts:
+- const char* spm_path: Path to the package archive.
+- int as_dep: Flag indicating if the package is a dependency.
+- const char* format: Specific package format (optional).
+
+Returns:
+- int: An integer indicating the result of the installation.
+  - 0: Package installed successfully.
+  - -1: Installation failed.
+*/
+int install_package_source(const char* spm_path,int as_dep);
+
+
+int f_install_package_binary(const char* spm_path,int as_dep,const char* format);
+int install_package_binary(const char* archivePath,int as_dep);
 // Remove packages
 int uninstall(char* name);
 // Check packages
