@@ -95,7 +95,7 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
     dbg(1, "Making %s done", pkg.name);
 
     // Get package locations
-    dbg(1, "Getting locations for %s");
+    dbg(1, "Getting locations for %s", pkg.name);
     pkg.locationsCount = get_locations(&pkg.locations, getenv("SOVIET_BUILD_DIR"));
     if (pkg.locationsCount <= 0) {
         msg(ERROR, "Failed to get locations for %s", pkg.name);
