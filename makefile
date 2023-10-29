@@ -86,9 +86,6 @@ check: test check-data check-ecmp
 
 
 
-cccp:
-	$(CC) $(CFLAGS) ${DEVDIR}/cccp.c $(LIBS) -o bin/cccp -lspm -L./bin
-
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)
 
