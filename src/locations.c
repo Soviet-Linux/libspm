@@ -4,9 +4,9 @@
 #include <linux/limits.h>
 
 // Include necessary headers
+#include "cutils.h"
 #include "globals.h"
 #include "libspm.h"
-#include "cutils.h"
 
 // Function to retrieve file locations within a directory
 /*
@@ -17,21 +17,23 @@ Accepts:
 Returns:
 - long: The number of file locations retrieved.
 */
-long get_locations(char*** locations, const char* loc_dir) {
+long get_locations(char ***locations, const char *loc_dir) {
   // Construct a shell command to list files in the specified directory
   char files_location_cmd[PATH_MAX + 64];
-  sprintf(files_location_cmd, "( cd %s && find . -type f | cut -c2- ) ", loc_dir);
-  
+  sprintf(files_location_cmd, "( cd %s && find . -type f | cut -c2- ) ",
+          loc_dir);
+
   // Log the constructed command for debugging
   dbg(2, "Getting files locations with %s ", files_location_cmd);
 
   // Execute the constructed shell command and store the output in 'res'
-  char* res = exec(files_location_cmd);
+  char *res = exec(files_location_cmd);
 
   // Log the retrieved file locations for debugging
   dbg(3, "Got locations: '%s'", res);
-  
-  // Split the 'res' string into an array of file locations using '\n' as a delimiter
+
+  // Split the 'res' string into an array of file locations using '\n' as a
+  // delimiter
   unsigned int count = splita(res, '\n', locations);
 
   // Log the count of retrieved locations for debugging
