@@ -51,15 +51,18 @@ int main(int argc, char const *argv[])
         printf("No arguments provided\n");
         return 1;
     }
-
+    printf("No not here\n");
     DEBUG = 4;
+    printf("Nor here\n");
     QUIET = false;
+    printf("and No not here\n");
     OVERWRITE = true;
+    printf("No not even here\n");
     DEBUG_UNIT = NULL;
 
     
 
-
+    printf("wtf\n");
     if (strcmp(argv[1],"data") == 0)
     {
         return test_data();
