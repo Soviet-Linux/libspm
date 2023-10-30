@@ -1,8 +1,8 @@
 // Include necessary headers
+#include "globals.h"
+#include "cutils.h"
 #include "stdbool.h"
 #include <stdlib.h>
-#include "cutils.h"
-#include "globals.h"
 
 // Define a constant for the maximum queue size
 #define QUEUE_MAX 64
@@ -19,9 +19,9 @@ bool OVERWRITE = false;
 bool QUIET = true;
 
 // Database handles for installed and all packages
-sqlite3* INSTALLED_DB = NULL;
-sqlite3* ALL_DB = NULL;
+sqlite3 *INSTALLED_DB = NULL;
+sqlite3 *ALL_DB = NULL;
 
 // Array for package queue and its count
-char* PACKAGE_QUEUE[QUEUE_MAX];
+char *PACKAGE_QUEUE[QUEUE_MAX];
 int QUEUE_COUNT;
