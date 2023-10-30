@@ -45,22 +45,19 @@ char* assemble(char** list,int count);
 
 int main(int argc, char const *argv[])
 {
-
+    dbg(1, "started spm-test");
     if (argc  < 2)
     {
         printf("No arguments provided\n");
         return 1;
     }
-
+    dbg(1, "Setting debug stuff");
     DEBUG = 4;
     QUIET = false;
     OVERWRITE = true;
     DEBUG_UNIT = NULL;
 
-    
-
-
-    if (argc < 2 || strcmp(argv[1], "help") == 0) {
+   if (argc < 2 || strcmp(argv[1], "help") == 0) {
         printf("Usage: %s [data|ecmp|all|make|install|uninstall|move|help|split|config|get]\n", argv[0]);
         return 0;
     }
@@ -85,7 +82,10 @@ int main(int argc, char const *argv[])
         EXIT += test_make(argv[2]);
         printf("Leaks: %d\n", check_leaks());
         return EXIT;
-    } else if (strcmp(argv[1], "install") == 0) {
+    }
+    else if (strcmp(argv[1],"install") == 0)
+    {
+        dbg(1, "installing");
         init();
         install_package_source(argv[2], 0);
         printf("Leaks: %d\n", check_leaks());
