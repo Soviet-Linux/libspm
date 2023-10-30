@@ -45,24 +45,18 @@ char* assemble(char** list,int count);
 
 int main(int argc, char const *argv[])
 {
-
+    dbg(1, "started spm-test");
     if (argc  < 2)
     {
         printf("No arguments provided\n");
         return 1;
     }
-    printf("No not here\n");
+    dbg(1, "Setting debug stuff");
     DEBUG = 4;
-    printf("Nor here\n");
     QUIET = false;
-    printf("and No not here\n");
     OVERWRITE = true;
-    printf("No not even here\n");
     DEBUG_UNIT = NULL;
 
-    
-
-    printf("wtf\n");
     if (strcmp(argv[1],"data") == 0)
     {
         return test_data();
@@ -87,6 +81,7 @@ int main(int argc, char const *argv[])
     }
     else if (strcmp(argv[1],"install") == 0)
     {
+        dbg(1, "installing");
         init();
         install_package_source(argv[2],0);
         printf("Leaks: %d\n",check_leaks());
