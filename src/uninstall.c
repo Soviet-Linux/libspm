@@ -21,10 +21,6 @@ Returns:
 Description:
 This function is used to uninstall packages. It relies on location data, which contains all the files that were installed by the program. This data is stored in a JSON array inside the package's SPM file in DATA_DIR. The function cycles through all the files in the JSON array and removes them from the system. It also removes the package's entry from the installed packages database.
 
-Note:
-- The variable `DEFAULT_FORMAT` is not defined; you may need to replace it with the correct environment variable or value. For example, you can use `getenv("SOVIET_DEFAULT_FORMAT")` or replace it with a string representing the default format.
-- The `INSTALLED_DB` variable is assumed to be defined elsewhere in your code.
-
 Please avoid making changes to this code unless there's a critical bug or an important missing feature.
 */
 int uninstall(char* name)

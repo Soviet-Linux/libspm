@@ -24,7 +24,7 @@ curl $URL | tar -xz
 [install] 
 #sh autogen.sh
 ./configure --prefix=/usr
-make
+make -j$(nproc)
 make DESTDIR=$BUILD_ROOT install
 
 # a script to run after the package is installed

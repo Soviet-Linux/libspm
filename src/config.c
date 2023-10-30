@@ -1,85 +1,96 @@
-#include "stdio.h"          // Standard I/O library for file operations
-#include <stdlib.h>         // Standard library for general functions
-#include <string.h>         // Standard library for string manipulation
+#include "stdio.h"
+#include <stdlib.h>
+#include <string.h>
 
-#include "libspm.h"         // Custom library for package management
-#include "globals.h"        // Custom library for global variables
-#include "cutils.h"         // Custom utility library
+#include "libspm.h"
+#include "globals.h"
+#include "cutils.h"
 
-/* 
-This readConfig function takes a config file path as an argument and initializes global variables with its content.
-The current implementation is considered inefficient.
-TODO: Rework it and use a HashMap to store the config values.
+#include <stdbool.h>
 
-Accepts:
-- const char* configFilePath: The path to the configuration file to be read.
+#define DEFAULT_CONFIG_FILE "/etc/cccp.conf" // Default config file path
 
-Returns:
-- int: An integer indicating the result of the configuration file reading operation.
-  - 0: Success.
-  - 1: Invalid config file format.
+// A hashmap to store config values with default values
+typedef struct {
+    const char* key;
+    const char* default_value;
+} ConfigEntry;
 
-Explanation of the config file format:
-The config file contains key-value pairs, where each line represents a key-value pair separated by an equal sign.
-The key-value pairs are used to set environment variables. Here's an example of the config file format:
+ConfigEntry configEntries[] = {
+    { "ROOT", "/" },
+    { "MAIN_DIR", "/var/cccp" },
+    { "WORK_DIR", "/var/cccp/work" },
+    { "INSTALLED_DB", "/var/cccp/installed_db" },
+    { "ALL_DB", "/var/cccp/all_db" },
+    { "CONFIG_FILE", DEFAULT_CONFIG_FILE },
+    { "SOVIET_REPOS", "/var/cccp/repos" },
+    { "SOVIET_FORMATS", "ecmp" },
+    // Add more key-value pairs with default values as needed
+};
 
-ROOT=/
-MAIN_DIR=/var/cccp
-DATA_DIR=/var/cccp/data
-SPM_DIR=/var/cccp/spm
-...etc...
+// The number of entries in the configEntries array
+const size_t numConfigEntries = sizeof(configEntries) / sizeof(configEntries[0]);
 
-The values are used to set corresponding environment variables, like SOVIET_ROOT, SOVIET_MAIN_DIR, SOVIET_DATA_DIR, and so on.
-Unknown keys in the config file are reported as errors.
-*/
 int readConfig(const char* configFilePath)
 {
-    dbg(2, "config: %s", configFilePath);
+    if (configFilePath == NULL) {
+        configFilePath = DEFAULT_CONFIG_FILE; // Use the default config file path
+    }
 
-    FILE* file = fopen(configFilePath, "r"); /* should check the result */
+    dbg(2, "config: %s", configFilePath);
+    dbg(2, "config: %s", configFilePath);
+    FILE* file = fopen(configFilePath, "r");
+    dbg(2, "file is readed");
+    if (file == NULL) {
+        // File doesn't exist, create it with default values
+        file = fopen(configFilePath, "w");
+        if (file == NULL) {
+            msg(ERROR, "Failed to create config file");
+            return 1;
+        }
+
+        // Write default values to the config file
+        for (size_t i = 0; i < numConfigEntries; i++) {
+            fprintf(file, "%s=%s\n", configEntries[i].key, configEntries[i].default_value);
+        }
+
+        fclose(file);
+
+        // Reopen the file for reading
+        file = fopen(configFilePath, "r");
+        if (file == NULL) {
+            msg(ERROR, "Failed to open config file for reading");
+            return 1;
+        }
+    }
+
     char line[1024];
-    char* kvlist[2];
-    int count;
 
     while (fgets(line, sizeof(line), file)) {
-        /* Note that fgets doesn't strip the terminating \n, checking its
-           presence would allow handling lines longer than sizeof(line). */
-        // Removing the '\n' mentioned above
         line[strlen(line) - 1] = 0;
 
         char* key = strtok(line, "=");
         char* value = strtok(NULL, "=");
         if (key == NULL || value == NULL) {
             msg(ERROR, "Invalid config file");
+            fclose(file);
             return 1;
         }
 
         dbg(3, "Key: %s Value: %s", key, value);
 
         // Set environment variables based on the key-value pairs in the config file
-        if (strcmp(key, "ROOT") == 0) {
-            setenv("SOVIET_ROOT", value, 1);
-        } else if (strcmp(key, "MAIN_DIR") == 0) {
-            setenv("SOVIET_MAIN_DIR", value, 1);
-        } else if (strcmp(key, "WORK_DIR") == 0) {
-            setenv("SOVIET_WORK_DIR", value, 1);
-        } else if (strcmp(key, "INSTALLED_DB") == 0) {
-            setenv("SOVIET_INSTALLED_DB_PATH", value, 1);
-        } else if (strcmp(key, "ALL_DB") == 0) {
-            setenv("SOVIET_ALL_DB", value, 1);
-        } else if (strcmp(key, "CONFIG_FILE") == 0) {
-            setenv("SOVIET_CONFIG_FILE", value, 1);
-        } else if (strcmp(key, "REPOS") == 0) {
-            dbg(3, "REPOS: %s", value);
-            setenv("SOVIET_REPOS", value, 1);
-        } else if (strcmp(key, "FORMATS") == 0) {
-            setenv("SOVIET_FORMATS", value, 1);
-        } else {
-            msg(ERROR, "Unknown key in config file: %s", key);
-        }
+        setenv(key, value, 1);
     }
 
     fclose(file);
+
+    // Set environment variables for missing keys with their default values
+    for (size_t i = 0; i < numConfigEntries; i++) {
+        if (getenv(configEntries[i].key) == NULL) {
+            setenv(configEntries[i].key, configEntries[i].default_value, 1);
+        }
+    }
 
     return 0;
 }
