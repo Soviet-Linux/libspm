@@ -18,6 +18,7 @@ typedef struct {
 
 ConfigEntry configEntries[] = {
     { "ROOT", "/" },
+    { "SOVIET_DEFAULT_FORMAT", "ecmp" },
     { "MAIN_DIR", "/var/cccp" },
     { "WORK_DIR", "/var/cccp/work" },
     { "INSTALLED_DB", "/var/cccp/installed_db" },
