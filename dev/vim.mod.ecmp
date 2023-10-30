@@ -10,7 +10,7 @@ curl $URL | tar -xz
 
 [install]
 ./configure --prefix=/usr
-make
+make -j$(nproc)
 make DESTDIR=$BUILD_ROOT install
 
 [special]
