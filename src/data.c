@@ -30,6 +30,27 @@ int connect_db(sqlite3 **db, char *DB_PATH) {
     return 0;
 }
 
+// Function to create an SQLite database at the specified path
+/*
+Accepts:
+- char *db_path: The path where the SQLite database will be created.
+
+Returns:
+- sqlite3 *: A pointer to the SQLite database handle, or NULL on failure.
+*/
+sqlite3* create_database(const char *db_path) {
+    sqlite3 *db;  // SQLite database handle
+
+    // Open the SQLite database
+    int rc = sqlite3_open(db_path, &db);
+    if (rc) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return NULL;
+    }
+
+    return db;
+}
 // Function to create an SQLite table for installed packages
 /*
 Accepts:

@@ -70,5 +70,5 @@ char* get(struct package* i_pkg, const char* out_path)
 void sync()
 {
     // Download the "all.db" file to the specified path
-    downloadRepo("all.db", getenv("ALL_DB_PATH"));
+    downloadRepo("all.db", getenv("SOVIET_ALL_DB_PATH"));
 }
