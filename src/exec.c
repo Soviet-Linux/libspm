@@ -1,30 +1,29 @@
+#include "limits.h"
+#include "malloc.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "malloc.h"
-#include "limits.h"
 // Include custom headers
-#include "libspm.h"
 #include "cutils.h"
+#include "libspm.h"
 #include <string.h>
 
 // Function to execute a command and capture its output
-char* exec(const char* cmd)
-{
+char *exec(const char *cmd) {
   // Open the command for reading and capture its output
-  FILE* fp = popen(cmd, "r");
+  FILE *fp = popen(cmd, "r");
 
   // Check if the command execution failed
   if (fp == NULL) {
     // Print an error message if execution fails
     printf("Failed to run command");
-    exit(1);  // Exit the program with an error code
+    exit(1); // Exit the program with an error code
   }
 
   // Read the output a line at a time and store it
   char path[PATH_MAX];
 
   // Initialize a result buffer to store the command's output
-  char* result = (char*)calloc(2048, sizeof(char));
+  char *result = (char *)calloc(2048, sizeof(char));
 
   // Read the output from the command and append it to the result buffer
   while (fgets(path, sizeof(path), fp) != NULL) {
@@ -40,7 +39,7 @@ char* exec(const char* cmd)
     // Check if the result buffer needs to be resized to accommodate the output
     if (result_len + path_len > result_size) {
       // Resize the result buffer to ensure it can hold the entire output
-      result = (char*)realloc(result, result_len + path_len + 1);
+      result = (char *)realloc(result, result_len + path_len + 1);
     }
 
     // Append the current line of output to the result
