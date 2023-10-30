@@ -13,10 +13,10 @@
 bool TESTING = false;
 
 // Flag for overwriting files
-bool OVERWRITE = false;
+bool OVERWRITE = true;
 
 // Flag for quiet mode (no verbose output)
-bool QUIET = true;
+bool QUIET = false;
 
 // Database handles for installed and all packages
 sqlite3* INSTALLED_DB = NULL;
