@@ -63,6 +63,7 @@ String utils
 Functions : 
  * popchar - Remove a character from a string
  * popcharn - Remove a character from a string (with a size limit)
+  * s_size should be a size_t (=long unsigned int)
  * splita - Split a string into an array of strings
  * countc - Count the number of occurences of a char in a string
 */
