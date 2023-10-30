@@ -94,7 +94,7 @@ int open(char* path,struct package* pkg)
 	section** sections;
 	uint count = getsections(path,&sections);
 
-	for (int i = 0; i < count; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		void** options = hm_get(hm,sections[i]->name);
 		if (options == NULL) {
 			msg(WARNING,"Unknown section : %s",sections[i]->name);
@@ -117,7 +117,7 @@ int open(char* path,struct package* pkg)
 	dbg(2,"done parsing | returning");
 
 	// free sections
-	for (int i = 0; i < count; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		free(sections[i]->name);
 		free(sections[i]);
 	}
@@ -155,7 +155,8 @@ unsigned int parseinfo(char *s, struct package* dest)
     char* p = s;
     while (*p != '\0') {
         if (*p == ' ') {
-            int index = p - s;
+            unsigned int index = p - s; 
+            // ^ this could be a long, but it doesn't need to be 64 bits
             dbg(3, "Removing space '%c']'%c'['%c' at %p (index=%d)", *(p - 1), *p, *(p + 1), p, index);
             popchar(s, index);
             p--;
@@ -228,7 +229,7 @@ unsigned int getsections(char* path,section*** sections) {
 
 			continue;
 		}
-		int bufflen = strlen((*sections)[sectionscount-1]->buff);
+		unsigned int bufflen = strlen((*sections)[sectionscount-1]->buff);
 		int linelen = strlen(line);
 		if ( bufflen + linelen + 2 >= alloc) {
 			alloc += strlen(line) + 64;
@@ -279,7 +280,7 @@ int create(const char* path,struct package* pkg)
 	if (pkg->url != NULL) fprintf(ecmp,"url = %s\n",pkg->url);
 	fprintf(ecmp,"\n"); // for improved readability
 
-	for (int i = 0;i < sizeof(list) / sizeof(list[0]);i++ )
+	for (unsigned int i = 0;i < sizeof(list) / sizeof(list[0]);i++ )
 	{
 		if (list[i][1] == NULL) {
 			continue;
