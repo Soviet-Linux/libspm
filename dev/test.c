@@ -57,66 +57,52 @@ int main(int argc, char const *argv[])
     OVERWRITE = true;
     DEBUG_UNIT = NULL;
 
-    if (strcmp(argv[1],"data") == 0)
-    {
+   if (argc < 2 || strcmp(argv[1], "help") == 0) {
+        printf("Usage: %s [data|ecmp|all|make|install|uninstall|move|help|split|config|get]\n", argv[0]);
+        return 0;
+    }
+
+    // Check for root privileges for all other commands
+    if (geteuid() != 0) {
+        printf("You must have root privileges to run this command.\n");
+        return 1;
+    }
+
+    if (strcmp(argv[1], "data") == 0) {
         return test_data();
-    }
-    else if (strcmp(argv[1],"ecmp") == 0)
-    {
+    } else if (strcmp(argv[1], "ecmp") == 0) {
         return test_ecmp();
-    }
-    else if (strcmp(argv[1],"all") == 0)
-    {
+    } else if (strcmp(argv[1], "all") == 0) {
         int ret = 0;
         ret += test_data();
         ret += test_ecmp();
         return ret;
-    }
-    else if (strcmp(argv[1],"make") == 0)
-    {
+    } else if (strcmp(argv[1], "make") == 0) {
         int EXIT = 0;
         EXIT += test_make(argv[2]);
-        printf("Leaks: %d",check_leaks());
+        printf("Leaks: %d\n", check_leaks());
         return EXIT;
     }
     else if (strcmp(argv[1],"install") == 0)
     {
         dbg(1, "installing");
         init();
-        install_package_source(argv[2],0);
-        printf("Leaks: %d\n",check_leaks());
+        install_package_source(argv[2], 0);
+        printf("Leaks: %d\n", check_leaks());
         return 0;
-    }
-    else if (strcmp(argv[1],"uninstall") == 0)
-    {
+    } else if (strcmp(argv[1], "uninstall") == 0) {
         init();
         uninstall(argv[2]);
         return 0;
-    }
-    else if (strcmp(argv[1],"move") == 0)
-    {
+    } else if (strcmp(argv[1], "move") == 0) {
         return test_move();
-    }
-    else if (strcmp(argv[1],"help") == 0)
-    {
-        printf("Usage: test [spm|data|ecmp|all|help|install]\n");
-        return 0;
-    }
-    else if (strcmp(argv[1],"split") == 0)
-    {
+    } else if (strcmp(argv[1], "split") == 0) {
         return test_split();
-    }
-
-    else if (strcmp(argv[1],"config") == 0)
-    {
+    } else if (strcmp(argv[1], "config") == 0) {
         return test_config();
-    }
-    else if (strcmp(argv[1],"get") == 0)
-    {
+    } else if (strcmp(argv[1], "get") == 0) {
         return test_get();
-    }
-    else
-    {
+    } else {
         printf("Invalid argument\n");
         return 1;
     }
