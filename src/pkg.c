@@ -53,6 +53,7 @@ int open_pkg(const char* path, struct package* pkg, const char* format) {
             printf("format: %s = %s\n", format, FORMATS[i]);
             if (strcmp(format, FORMATS[i]) == 0) {
                 dbg(2, "Opening package with %s format", FORMATS[i]);
+                strcat(path, ".ecmp");
                 runFormatLib(FORMATS[i], "open", path, pkg);
                 return 0;
             }
