@@ -10,10 +10,8 @@
 
 // Function to initialize the Soviet Package Manager
 void init() {
-    printf("Getting SOVIET_DEBUG");
+    msg(INFO, "initializing");
     char* debug_env = getenv("SOVIET_DEBUG");
-    printf("Got SOVIET_DEBUG");
-
     // Set the debugging level based on the environment variable
     dbg(3, "DEBUG: %s", debug_env);
     DEBUG += debug_env ? atoi(debug_env) : 0;
