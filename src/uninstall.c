@@ -29,11 +29,8 @@ int uninstall(char* name)
     char* SPM_DIR = getenv("SOVIET_SPM_DIR");
 
     // Generate the path to the package's SPM file
-    char dataSpmPath[MAX_PATH];
-    // Use the default format to generate the path
-    // Note: The variable DEFAULT_FORMAT is not defined; you may need to replace it with the correct environment variable or value.
-    // For example, you can use getenv("SOVIET_DEFAULT_FORMAT") or replace it with a string.
-    // getenv("DEFAULT_FORMAT");
+    char* dataSpmPath[MAX_PATH];
+    sprintf(dataSpmPath, "%s/%s.%s", getenv("SOVIET_SPM_DIR"), name, getenv("SOVIET_DEFAULT_FORMAT"));
     
     // Verify if the package is installed
     dbg(3, "Verifying if the package is installed at %s", dataSpmPath);
