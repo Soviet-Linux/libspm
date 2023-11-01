@@ -69,16 +69,16 @@ void init() {
     // Verify if required directories exist, and create them if not
     struct stat st = {0};
     if (stat(getenv("ROOT"), &st) == -1) {
-        mkdir(getenv("SOVIET_ROOT"), 0777);
+        mkdir(getenv("ROOT"), 0777);
     }
     if (stat(getenv("MAIN_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_MAIN_DIR"), 0777);
+        mkdir(getenv("MAIN_DIR"), 0777);
     }
     if (stat(getenv("SOVIET_DATA_DIR"), &st) == -1) {
         mkdir(getenv("SOVIET_DATA_DIR"), 0777);
     }
     if (stat(getenv("WORK_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_WORK_DIR"), 0777);
+        mkdir(getenv("WORK_DIR"), 0777);
     }
     if (stat(getenv("SOVIET_SPM_DIR"), &st) == -1) {
         mkdir(getenv("SOVIET_SPM_DIR"), 0777);
