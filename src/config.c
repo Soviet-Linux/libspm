@@ -22,7 +22,7 @@ ConfigEntry configEntries[] = {
     { "MAIN_DIR", "/var/cccp" },
     { "WORK_DIR", "/var/cccp/work" },
     { "INSTALLED_DB", "/var/cccp/data/installed.db" },
-    { "ALL_DB", "/var/cccp/all_db" },
+    { "ALL_DB", "/var/cccp/data/all.db" },
     { "CONFIG_FILE", DEFAULT_CONFIG_FILE },
     { "SOVIET_REPOS", "/var/cccp/repos" },
     { "SOVIET_FORMATS", "ecmp" },

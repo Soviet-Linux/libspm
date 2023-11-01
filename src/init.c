@@ -26,19 +26,19 @@ void init() {
     dbg(3, "Setting variables");
 
     // Set global variables for various paths and directories
-    setenv("SOVIET_ROOT", "/", 0);
-    setenv("SOVIET_MAIN_DIR", "/var/cccp", 0);
+    setenv("ROOT", "/", 0);
+    setenv("MAIN_DIR", "/var/cccp", 0);
     setenv("SOVIET_DATA_DIR", "/var/cccp/data", 0);
-    setenv("SOVIET_WORK_DIR", "/var/cccp/work", 0);
+    setenv("WORK_DIR", "/var/cccp/work", 0);
     setenv("SOVIET_SPM_DIR", "/var/cccp/spm", 0);
     setenv("SOVIET_LOG_DIR", "/var/cccp/log", 0);
     setenv("SOVIET_PLUGIN_DIR", "/var/cccp/plugins", 0);
     setenv("SOVIET_BUILD_DIR", "/var/cccp/work/build", 0);
     setenv("SOVIET_MAKE_DIR", "/var/cccp/work/make", 0);
-    setenv("SOVIET_INSTALLED_DB_PATH", "/var/cccp/data/installed.db", 0);
-    setenv("SOVIET_ALL_DB_PATH", "/var/cccp/data/all.db", 0);
+    setenv("INSTALLED_DB", "/var/cccp/data/installed.db", 0);
+    setenv("ALL_DB", "/var/cccp/data/all.db", 0);
     setenv("SOVIET_TEST_LOG", "/var/cccp/log/test.log", 0);
-
+   
     // Clean the working directories
     clean();
 
@@ -68,16 +68,16 @@ void init() {
 
     // Verify if required directories exist, and create them if not
     struct stat st = {0};
-    if (stat(getenv("SOVIET_ROOT"), &st) == -1) {
+    if (stat(getenv("ROOT"), &st) == -1) {
         mkdir(getenv("SOVIET_ROOT"), 0777);
     }
-    if (stat(getenv("SOVIET_MAIN_DIR"), &st) == -1) {
+    if (stat(getenv("MAIN_DIR"), &st) == -1) {
         mkdir(getenv("SOVIET_MAIN_DIR"), 0777);
     }
     if (stat(getenv("SOVIET_DATA_DIR"), &st) == -1) {
         mkdir(getenv("SOVIET_DATA_DIR"), 0777);
     }
-    if (stat(getenv("SOVIET_WORK_DIR"), &st) == -1) {
+    if (stat(getenv("WORK_DIR"), &st) == -1) {
         mkdir(getenv("SOVIET_WORK_DIR"), 0777);
     }
     if (stat(getenv("SOVIET_SPM_DIR"), &st) == -1) {
@@ -97,17 +97,17 @@ void init() {
     }
 
     // Initialize the databases
-    char* installed_db_path_env = getenv("SOVIET_INSTALLED_DB_PATH");
+    char* installed_db_path_env = getenv("INSTALLED_DB");
     if (!installed_db_path_env) {
-        msg(ERROR, "SOVIET_INSTALLED_DB_PATH environment variable not set");
+        msg(ERROR, "INSTALLED_DB environment variable not set");
         exit(1);
     }
     connect_db(&INSTALLED_DB, installed_db_path_env);
     create_table_installed(INSTALLED_DB);
 
-    char* all_db_path_env = getenv("SOVIET_ALL_DB_PATH");
+    char* all_db_path_env = getenv("ALL_DB");
     if (!all_db_path_env) {
-        msg(ERROR, "SOVIET_ALL_DB_PATH environment variable not set");
+        msg(ERROR, "ALL_DB environment variable not set");
         exit(1);
     }
 
