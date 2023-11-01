@@ -50,8 +50,8 @@ struct package
 
 //test
 int list_installed();
-int count_installed();
-int get_installed(int index);
+int update();
+int upgrade();
 
 //end test
 
