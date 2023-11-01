@@ -12,64 +12,72 @@
 
 //will print the content of INSTALLED_DB
 int list_installed()
-    {
-        msg(INFO, "listing installed packages from %s", getenv("INSTALLED_DB"));
-        if(0 == 1)
-            {
-                sqlite3_stmt *stmt;
-                int rc;
+{
+    msg(INFO, "listing installed packages from %s", getenv("INSTALLED_DB"));
 
-                // Prepare the SQL query
-                const char *sql = "idfk";
-                rc = sqlite3_prepare_v2(getenv(INSTALLED_DB), sql, -1, &stmt, NULL);
-                if (rc != SQLITE_OK) {
-                    msg(ERROR, "SQL error: %s -- %d", sqlite3_errmsg(INSTALLED_DB), rc);
-                    return 1;
-                }
+    //shame that print_all_data uses msg, this could have been so clean
+    sqlite3_stmt *stmt;
+    char *zErrMsg = 0;
+    int rc;
 
-                // Bind the value for the parameter in the SQL query
-                sqlite3_bind_text(stmt, 1, "idk", -1, SQLITE_STATIC);
+    // Prepare the SQL query
+    const char *sql = "SELECT Name, Version, Type FROM Packages";
+    rc = sqlite3_prepare_v2(INSTALLED_DB, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        msg(ERROR, "SQL error: %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return 1;
+    }
 
-                // Execute the PRINT statement or smth.
-                rc = sqlite3_step(stmt);
-                if (rc != SQLITE_DONE) {
-                    msg(ERROR, "Error executing PRINT statement or smth: %s\n", sqlite3_errmsg(INSTALLED_DB));
-                    return -1;
-                }
+    // Execute the SQL query
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        printf("\x1b[31;1;1m %s \x1b[0m %s - %s \n", sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), sqlite3_column_text(stmt, 2));
+    }
 
-                // Finalize the statement.
-                rc = sqlite3_finalize(stmt);
-                if (rc != SQLITE_OK) {
-                    msg(ERROR, "Error finalizing PRINT statement or smth: %s\n", sqlite3_errmsg(INSTALLED_DB));
-                    return -1;
-            }
-
-        return 0;
-        }
-
+    // Check if the SQL query was successful
+    if (rc != SQLITE_DONE) {
+        fprintf(stderr, "SQL error: %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
     }
     
-//will return the ammount of packages installed  INSTALLED_DB
+    msg(INFO, "%d packages installed", count_installed());
+    return 0;
+}
+
+//count installed
 int count_installed()
-    {
-        int count = 1;
-        
-        // do sql magic here
-        
-        msg(INFO, "there are %d installed packages", count);
-        
-        return count;
+{
+    int count;
+
+    sqlite3_stmt *stmt;
+    char *zErrMsg = 0;
+    int rc;
+    
+    // Prepare the SQL query
+    const char *sql = "SELECT COUNT(*) FROM Packages";
+    rc = sqlite3_prepare_v2(INSTALLED_DB, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        msg(ERROR, "SQL error: %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return 1;
+    }
+    // Execute the SQL query
+     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        count = (int)sqlite3_column_int(stmt, 0);
+     }
+
+     if (rc != SQLITE_DONE) {
+        msg(ERROR, "Error executing statement: %s\n", sqlite3_errmsg(INSTALLED_DB));
+        return -1;
+     }
+    // Check if the SQL query was successful
+    if (rc != SQLITE_DONE) {
+        fprintf(stderr, "SQL error: %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
     }
 
-//will print the content of INSTALLED_DB at a specific index
-int get_installed(int index)
-    {
-        int count = 0;
-        char* out = "test";
-        //out = sql magic
-        
-        msg(INFO, "%s is installed at %d", out, index);
-        
-        return count;
+    return count;
+}
 
-    }
