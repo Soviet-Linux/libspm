@@ -13,7 +13,7 @@
 //will print the content of INSTALLED_DB
 int list_installed()
     {
-        msg(INFO, "listing installed packages from %s", getenv(INSTALLED_DB));
+        msg(INFO, "listing installed packages from %s", getenv("INSTALLED_DB"));
         if(0 == 1)
             {
                 sqlite3_stmt *stmt;
