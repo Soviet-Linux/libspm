@@ -51,6 +51,7 @@ struct package
 //test
 int list_installed();
 int count_installed();
+int search(char* in);
 int update();
 int upgrade();
 

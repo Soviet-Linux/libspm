@@ -81,3 +81,45 @@ int count_installed()
     return count;
 }
 
+int search(char* in)
+{
+    msg(INFO, "searching for %s", in);
+    
+    sqlite3_stmt *stmt;
+    char *zErrMsg = 0;
+    int rc;
+    int _found = 0;
+
+    // Prepare the SQL query
+    const char *sql = "SELECT Name, Section FROM Packages";
+    rc = sqlite3_prepare_v2(ALL_DB, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        msg(ERROR, "SQL error: %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return 1;
+    }
+    
+    // Execute the SQL query
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        struct package* remote = calloc(1, sizeof(struct package));
+        remote->name = (char*)sqlite3_column_text(stmt, 0);
+        
+        if(strstr(remote->name, in) != 0)
+        {
+             printf("found \x1b[31;1;1m %s \x1b[0m in %s \n", remote->name, (char*)sqlite3_column_text(stmt, 1));
+             _found++;
+        }
+        free(remote);
+    }
+
+    // Check if the SQL query was successful
+    if (rc != SQLITE_DONE) {
+        fprintf(stderr, "SQL error: %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
+    }
+
+    msg(WARNING, "found %d packages that match %s", _found, in);
+
+    return 0;
+}
