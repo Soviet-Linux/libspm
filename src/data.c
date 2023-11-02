@@ -289,7 +289,8 @@ int print_all_data(sqlite3 *db) {
 
     // Check if the SQL query was successful
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "SQL error: %s", zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(db));
+        // could remove this _free() probably..
         sqlite3_free(zErrMsg);
         return -1;
     }
