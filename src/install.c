@@ -21,6 +21,20 @@ Returns:
 - int: An integer indicating the result of the installation.
   - 0: Package installed successfully.
   - -1: Installation failed.
+  - -2: SOVIET_MAKE_DIR or SOVIET_BUILD_DIR is not set.
+  - -3: Failed to open package.
+  - -4: Failed to make the package.
+  - -5: Failed to get locations for the package.
+  - -6: Failed to store data in the installed database.
+
+Meanings of return codes:
+- 0: The package installation was successful, and the package is now installed on the system.
+- -1: The package installation process encountered an error, and the installation failed.
+- -2: The function requires the environment variables SOVIET_MAKE_DIR and SOVIET_BUILD_DIR to be set, but one or both of them are not set. This is an error condition.
+- -3: The function attempted to open the package archive specified by spm_path, but the operation failed. This suggests an issue with the package archive.
+- -4: The package build process (make) encountered an error and failed. The package could not be successfully built.
+- -5: The function attempted to retrieve locations for the package, but it failed to do so. This indicates an issue with finding or determining the necessary package locations.
+- -6: The function attempted to store data about the installed package in the database, but the operation failed. This suggests an issue with database storage.
 */
 int install_package_source(const char* spm_path, int as_dep) {
     return f_install_package_source(spm_path, as_dep, NULL);
@@ -37,11 +51,15 @@ Returns:
 - int: An integer indicating the result of the installation.
   - 0: Package installed successfully.
   - -1: Installation failed.
+  - -2: SOVIET_MAKE_DIR or SOVIET_BUILD_DIR is not set.
+  - -3: Failed to open package.
+  - -4: Failed to make the package.
+  - -5: Failed to get locations for the package.
+  - -6: Failed to store data in the installed database.
 */
 int f_install_package_source(const char* spm_path, int as_dep, const char* format) {
     // Check if spm_path is NULL
     if (spm_path == NULL) {
-        msg(ERROR, "spm_path is NULL");
         return -1;
     }
 
@@ -50,8 +68,7 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
     char* build_dir = getenv("SOVIET_BUILD_DIR");
 
     if (make_dir == NULL || build_dir == NULL) {
-        msg(ERROR, "SOVIET_MAKE_DIR or SOVIET_BUILD_DIR is not set");
-        return -1;
+        return -2;
     }
 
     // Initialize the package structure
@@ -59,26 +76,20 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
 
     // Attempt to open the package archive
     if (open_pkg(spm_path, &pkg, format) != 0) {
-        msg(ERROR, "Failed to open package");
-        return -1;
+        return -3;
     }
-
-    msg(INFO, "Installing %s", pkg.name);
 
     // Add the package name to the queue
     PACKAGE_QUEUE[QUEUE_COUNT] = pkg.name;
     QUEUE_COUNT++;
-    dbg(1, "Added %s to the queue", pkg.name);
 
     // Check package dependencies
     if (pkg.dependencies != NULL && pkg.dependenciesCount > 0 && strlen(pkg.dependencies[0]) > 0) {
-        dbg(1, "Checking dependencies...");
         check_dependencies(pkg.dependencies, pkg.dependenciesCount);
     }
 
     // Checking makedeps
     if (pkg.makedependencies != NULL && pkg.makedependenciesCount > 0 && strlen(pkg.makedependencies[0]) > 0) {
-        dbg(3, "Checking makedeps : %s", pkg.makedependencies);
         check_dependencies(pkg.makedependencies, pkg.makedependenciesCount);
     }
 
@@ -87,37 +98,26 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
     sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
 
     // Build the package
-    dbg(1, "Making %s", pkg.name);
     if (make(legacy_dir, &pkg) != 0) {
-        msg(ERROR, "Failed to make %s", pkg.name);
-        return -1;
+        return -4;
     }
-    dbg(1, "Making %s done", pkg.name);
 
     // Get package locations
-    dbg(1, "Getting locations for %s", pkg.name);
     pkg.locationsCount = get_locations(&pkg.locations, getenv("SOVIET_BUILD_DIR"));
     if (pkg.locationsCount <= 0) {
-        msg(ERROR, "Failed to get locations for %s", pkg.name);
-        return -1;
+        return -5;
     }
-    dbg(1, "Got %d locations for %s", pkg.locationsCount, pkg.name);
 
     // Check if the package is already installed
     if (is_installed(pkg.name)) {
-        msg(WARNING, "Package %s is already installed, reinstalling", pkg.name);
         uninstall(pkg.name);
-    } else {
-        dbg(3, "Package %s is not installed", pkg.name);
     }
 
     // Move binaries to their destination
-    dbg(1, "Moving binaries for %s", pkg.name);
     move_binaries(pkg.locations, pkg.locationsCount);
 
     // Execute post-install scripts
     if (pkg.info.special != NULL && strlen(pkg.info.special) > 0) {
-        dbg(1, "Executing post install script for %s", pkg.name);
         exec_special(pkg.info.special, getenv("SOVIET_BUILD_DIR"));
     }
 
@@ -128,11 +128,8 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
 
     // Store package data in the installed database
     if (store_data_installed(INSTALLED_DB, &pkg, as_dep) != 0) {
-        msg(ERROR, "Failed to store data in %s", INSTALLED_DB);
-        msg(ERROR, "!! Package %s potentially corrupted !!", pkg.name);
-        return -1;
+        return -6;
     }
-    dbg(1, "Package %s installed", pkg.name);
 
     // Clean up
     clean();
