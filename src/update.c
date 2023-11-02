@@ -58,7 +58,7 @@ int update()
 
     // Check if the SQL query was successful
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "SQL error: %s", zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
         sqlite3_free(zErrMsg);
         return -1;
     }
