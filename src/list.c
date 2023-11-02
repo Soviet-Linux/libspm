@@ -24,7 +24,7 @@ int list_installed()
     const char *sql = "SELECT Name, Version, Type FROM Packages";
     rc = sqlite3_prepare_v2(INSTALLED_DB, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", zErrMsg);
+        msg(ERROR, "SQL error: %s", zErrMsg); // compiler doesn't complain about this but it might be bad
         sqlite3_free(zErrMsg);
         return 1;
     }
@@ -36,8 +36,7 @@ int list_installed()
 
     // Check if the SQL query was successful
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
         return -1;
     }
     
@@ -48,35 +47,29 @@ int list_installed()
 //count installed
 int count_installed()
 {
-    int count;
+    int count = 0;
 
     sqlite3_stmt *stmt;
-    char *zErrMsg = 0;
     int rc;
     
     // Prepare the SQL query
     const char *sql = "SELECT COUNT(*) FROM Packages";
     rc = sqlite3_prepare_v2(INSTALLED_DB, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
         return 1;
     }
     // Execute the SQL query
-     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
         count = (int)sqlite3_column_int(stmt, 0);
-     }
+    }
 
-     if (rc != SQLITE_DONE) {
-        msg(ERROR, "Error executing statement: %s\n", sqlite3_errmsg(INSTALLED_DB));
-        return -1;
-     }
     // Check if the SQL query was successful
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
+        msg(ERROR, "Error executing statement: %s\n", sqlite3_errmsg(INSTALLED_DB));
         return -1;
     }
+
 
     return count;
 }
@@ -86,7 +79,6 @@ int search(char* in)
     msg(INFO, "searching for %s", in);
     
     sqlite3_stmt *stmt;
-    char *zErrMsg = 0;
     int rc;
     int _found = 0;
 
@@ -94,8 +86,7 @@ int search(char* in)
     const char *sql = "SELECT Name, Section FROM Packages";
     rc = sqlite3_prepare_v2(ALL_DB, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(ALL_DB));
         return 1;
     }
     
@@ -114,8 +105,7 @@ int search(char* in)
 
     // Check if the SQL query was successful
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(ALL_DB));
         return -1;
     }
 

@@ -4,6 +4,8 @@
 #include <string.h>
 #include "sqlite3.h"      // SQLite database library
 
+#include "data.h"
+
 // Include necessary headers
 #include "libspm.h"
 #include "cutils.h"
@@ -37,7 +39,7 @@ int update()
         local->version = (char*)sqlite3_column_text(stmt, 1);
         dbg(1, "don't ask why this is here");
         remote->name = local->name;
-        retrieve_data_repo(ALL_DB, remote);
+        retrieve_data_repo(ALL_DB, remote, NULL, NULL);
         if(remote->version == NULL)
         {
            msg(ERROR, "No package %s exists in repo", local->name);
@@ -56,7 +58,7 @@ int update()
 
     // Check if the SQL query was successful
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "SQL error: %s", zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
         sqlite3_free(zErrMsg);
         return -1;
     }
@@ -98,7 +100,7 @@ int upgrade()
         local->version = (char*)sqlite3_column_text(stmt, 1);
         dbg(1, "don't ask why this is here");
         remote->name = local->name;
-        retrieve_data_repo(ALL_DB, remote);
+        retrieve_data_repo(ALL_DB, remote, NULL, NULL);
         if(remote->version == NULL)
         {
            msg(ERROR, "No package %s exists in repo", local->name);
@@ -126,8 +128,7 @@ int upgrade()
 
     // Check if the SQL query was successful
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
+        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
         return -1;
     }
     if(new_version_installed == 0)
