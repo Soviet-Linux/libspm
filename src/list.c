@@ -91,7 +91,7 @@ int search(char* in)
     int _found = 0;
 
     // Prepare the SQL query
-    const char *sql = "SELECT Name FROM Packages";
+    const char *sql = "SELECT Name, Section FROM Packages";
     rc = sqlite3_prepare_v2(ALL_DB, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
         msg(ERROR, "SQL error: %s", zErrMsg);
@@ -106,7 +106,7 @@ int search(char* in)
         
         if(strstr(remote->name, in) != 0)
         {
-             msg(INFO, "found %s", remote->name);
+             printf("found \x1b[31;1;1m %s \x1b[0m in %s \n", remote->name, (char*)sqlite3_column_text(stmt, 1));
              _found++;
         }
         free(remote);
