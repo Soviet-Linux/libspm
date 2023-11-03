@@ -10,3 +10,10 @@ make all
 make formats
 sudo make install
 ```
+### spm-test
+```bash
+make all
+make formats
+sudo make install
+make test
+```
