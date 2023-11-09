@@ -17,3 +17,11 @@ make formats
 sudo make install
 make test
 ```
+
+### Memory checking tool
+
+In order to run the program with the memcheck tool from the cutils library run :
+```bash
+make MEMCHECK=1 all
+sudo make install
+```
