@@ -37,7 +37,7 @@ int update()
         struct package* remote = calloc(1, sizeof(struct package));
         local->name = (char*)sqlite3_column_text(stmt, 0);
         local->version = (char*)sqlite3_column_text(stmt, 1);
-        msg(ERROR, "don't ask why this is here");
+        dbg(1, "don't ask why this is here");
         remote->name = local->name;
         retrieve_data_repo(ALL_DB, remote, NULL, NULL);
         if(remote->version == NULL)
@@ -98,7 +98,7 @@ int upgrade()
         struct package* remote = calloc(1, sizeof(struct package));
         local->name = (char*)sqlite3_column_text(stmt, 0);
         local->version = (char*)sqlite3_column_text(stmt, 1);
-        msg(ERROR, "don't ask why this is here");
+        dbg(1, "don't ask why this is here");
         remote->name = local->name;
         retrieve_data_repo(ALL_DB, remote, NULL, NULL);
         if(remote->version == NULL)
