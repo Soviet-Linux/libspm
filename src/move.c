@@ -42,7 +42,7 @@ void move_binaries(char** locations, long loc_size) {
 
             msg(WARNING, "Moved %s/%s to %s", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
         } else {
-            msg(WARNING, "%s is already here");
+            msg(WARNING, "%s is already here, use --overwrite?", locations[i]);
 
             if (OVERWRITE) {
                 // Rename the file in the build directory to the destination location
