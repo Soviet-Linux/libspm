@@ -58,7 +58,7 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
             remove(pkg->name);
 
             /*
-            TODO: make gud
+            TODO: make gud 
             char dep_path[PATH_MAX];
             snprintf(dep_path, PATH_MAX, "/tmp/%s-dep.tmp", dependencies[i]);
 
