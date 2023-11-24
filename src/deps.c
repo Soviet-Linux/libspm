@@ -24,7 +24,6 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
 
     for (int i = 0; i < dependenciesCount; i++) {
         dbg(3, "Checking if %s is installed", dependencies[i]);
-
         if (!is_installed(dependencies[i])) {
             dbg(3, "Dependency %s is not installed", dependencies[i]);
             // TODO: We need to install the dependency
@@ -44,6 +43,22 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
                 continue;
             }
 
+            struct package* pkg = calloc(1, sizeof(struct package));
+            pkg->name = dependencies[i];
+
+            char* format = get(pkg, pkg->name);
+
+            if (format == NULL) {
+            msg(ERROR, "Failed to download package %s", pkg->name);
+            return 1;
+            }
+
+            f_install_package_source(pkg->name, 0, format);
+
+            remove(pkg->name);
+
+            /*
+            TODO: make gud
             char dep_path[PATH_MAX];
             snprintf(dep_path, PATH_MAX, "/tmp/%s-dep.tmp", dependencies[i]);
 
@@ -57,14 +72,12 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
                 msg(ERROR, "Failed to get dependency %s", dependencies[i]);
                 return -1;
             }
-
+            */
             // Install the dependency
             /*
                 TODO: Find a clever way to implement automatic dependency installing
                 In the meantime, I'll implement no dependency checking.
             */
-
-            return 0;
         } else {
             dbg(3, "Dependency %s is installed", dependencies[i]);
         }
