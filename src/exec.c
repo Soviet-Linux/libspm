@@ -38,7 +38,7 @@ char* exec(const char* cmd)
     size_t path_len = strlen(path);
 
     // Check if the result buffer needs to be resized to accommodate the output
-    if (result_len + path_len > result_size) {
+    if (result_len + path_len + 1 > result_size) {
       // Resize the result buffer to ensure it can hold the entire output
       result = (char*)realloc(result, result_len + path_len + 1);
     }
