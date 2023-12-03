@@ -25,6 +25,7 @@ ConfigEntry configEntries[] = {
     { "ALL_DB", "/var/cccp/data/all.db" },
     { "CONFIG_FILE", DEFAULT_CONFIG_FILE },
     { "SOVIET_REPOS", "/var/cccp/repos" },
+    { "MAKE_FLAGS", "-j1" },
     { "SOVIET_FORMATS", "ecmp" },
     // Add more key-value pairs with default values as needed
 };
