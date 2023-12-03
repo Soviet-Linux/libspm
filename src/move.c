@@ -38,9 +38,15 @@ void move_binaries(char** locations, long loc_size) {
             }
 
             // Move the files from the build directory to the destination location
-            mvsp(build_loc, dest_loc);
+            if(mvsp(build_loc, dest_loc)!= 0)
+            {
+                msg(FATAL, "Moving %s/%s to %s, failed", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+            }
+            else
+            {
+                msg(WARNING, "Moved %s/%s to %s", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+            }
 
-            msg(WARNING, "Moved %s/%s to %s", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
         } else {
             msg(WARNING, "%s is already here, use --overwrite?", locations[i]);
 
