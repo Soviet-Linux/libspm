@@ -1,0 +1,3 @@
+[submodule "lib/cutils"]
+	path = lib/cutils
+	url = https://github.com/Soviet-Linux/cutils.git
