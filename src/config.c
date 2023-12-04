@@ -25,6 +25,7 @@ ConfigEntry configEntries[] = {
     { "ALL_DB", "/var/cccp/data/all.db" },
     { "CONFIG_FILE", DEFAULT_CONFIG_FILE },
     { "SOVIET_REPOS", "/var/cccp/repos" },
+    { "MAKE_FLAGS", "-j1" },
     { "SOVIET_FORMATS", "ecmp" },
     // Add more key-value pairs with default values as needed
 };
@@ -71,14 +72,14 @@ int readConfig(const char* configFilePath)
         line[strlen(line) - 1] = 0;
 
         char* key = strtok(line, "=");
-        char* value = strtok(NULL, "=");
+        char* value = strchr(line, '\0') + 1;
         if (key == NULL || value == NULL) {
             msg(ERROR, "Invalid config file");
             fclose(file);
             return 1;
         }
 
-        dbg(3, "Key: %s Value: %s", key, value);
+        dbg(2, "Key: %s Value: %s", key, value);
 
         // Set environment variables based on the key-value pairs in the config file
         setenv(key, value, 1);

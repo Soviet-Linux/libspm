@@ -38,9 +38,20 @@ void move_binaries(char** locations, long loc_size) {
             }
 
             // Move the files from the build directory to the destination location
-            mvsp(build_loc, dest_loc);
+            switch (better_mvsp(build_loc, dest_loc))
+            {
+                case -1:
+                    msg(FATAL, "Moving %s/%s to %s failed, could not create dir", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+                    break;
+                case -2:
+                    msg(FATAL, "Moving %s/%s to %s failed, destination not a dir", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+                    break;
+                case 0:
+                    msg(WARNING, "Moved %s/%s to %s", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+                    break;
+            }
 
-            msg(WARNING, "Moved %s/%s to %s", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+            
         } else {
             msg(WARNING, "%s is already here, use --overwrite?", locations[i]);
 
@@ -53,4 +64,44 @@ void move_binaries(char** locations, long loc_size) {
         }
     }
     return;
+}
+
+int better_mvsp(char* old_path,char* new_path)
+{
+    char* parent_path = calloc(strlen(new_path)+1,sizeof(char));
+    strncpy(parent_path,new_path,strrchr(new_path, '/')-new_path);
+
+    switch (isdir(parent_path))
+    {
+        case 1:
+            if (mkdir_parent(parent_path, 0777) != 0) return -1;
+            break;
+        case 2:
+            return -2;
+        case 0:
+            break;
+    }
+    free(parent_path);
+    // move file
+    return rename(old_path,new_path);
+}
+
+int mkdir_parent(const char *path, mode_t mode) {
+    char tmp[256];
+    char *p = NULL;
+    size_t len;
+
+    snprintf(tmp, sizeof(tmp),"%s", path);
+    len = strlen(tmp);
+    if(tmp[len - 1] == '/')
+        tmp[len - 1] = 0;
+    for(p = tmp + 1; *p; p++)
+        if(*p == '/') {
+            *p = 0;
+            mkdir(tmp, mode);
+            *p = '/';
+        }
+    mkdir(tmp, mode);
+
+    return 0;
 }

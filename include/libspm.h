@@ -54,7 +54,8 @@ int count_installed();
 int search(char* in);
 int update();
 int upgrade();
-
+int better_mvsp(char* old_path,char* new_path);
+int mkdir_parent(const char *path, mode_t mode);
 //end test
 
 // package info
