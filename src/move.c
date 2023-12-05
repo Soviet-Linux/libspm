@@ -38,7 +38,7 @@ void move_binaries(char** locations, long loc_size) {
             }
 
             // Move the files from the build directory to the destination location
-            switch (better_mvsp(build_loc, dest_loc))
+            switch (mvsp(build_loc, dest_loc))
             {
                 case -1:
                     msg(FATAL, "Moving %s/%s to %s failed, could not create dir", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
