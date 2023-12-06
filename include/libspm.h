@@ -54,6 +54,7 @@ int count_installed();
 int search(char* in);
 int update();
 int upgrade();
+void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX]);
 //end test
 
 // package info

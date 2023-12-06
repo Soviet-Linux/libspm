@@ -24,6 +24,9 @@ Notes:
 Returns: None
 */
 void move_binaries(char** locations, long loc_size) {
+
+    create_links(getenv("SOVIET_BUILD_DIR"), getenv("ROOT"));
+
     // Iterate through locations and move the binaries to their correct locations
     for (int i = 0; i < loc_size; i++) {
         char dest_loc[PATH_MAX];
@@ -50,11 +53,9 @@ void move_binaries(char** locations, long loc_size) {
                     msg(WARNING, "Moved %s/%s to %s", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
                     break;
             }
-
             
         } else {
             msg(WARNING, "%s is already here, use --overwrite?", locations[i]);
-
             if (OVERWRITE) {
                 // Rename the file in the build directory to the destination location
                 rename(build_loc, dest_loc);
