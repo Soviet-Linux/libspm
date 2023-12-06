@@ -60,24 +60,15 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
         sprintf(start, "%s/%s", build_loc, target);
         sprintf(end, "%s/%s", dest_loc, target);
 
+        char* copy_cmd = calloc(PATH_MAX + 64, sizeof(char));
+        sprintf(copy_cmd, "cp %s %s", start, end);
+
         if (!(access(end, F_OK) == 0))
         {
             if (end == NULL) {
                 msg(FATAL, "Location is NULL");
             }
-
-            switch (mvsp(start, end))
-            {
-                case -1:
-                    msg(FATAL, "Moving failed, could not create dir");
-                    break;
-                case -2:
-                    msg(FATAL, "Moving failed, destination not a dir");
-                    break;
-                case 0:
-                    msg(WARNING, "Moved %s to %s", start, end);
-                    break;
-            }
+            system(copy_cmd);
         }
         else 
         {
@@ -92,7 +83,7 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
 
         dbg(2, "executing %s now", link_cmd);
 
-        int result = system(link_cmd);
+        system(link_cmd);
 
         free(read_link_cmd);
         free(find_cmd);
@@ -100,6 +91,7 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
         free(target);
         free(start);
         free(end);
+        free(copy_cmd);
     }
     free(links);
 }
