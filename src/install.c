@@ -94,6 +94,11 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
     }
     dbg(1, "Making %s done", pkg.name);
 
+    // Create links for the package
+    // This bypasses getting the locations for links
+    // Not optimal
+    create_links(getenv("SOVIET_BUILD_DIR"), getenv("ROOT"));
+
     // Get package locations
     dbg(1, "Getting locations for %s", pkg.name);
     pkg.locationsCount = get_locations(&pkg.locations, getenv("SOVIET_BUILD_DIR"));

@@ -24,9 +24,6 @@ Notes:
 Returns: None
 */
 void move_binaries(char** locations, long loc_size) {
-
-    create_links(getenv("SOVIET_BUILD_DIR"), getenv("ROOT"));
-
     // Iterate through locations and move the binaries to their correct locations
     for (int i = 0; i < loc_size; i++) {
         char dest_loc[PATH_MAX];

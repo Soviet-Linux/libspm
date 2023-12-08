@@ -38,77 +38,144 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
     char** target;
     char* buffer = calloc(count * (PATH_MAX + 64) + 1, sizeof(char));
 
+    // This loops over the links and finds their target
     for(int i = 0; i < count; i++)
     {
         // Allcoaion for variable that store the command to find the target
         char* read_link_cmd = calloc(PATH_MAX + 64, sizeof(char));
         sprintf(read_link_cmd, "readlink %s/%s", build_loc, links[i]);
         char* find_cmd = calloc(PATH_MAX + 64, sizeof(char));
-        sprintf(find_cmd, "( cd %s && find . -name %s ", build_loc, exec(read_link_cmd));
-        find_cmd[strcspn(find_cmd, "\n")] = 0;
-        strcat(find_cmd, " | cut -c2- ) ");
 
-        // Executes the search command to find the target
-        // Target[strcspn(buffer, "\n")] = 0; removes the new line
-        // Not needed for now
-        strcat(buffer, exec(find_cmd));
+        // Check if the link is relative
+        if(strchr(exec(read_link_cmd), '/') != NULL)
+        {
+            // If not, use the output of readlink
+            // This probably won't work
+            sprintf(find_cmd, exec(read_link_cmd));
 
+            // Executes the search command to find the target
+            // Target[strcspn(buffer, "\n")] = 0; removes the new line
+            // Not needed for now
+            strcat(buffer, find_cmd);
+        }
+        else
+        {   
+            // If true, use the location of the link + output of readlink
+
+            // Will extract the location of the link
+            char *lastSlash = strrchr(links[i], '/');
+
+            // Calculates the length of the substring
+            size_t length = lastSlash - links[i] + 1;
+
+            // Creates a substring up to the last '/'
+            char substring[length];
+            strncpy(substring, links[i], length);
+            substring[length - 1] = '\0'; // Null-terminate the substring
+ 
+            sprintf(find_cmd, "%s/%s", substring, exec(read_link_cmd));
+
+            // Executes the search command to find the target
+            // Target[strcspn(buffer, "\n")] = 0; removes the new line
+            // Not needed for now
+            strcat(buffer, find_cmd);
+        }
+        
         free(read_link_cmd);
         free(find_cmd);
     }
 
+    // Log the retrieved target locations for debugging
     dbg(3, "Got targets: '%s'", buffer);
 
+    // Split the 'buffer' string into an array of target locations using '\n' as a delimiter
     unsigned int target_count = splita(buffer, '\n', &target);
 
+    // Log the count of retrieved target locations for debugging
+    dbg(2, "Got %d targets", target_count);
+
+    // This is a variable that stores the link command  
+    char** link_cmd;
+    char* link_cmd_buffer = calloc(count * (PATH_MAX + 64) + 1, sizeof(char));
+
+    if(target_count != count)
+    {
+        msg(FATAL, "Some links created by the program appear to be non-functional");
+    }
+
+    // This loops over the links and creates a linking command for each
+    for(int i = 0; i < count; i++)
+    {
+        // A command to link the link to the target
+        // This assumes every link had a target, if not, this will break
+        // Too bad
+        char* link_cmd_tmp = calloc(PATH_MAX + 64, sizeof(char));
+        sprintf(link_cmd_tmp, "ln -sfv %s %s", target[i], links[i]);
+        strcat(link_cmd_tmp, "\n");
+        strcat(link_cmd_buffer, link_cmd_tmp);
+
+        free(link_cmd_tmp);
+    }
+
+    dbg(4, "Linking command is: %s", link_cmd_buffer);
+
+    unsigned int link_cmd_count = splita(link_cmd_buffer, '\n', &link_cmd);
+    
     // This removes the duplicate target entries
     // Since multiple links can lead to the same target
     // I know we have a hashmap, but like, yea
-
     for (int i = 0; i < target_count - 1; i++) 
     {
         for (int j = i + 1; j < target_count;) 
         {
             if (strcmp(target[i], target[j]) == 0) 
             {
-                // Remove the duplicate string by shifting elements to the left
-                for (int k = j; k < target_count - 1; k++) 
+                // Move the duplicate string to the end
+                char* temp = target[j];
+                for (int k = j; k < target_count - 1; k++)
                 {
-                    strcpy(target[k], target[k + 1]);
+                    target[k] = target[k + 1];
                 }
-                target_count--;  // Decrease the size of the array
-            } 
-            else 
+                target[target_count - 1] = temp;
+                target_count--;
+            }
+            else
             {
                 j++;
             }
         }
     }
 
-    dbg(2, "Got %d targets", target_count);
-
+    // This loops over the targets and moves them to their new location 
     for(int i = 0; i < target_count; i++)
     {
-
-        char* link_cmd = calloc(PATH_MAX + 64, sizeof(char));
-        //a command to link the link to the target
-        sprintf(link_cmd, "ln -sfv %s %s", target, links[i]);
-
-        //will copy the file start to file end in order to cerate the link in the new dir
+        // will create the file 'start' and the file 'end'
+        // In order to cerate the link in the new dir
         char* start = calloc(PATH_MAX + 64, sizeof(char));
         char* end = calloc(PATH_MAX + 64, sizeof(char));
-        sprintf(start, "%s/%s", build_loc, target);
-        sprintf(end, "%s/%s", dest_loc, target);
-        //IMPORTANT: will need to store the targets in an array and go through them, moving them to avoid overwrite
-        char* copy_cmd = calloc(PATH_MAX + 64, sizeof(char));
-        sprintf(copy_cmd, "cp %s %s", start, end);
+        sprintf(start, "%s/%s", build_loc, target[i]);
+        sprintf(end, "%s/%s", dest_loc, target[i]);
+    
 
         if (!(access(end, F_OK) == 0))
         {
             if (end == NULL) {
                 msg(FATAL, "Location is NULL");
             }
-            system(copy_cmd);
+
+            // Move the files from 'start' to 'end' location
+            switch (mvsp(start, end))
+            {
+                case -1:
+                    msg(FATAL, "Moving %s to %s failed, could not create dir", start, end);
+                    break;
+                case -2:
+                    msg(FATAL, "Moving %s to %s failed, destination not a dir", start, end);
+                    break;
+                case 0:
+                    msg(WARNING, "Moved %s to %s", start, end);
+                    break;
+            }
         }
         else 
         {
@@ -120,13 +187,17 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
                 msg(FATAL, "Terminating the program");
             }
         }
-        //executes the link command
-        dbg(2, "executing %s now", link_cmd);
 
-        system(link_cmd);
         free(start);
         free(end);
-        free(copy_cmd);
+    }
+
+    // This loops over the link commands and executes them
+    for(int i = 0; i < link_cmd_count; i++)
+    {
+        // Executes the link command
+        dbg(2, "executing %s now", link_cmd[i]);
+        system(link_cmd[i]);
     }
 
     free(links);
