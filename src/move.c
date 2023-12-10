@@ -41,13 +41,16 @@ void move_binaries(char** locations, long loc_size) {
             switch (mvsp(build_loc, dest_loc))
             {
                 case -1:
-                    msg(FATAL, "Moving %s/%s to %s failed, could not create dir", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+                    msg(FATAL, "Moving %s to %s failed, could not create dir", build_loc, dest_loc);
                     break;
                 case -2:
-                    msg(FATAL, "Moving %s/%s to %s failed, destination not a dir", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+                    msg(FATAL, "Moving %s to %s failed, destination not a dir", build_loc, dest_loc);
+                    break;
+                case -3:
+                    msg(FATAL, "Moving %s to %s failed, destination parent not a dir", build_loc, dest_loc);
                     break;
                 case 0:
-                    msg(WARNING, "Moved %s/%s to %s", getenv("SOVIET_BUILD_DIR"), locations[i], dest_loc);
+                    msg(WARNING, "Moved %s to %s", build_loc, dest_loc);
                     break;
             }
             
