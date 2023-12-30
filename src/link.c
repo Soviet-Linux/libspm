@@ -43,41 +43,6 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
         // This loops over the links and finds their target
         for(int i = 0; i < count; i++)
         {
-            // If not, use the output of readlink
-            // This probably won't work
-            sprintf(find_cmd, "%s", exec(read_link_cmd));
-
-            // Executes the search command to find the target
-            // Target[strcspn(buffer, "\n")] = 0; removes the new line
-            // Not needed for now
-            strcat(buffer, find_cmd);
-        }
-        else
-        {   
-            // If true, use the location of the link + output of readlink
-
-            // Will extract the location of the link
-            char *lastSlash = strrchr(links[i], '/');
-
-            // Calculates the length of the substring
-            size_t length = lastSlash - links[i] + 1;
-
-            // Creates a substring up to the last '/'
-            char substring[length];
-            strncpy(substring, links[i], length);
-            substring[length - 1] = '\0'; // Null-terminate the substring
- 
-            sprintf(find_cmd, "%s/%s", substring, exec(read_link_cmd));
-
-            // Executes the search command to find the target
-            // Target[strcspn(buffer, "\n")] = 0; removes the new line
-            // Not needed for now
-            strcat(buffer, find_cmd);
-        }
-        
-        free(read_link_cmd);
-        free(find_cmd);
-    }
             // Allcoaion for variable that store the command to find the target
             char* read_link_cmd = calloc(PATH_MAX + 64, sizeof(char));
             sprintf(read_link_cmd, "readlink %s/%s", build_loc, links[i]);
@@ -88,7 +53,7 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
             {
                 // If not, use the output of readlink
                 // This probably won't work
-                sprintf(find_cmd, exec(read_link_cmd));
+                snprintf(find_cmd, PATH_MAX + 64, "%s", exec(read_link_cmd));
 
                 // Executes the search command to find the target
                 // Target[strcspn(buffer, "\n")] = 0; removes the new line
