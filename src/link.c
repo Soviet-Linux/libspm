@@ -53,7 +53,7 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
             {
                 // If not, use the output of readlink
                 // This probably won't work
-                sprintf(find_cmd, exec(read_link_cmd));
+                snprintf(find_cmd, PATH_MAX + 64, "%s", exec(read_link_cmd));
 
                 // Executes the search command to find the target
                 // Target[strcspn(buffer, "\n")] = 0; removes the new line
