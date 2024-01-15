@@ -58,6 +58,35 @@ int make(char* package_dir, struct package* pkg) {
         }
     }
 
+    // Check the hash, abort if mismatch
+    char* exec_cmd_1 = calloc(MAX_PATH, sizeof(char));
+    char* exec_cmd_2 = calloc(MAX_PATH, sizeof(char));
+
+    sprintf(exec_cmd_1, "( cd %s && find . -maxdepth 1 -type f  | cut -c3- ) ", getenv("SOVIET_MAKE_DIR"));
+    dbg(1, "Executing  %s to search for package tarball", exec_cmd_1);
+    char* file = exec(exec_cmd_1);
+    
+    file[strcspn(file, "\n")] = 0;
+
+    dbg(1, "Checking file %s, if this is not the package tarball, the author of this line is stupid", file);
+
+    sprintf(exec_cmd_2, "( cd %s && sha256sum %s | cut -d ' ' -f 1)", getenv("SOVIET_MAKE_DIR"), file);
+    dbg(1, "Executing  %s to check the hash", exec_cmd_2);
+    char* hash = exec(exec_cmd_2);
+
+    dbg(1, "Hash is %s", pkg->sha256);
+    dbg(1, "Got %s", hash);
+
+    hash[strcspn(hash, "\n")] = 0;
+    
+    if(strcmp(hash, pkg->sha256) != 0)
+    {
+        msg(FATAL, "Hash mismatch, aborting");
+    }
+
+    free(exec_cmd_1);
+    free(exec_cmd_2);
+
     // Run 'prepare' command
     if (pkg->info.prepare != NULL && strlen(pkg->info.prepare) > 0) {
         char prepare_cmd[64 + strlen(package_dir) + strlen(pkg->info.prepare) + strlen(cmd_params)];

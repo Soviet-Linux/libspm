@@ -29,6 +29,7 @@ struct package
     char* type; // for the type at first i used an enum but im lazy and its stupid;
     char* version;
     char* license;
+    char* sha256;
     char* url;
 
     char** dependencies;

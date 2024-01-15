@@ -82,6 +82,7 @@ int open(char* path,struct package* pkg)
 		{"type",&pkg->type},
 		{"url",&pkg->url},
 		{"license",&pkg->license},
+		{"sha256",&pkg->sha256},
 		{NULL,NULL}
 	};
 	hm = hm_init(pairs,sizeof(pairs)/sizeof(pairs[0]));
@@ -278,6 +279,7 @@ int create(const char* path,struct package* pkg)
 	if (pkg->type != NULL) fprintf(ecmp,"type = %s\n",pkg->type);
 	if (pkg->license != NULL) fprintf(ecmp,"license = %s\n",pkg->license);
 	if (pkg->url != NULL) fprintf(ecmp,"url = %s\n",pkg->url);
+	if (pkg->sha256 != NULL) fprintf(ecmp,"sha256 = %s\n",pkg->sha256);
 	fprintf(ecmp,"\n"); // for improved readability
 
 	for (unsigned int i = 0;i < sizeof(list) / sizeof(list[0]);i++ )
