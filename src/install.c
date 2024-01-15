@@ -85,7 +85,7 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
     // Legacy directory path for compatibility
     char legacy_dir[MAX_PATH];
     sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
-
+    
     // Build the package
     dbg(1, "Making %s", pkg.name);
     if (make(legacy_dir, &pkg) != 0) {
