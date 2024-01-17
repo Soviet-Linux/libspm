@@ -58,6 +58,11 @@ int make(char* package_dir, struct package* pkg) {
         }
     }
 
+    if ((pkg->sha256 == NULL) || (pkg->sha256[0] == '\0')) 
+    {
+        pkg->sha256 = "Not provided";
+    }
+
     // Check the hash, abort if mismatch
     char* exec_cmd_1 = calloc(MAX_PATH, sizeof(char));
     char* exec_cmd_2 = calloc(MAX_PATH, sizeof(char));
@@ -68,21 +73,35 @@ int make(char* package_dir, struct package* pkg) {
     
     file[strcspn(file, "\n")] = 0;
 
-    dbg(1, "Checking file %s, if this is not the package tarball, the author of this line is stupid", file);
-
-    sprintf(exec_cmd_2, "( cd %s && sha256sum %s | cut -d ' ' -f 1)", getenv("SOVIET_MAKE_DIR"), file);
-    dbg(1, "Executing  %s to check the hash", exec_cmd_2);
-    char* hash = exec(exec_cmd_2);
-
-    dbg(1, "Hash is %s", pkg->sha256);
-    dbg(1, "Got %s", hash);
-
-    hash[strcspn(hash, "\n")] = 0;
-    
-    if(strcmp(hash, pkg->sha256) != 0)
+    if (!((file == NULL) || (file[0] == '\0'))) 
     {
-        msg(FATAL, "Hash mismatch, aborting");
+        dbg(1, "Checking file %s, if this is not the package tarball, the author of this line is stupid", file);
+
+        sprintf(exec_cmd_2, "( cd %s && sha256sum %s | cut -d ' ' -f 1)", getenv("SOVIET_MAKE_DIR"), file);
+        dbg(1, "Executing  %s to check the hash", exec_cmd_2);
+        char* hash = exec(exec_cmd_2);
+
+        if (!((hash == NULL) || (hash[0] == '\0'))) 
+        {
+            dbg(1, "Hash is %s", pkg->sha256);
+            dbg(1, "Got %s", hash);
+
+            hash[strcspn(hash, "\n")] = 0;
+            
+            if(strcmp(hash, pkg->sha256) != 0)
+            {
+                msg(FATAL, "Hash mismatch, aborting, use --insecure? (not present atm)");
+            }
+        }
     }
+    else
+    {
+        msg(FATAL, "Could not verify the file's hash, might be the package fault, use --insecure? (not present atm)");
+    }
+
+
+
+    
 
     free(exec_cmd_1);
     free(exec_cmd_2);
