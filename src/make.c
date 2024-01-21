@@ -13,6 +13,11 @@
 Accepts:
 - char* package_dir: Path to the package directory.
 - struct package* pkg: Pointer to the package structure.
+- int skip_checksum: a int value to determine if the checksum should be bypassed
+   - Valid Values for skip_checksum:
+     -  0: To not skip the checksum
+     -  1: To skip the checksum
+     -  Any other value will result to the checksum not being bypassed
 
 Returns:
 - int: An integer indicating the result of the build and installation process.
@@ -21,15 +26,15 @@ Returns:
   - -2: Failed to install the package.
   - -3: No install command found.
 */
-int make(char* package_dir, struct package* pkg) {
+int make(char* package_dir, struct package* pkg, int skip_checksum) {
     char* build_dir = getenv("SOVIET_BUILD_DIR");
     char* make_dir = getenv("SOVIET_MAKE_DIR");
 
     char* cmd_params;
-    if (QUIET) { 
-        cmd_params = "&> /dev/null"; 
-    } else { 
-        cmd_params = ""; 
+    if (QUIET) {
+        cmd_params = "&> /dev/null";
+    } else {
+        cmd_params = "";
     }
 
     // Set environment variables for building
@@ -58,54 +63,55 @@ int make(char* package_dir, struct package* pkg) {
         }
     }
 
-    if ((pkg->sha256 == NULL) || (pkg->sha256[0] == '\0')) 
+    if ((pkg->sha256 == NULL) || (pkg->sha256[0] == '\0'))
     {
         pkg->sha256 = "Not provided";
     }
 
-    // Check the hash, abort if mismatch
-    char* exec_cmd_1 = calloc(MAX_PATH, sizeof(char));
-    char* exec_cmd_2 = calloc(MAX_PATH, sizeof(char));
+    // Check if the checksum shall be bypassed
+    if (skip_checksum != 1){
+      // Check the hash, abort if mismatch
+      char* exec_cmd_1 = calloc(MAX_PATH, sizeof(char));
+      char* exec_cmd_2 = calloc(MAX_PATH, sizeof(char));
 
-    sprintf(exec_cmd_1, "( cd %s && find . -maxdepth 1 -type f  | cut -c3- ) ", getenv("SOVIET_MAKE_DIR"));
-    dbg(1, "Executing  %s to search for package tarball", exec_cmd_1);
-    char* file = exec(exec_cmd_1);
-    
-    file[strcspn(file, "\n")] = 0;
+      sprintf(exec_cmd_1, "( cd %s && find . -maxdepth 1 -type f  | cut -c3- ) ", getenv("SOVIET_MAKE_DIR"));
+      dbg(1, "Executing  %s to search for package tarball", exec_cmd_1);
+      char* file = exec(exec_cmd_1);
 
-    if (!((file == NULL) || (file[0] == '\0'))) 
-    {
+      file[strcspn(file, "\n")] = 0;
+
+      if (!((file == NULL) || (file[0] == '\0')))
+        {
         dbg(1, "Checking file %s, if this is not the package tarball, the author of this line is stupid", file);
 
         sprintf(exec_cmd_2, "( cd %s && sha256sum %s | cut -d ' ' -f 1)", getenv("SOVIET_MAKE_DIR"), file);
         dbg(1, "Executing  %s to check the hash", exec_cmd_2);
         char* hash = exec(exec_cmd_2);
 
-        if (!((hash == NULL) || (hash[0] == '\0'))) 
-        {
-            dbg(1, "Hash is %s", pkg->sha256);
-            dbg(1, "Got %s", hash);
-
-            hash[strcspn(hash, "\n")] = 0;
-            
-            if(strcmp(hash, pkg->sha256) != 0)
+        if (!((hash == NULL) || (hash[0] == '\0')))
             {
-                msg(FATAL, "Hash mismatch, aborting, use --insecure? (not present atm)");
-            }
+          dbg(1, "Hash is %s", pkg->sha256);
+          dbg(1, "Got %s", hash);
+
+          hash[strcspn(hash, "\n")] = 0;
+
+
+          if(strcmp(hash, pkg->sha256) != 0)
+                {
+            msg(FATAL, "Hash mismatch, aborting, use --no-checksum? (not present atm)");
+          }
         }
+      }
+        else
+        {
+        msg(FATAL, "Could not verify the file's hash, might be the package fault, use --no-checksum? (not present atm)");
+      }
+
+      free(exec_cmd_1);
+      free(exec_cmd_2);
+    } else {
+      msg(WARNING, "The Checksum is being skipped");
     }
-    else
-    {
-        msg(FATAL, "Could not verify the file's hash, might be the package fault, use --insecure? (not present atm)");
-    }
-
-
-
-    
-
-    free(exec_cmd_1);
-    free(exec_cmd_2);
-
     // Run 'prepare' command
     if (pkg->info.prepare != NULL && strlen(pkg->info.prepare) > 0) {
         char prepare_cmd[64 + strlen(package_dir) + strlen(pkg->info.prepare) + strlen(cmd_params)];
