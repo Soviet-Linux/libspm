@@ -118,7 +118,7 @@ int upgrade()
                 return 1;
                 }
 
-                f_install_package_source(local->name, 0, format);
+                f_install_package_source(local->name, 0, format, 0);
                 new_version_installed = 1;
             }
         }

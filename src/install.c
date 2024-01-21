@@ -16,14 +16,15 @@
 Accepts:
 - const char* spm_path: Path to the package archive.
 - int as_dep: Flag indicating if the package is a dependency.
+- int skip_checksum: Flag Indicating if the checksum shall be passed. Valid Values: 0: To not skip the checksum 1: To skip the checksum. Any other value will result in the checksum not being skipped
 
 Returns:
 - int: An integer indicating the result of the installation.
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int install_package_source(const char* spm_path, int as_dep) {
-    return f_install_package_source(spm_path, as_dep, NULL);
+int install_package_source(const char* spm_path, int as_dep, int skip_checksum) {
+    return f_install_package_source(spm_path, as_dep, skip_checksum, NULL);
 }
 
 // Function to install a package from source with a specific format
@@ -31,6 +32,7 @@ int install_package_source(const char* spm_path, int as_dep) {
 Accepts:
 - const char* spm_path: Path to the package archive.
 - int as_dep: Flag indicating if the package is a dependency.
+- int skip_checksum: Flag Indicating if the checksum shall be passed. Valid Values: 0: To not skip the checksum 1: To skip the checksum. Any other value will result in the checksum not being skipped
 - const char* format: Specific package format (optional).
 
 Returns:
@@ -38,7 +40,7 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int f_install_package_source(const char* spm_path, int as_dep, const char* format) {
+int f_install_package_source(const char* spm_path, int as_dep, int skip_checksum, const char* format) {
     // Check if spm_path is NULL
     if (spm_path == NULL) {
         msg(ERROR, "spm_path is NULL");
@@ -88,7 +90,7 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
     
     // Build the package
     dbg(1, "Making %s", pkg.name);
-    if (make(legacy_dir, &pkg) != 0) {
+    if (make(legacy_dir, &pkg, skip_checksum) != 0) {
         msg(ERROR, "Failed to make %s", pkg.name);
         return -1;
     }
