@@ -200,7 +200,7 @@ Returns: None
 */
 void move_binaries(char** locations,long loc_size);
 // build a package from source
-int make (char* package_dir,struct package* pkg);
+int make (char* package_dir,struct package* pkg, int skip_checksum);
 // execute post install scripts
 int exec_special(const char* cmd,const char* package_dir);
 
