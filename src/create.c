@@ -60,7 +60,7 @@ int f_create_binary_from_source(const char* src_path, const char* bin_path, cons
     dbg(1, "legacy dir: %s", legacy_dir);
 
     // Make the package
-    if (make(legacy_dir, &pkg) != 0) {
+    if (make(legacy_dir, &pkg, 0) != 0) {
         msg(FATAL, "Make failed");
     }
     dbg(1, "Make done - %s", pkg.name);
