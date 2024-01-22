@@ -55,7 +55,7 @@ all: $(BINDIR)/$(LIBOUT)
 	@echo "BUILD SUCESSFUL"
 
 $(BINDIR)/$(LIBOUT): $(OBJECTS)
-	@$(CC) $(OBJECTS) $(LIBS) $(LFLAGS) -o $@ -shared
+	@$(CC) $(OBJECTS) $(LIBS) $(LFLAGS) -o $@ -shared --sysroot=$(DESTDIR)/
 	@echo "Linking complete!"
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
@@ -87,7 +87,7 @@ check: test check-data check-ecmp
 
 
 direct:
-	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)
+	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g --sysroot=$(DESTDIR)/ -shared -fPIC -o $(LIBOUT)
 
 formats:
 	@echo "Building formats..."
@@ -96,7 +96,7 @@ formats:
 	for i in $(FMT_DIR)/*; do \
 		echo "Building $$i"; \
 		if [ -d $$i ]; then \
-			$(CC) $(CFLAGS) -shared -fPIC $$i/*.c -o $(BINDIR)/plugins/$$(basename $$i).so; \
+			$(CC) $(CFLAGS) -shared --sysroot=$(DESTDIR)/ -fPIC $$i/*.c -o $(BINDIR)/plugins/$$(basename $$i).so; \
 		fi; \
 	done
 
