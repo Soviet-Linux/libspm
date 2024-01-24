@@ -16,6 +16,8 @@ extern bool TESTING;
 extern bool OVERWRITE;
 // enable verbose mode
 extern bool QUIET;
+// Flag for skipping checksum validation
+extern bool INSECURE;
 
 
 extern sqlite3* INSTALLED_DB;

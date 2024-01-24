@@ -18,6 +18,9 @@ bool OVERWRITE = false;
 // Flag for quiet mode (no verbose output)
 bool QUIET = true;
 
+// Flag for skipping checksum validation
+bool INSECURE = false;
+
 // Database handles for installed and all packages
 sqlite3* INSTALLED_DB = NULL;
 sqlite3* ALL_DB = NULL;
