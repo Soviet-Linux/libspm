@@ -53,7 +53,7 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
             return 1;
             }
 
-            f_install_package_source(pkg->name, 0, 0, format);
+            f_install_package_source(pkg->name, 0, format);
 
             remove(pkg->name);
 

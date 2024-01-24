@@ -74,7 +74,6 @@ float version();
 Accepts:
 - const char* spm_path: Path to the package archive.
 - int as_dep: Flag indicating if the package is a dependency.
-- int skip_checksum: Flag Indicating if the checksum shall be passed. Valid Values: 0: To not skip the checksum 1: To skip the checksum. Any other value will result in the checksum not being skipped
 - const char* format: Specific package format (optional).
 
 Returns:
@@ -82,14 +81,13 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int f_install_package_source(const char* spm_path,int as_dep,int skip_checksum,const char* format);
+int f_install_package_source(const char* spm_path,int as_dep,const char* format);
 
 // Function to install a package from source with a specific format
 /*
 Accepts:
 - const char* spm_path: Path to the package archive.
 - int as_dep: Flag indicating if the package is a dependency.
-- int skip_checksum: Flag Indicating if the checksum shall be passed. Valid Values: 0: To not skip the checksum 1: To skip the checksum. Any other value will result in the checksum not being skipped
 - const char* format: Specific package format (optional).
 
 Returns:
@@ -97,7 +95,7 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int install_package_source(const char* spm_path,int as_dep,int skip_checksum);
+int install_package_source(const char* spm_path,int as_dep);
 int f_install_package_binary(const char* spm_path,int as_dep,const char* format);
 
 // Function to install a package from a binary archive
@@ -200,7 +198,7 @@ Returns: None
 */
 void move_binaries(char** locations,long loc_size);
 // build a package from source
-int make (char* package_dir,struct package* pkg, int skip_checksum);
+int make (char* package_dir,struct package* pkg);
 // execute post install scripts
 int exec_special(const char* cmd,const char* package_dir);
 

@@ -87,7 +87,7 @@ int main(int argc, char const *argv[])
     {
         dbg(1, "installing");
         init();
-        install_package_source(argv[2], 0,0);
+        install_package_source(argv[2], 0);
         printf("Leaks: %d\n", check_leaks());
         return 0;
     } else if (strcmp(argv[1], "uninstall") == 0) {
@@ -187,7 +187,7 @@ int test_make(char* spm_path) {
 
     dbg(1,"Legacy dir: %s",legacy_dir);
 
-    make(legacy_dir,&p,1);
+    make(legacy_dir,&p);
 
     dbg(1,"Getting locations for %s",p.name);
     p.locationsCount = get_locations(&p.locations,getenv("SOVIET_BUILD_DIR"));
