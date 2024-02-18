@@ -35,11 +35,8 @@ struct package
     char** dependencies;
     int dependenciesCount;
 
-    char** makedependencies;
-    int makedependenciesCount;
-
-    char** optionaldependencies;
-    int optionaldependenciesCount;
+    char** optional;
+    int optionalCount;
 
     char ** locations;
     int locationsCount;
@@ -56,6 +53,7 @@ int search(char* in);
 int update();
 int upgrade();
 void create_links(char build_loc[4096], char dest_loc[4096]);
+int check_optional_dependencies(char ** dependencies,int dependenciesCount);
 //end test
 
 // package info

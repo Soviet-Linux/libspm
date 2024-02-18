@@ -55,8 +55,7 @@ int open(char* path,struct package* pkg)
 		{parseraw,&pkg->info.special,NULL},
 
 		{parsenl,&pkg->dependencies,&pkg->dependenciesCount},
-		{parsenl,&pkg->makedependencies,&pkg->makedependenciesCount},
-		{parsenl,&pkg->optionaldependencies,&pkg->optionaldependenciesCount},
+		{parsenl,&pkg->optional,&pkg->optionalCount},
 		{parsenl,&pkg->locations,&pkg->locationsCount},
 
 	};
@@ -71,8 +70,7 @@ int open(char* path,struct package* pkg)
 		{"special",parsers[5]},
 
 		{"dependencies",parsers[6]},
-		{"makedependencies",parsers[7]},
-		{"optionaldependencies",parsers[8]},
+		{"optional",parsers[7]},
 		{"locations",parsers[9]},
 		{NULL,NULL}
 	};
@@ -258,8 +256,7 @@ int create(const char* path,struct package* pkg)
 		{"special",pkg->info.special,NULL},
 
 		{"dependencies",pkg->dependencies,&pkg->dependenciesCount},
-		{"makedependencies",pkg->makedependencies,&pkg->makedependenciesCount},
-		{"optionaldependencies",pkg->optionaldependencies,&pkg->optionaldependenciesCount},
+		{"optional",pkg->optional,&pkg->optionalCount},
 
 		{"locations",pkg->locations,&pkg->locationsCount},
 	};

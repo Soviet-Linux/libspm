@@ -29,7 +29,7 @@ int open_pkg(const char* path, struct package* pkg, const char* format) {
     memset(pkg, 0, sizeof(struct package));
 
     // Print make dependencies count
-    dbg(3, "make dependencies count: %d", pkg->makedependenciesCount);
+    dbg(3, "make dependencies count: %d", pkg->optionalCount);
 
     // Check if the file exists
     if (access(path, F_OK) != 0) {
