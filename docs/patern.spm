@@ -6,8 +6,7 @@
     "maintainer" : "<pkd , theholy, trevor...>",
     "description" : "a cool little package",
     "dependencies" : ["<a dependencie>","<other dependencie>"],
-    "makedependencies" : ["<a dependencie>","<other dependencie>"],
-    "optionaldependencies" : ["<a dependencie>","<other dependencie>"],
+    "optional" : ["<a dependencie>","<other dependencie>"],
     "url" : "https://website.com/archive.tar.gz",
     "info" : 
     {

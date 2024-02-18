@@ -57,27 +57,85 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
 
             remove(pkg->name);
 
-            /*
-            TODO: make gud 
-            char dep_path[PATH_MAX];
-            snprintf(dep_path, PATH_MAX, "/tmp/%s-dep.tmp", dependencies[i]);
+        } else {
+            dbg(3, "Dependency %s is installed", dependencies[i]);
+        }
+    }
 
-            struct package dep_pkg = {0};
-            dep_pkg.name = dependencies[i];
+    return 0;
+}
 
-            // Get the dependency
-            char *dep_format = get(&dep_pkg, dep_path);
 
-            if (dep_format == NULL) {
-                msg(ERROR, "Failed to get dependency %s", dependencies[i]);
-                return -1;
+// Function to check if all optional dependencies of a package are installed
+/*
+Accepts:
+- char **dependencies: An array of dependency names.
+- int dependenciesCount: The number of dependencies in the array.
+
+Returns:
+- int: An integer indicating the result of dependency checking.
+  - 0: All dependencies are installed.
+  - -1: An error occurred during dependency checking.
+*/
+int check_optional_dependencies(char **dependencies, int dependenciesCount) {
+    dbg(1, "Checking optional dependencies...");
+
+    for (int i = 0; i < dependenciesCount; i++) {
+        dbg(3, "Checking if %s is installed", dependencies[i]);
+        if (!is_installed(dependencies[i])) {
+            dbg(3, "Dependency %s is not installed", dependencies[i]);
+
+            msg(INFO, "Do you want to download optional package %s, y/N", dependencies[i]);
+
+            int k = 0;
+
+            char* str = calloc(2, sizeof(char));
+            char* res = fgets(str, 2, stdin);
+
+            while (str[k] != '\n' && res[k] != '\0')
+            {
+                k++;
             }
-            */
-            // Install the dependency
-            /*
-                TODO: Find a clever way to implement automatic dependency installing
-                In the meantime, I'll implement no dependency checking.
-            */
+
+            if (str[k] == '\n')
+            {
+                str[k] = '\0';
+            }
+
+            if(strcmp(str, "Y") == 0 || strcmp(str, "y") == 0)
+            {
+                // TODO: We need to install the dependency
+                msg(INFO, "Installing %s", dependencies[i]);
+
+                // Check if the dependency is in the queue
+                int in_queue = 0;
+                for (int j = 0; j < QUEUE_COUNT; j++) {
+                    if (strcmp(PACKAGE_QUEUE[j], dependencies[i]) == 0) {
+                        in_queue = 1;
+                        break;
+                    }
+                }
+
+                if (in_queue) {
+                    dbg(1, "Package %s is already in the queue", dependencies[i]);
+                    continue;
+                }
+
+                struct package* pkg = calloc(1, sizeof(struct package));
+                pkg->name = dependencies[i];
+
+                char* format = get(pkg, pkg->name);
+
+                if (format == NULL) {
+                msg(ERROR, "Failed to download package %s", pkg->name);
+                return 1;
+                }
+
+                f_install_package_source(pkg->name, 0, format);
+
+                remove(pkg->name);
+            }
+
         } else {
             dbg(3, "Dependency %s is installed", dependencies[i]);
         }

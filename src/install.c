@@ -76,10 +76,10 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
         check_dependencies(pkg.dependencies, pkg.dependenciesCount);
     }
 
-    // Checking makedeps
-    if (pkg.makedependencies != NULL && pkg.makedependenciesCount > 0 && strlen(pkg.makedependencies[0]) > 0) {
-        dbg(3, "Checking makedeps : %s", pkg.makedependencies);
-        check_dependencies(pkg.makedependencies, pkg.makedependenciesCount);
+    // Checking optional dependencies
+    if (pkg.optional != NULL && pkg.optionalCount > 0 && strlen(pkg.optional[0]) > 0) {
+        dbg(3, "Checking optional dependencies : %s", pkg.optional);
+        check_optional_dependencies(pkg.optional, pkg.optionalCount);
     }
 
     // Legacy directory path for compatibility
@@ -339,13 +339,13 @@ int free_pkg(struct package* pkg) {
         if (*pkg->dependencies) free(*pkg->dependencies);
         free(pkg->dependencies);
     }
-    if (pkg->makedependencies) {
-        if (*pkg->makedependencies) free(*pkg->makedependencies);
-        free(pkg->makedependencies);
+    if (pkg->optional) {
+        if (*pkg->optional) free(*pkg->optional);
+        free(pkg->optional);
     }
-    if (pkg->makedependencies) {
-        if (*pkg->makedependencies) free(*pkg->makedependencies);
-        free(pkg->makedependencies);
+    if (pkg->optional) {
+        if (*pkg->optional) free(*pkg->optional);
+        free(pkg->optional);
     }
     return 0;
 }
