@@ -107,7 +107,14 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
             }
             else
             {
-                sprintf(str, USER_CHOISE[0]);
+                if(sizeof(USER_CHOISE[0]) == sizeof(str))
+                {
+                    sprintf(str, USER_CHOISE[0]);
+                }
+                else
+                {
+                    msg(FATAL, "something somwhere went wrong");
+                }
             }
 
             if((strcmp(str, "Y") == 0 || strcmp(str, "y") == 0))
