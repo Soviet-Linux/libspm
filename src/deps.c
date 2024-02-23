@@ -150,6 +150,10 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
 
                 remove(pkg->name);
             }
+            else
+            {
+                msg(INFO, "Skipping %s", dependencies[i]);
+            }
 
         } else {
             dbg(3, "Dependency %s is installed", dependencies[i]);
