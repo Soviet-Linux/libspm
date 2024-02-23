@@ -85,24 +85,39 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
         if (!is_installed(dependencies[i])) {
             dbg(3, "Dependency %s is not installed", dependencies[i]);
 
-            msg(INFO, "Do you want to download optional package %s, y/N", dependencies[i]);
-
-            int k = 0;
 
             char* str = calloc(2, sizeof(char));
-            char* res = fgets(str, 2, stdin);
 
-            while (str[k] != '\n' && str[k] != '\0')
+            msg(INFO, "Do you want to download optional package %s, y/N", dependencies[i]);
+            if(OVERWRITE_CHOISE != true)
             {
-                k++;
+                char* res = fgets(str, 2, stdin);
+
+                int k = 0;
+
+                while (str[k] != '\n' && str[k] != '\0')
+                {
+                    k++;
+                }
+
+                if (str[k] == '\n')
+                {
+                    str[k] = '\0';
+                }
+            }
+            else
+            {
+                if(sizeof(USER_CHOISE[0]) == sizeof(str))
+                {
+                    sprintf(str, USER_CHOISE[0]);
+                }
+                else
+                {
+                    msg(FATAL, "something somwhere went wrong");
+                }
             }
 
-            if (str[k] == '\n')
-            {
-                str[k] = '\0';
-            }
-
-            if(strcmp(str, "Y") == 0 || strcmp(str, "y") == 0)
+            if((strcmp(str, "Y") == 0 || strcmp(str, "y") == 0))
             {
                 // TODO: We need to install the dependency
                 msg(INFO, "Installing %s", dependencies[i]);
