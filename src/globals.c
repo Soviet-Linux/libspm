@@ -21,6 +21,12 @@ bool QUIET = true;
 // Flag for skipping checksum validation
 bool INSECURE = false;
 
+// Flag indicating that a user passed either Y or N to be used as default
+bool OVERWRITE_CHOISE = false;
+
+// Choise for passing N or Y to a prompt by default
+char* USER_CHOISE[2];
+
 // Database handles for installed and all packages
 sqlite3* INSTALLED_DB = NULL;
 sqlite3* ALL_DB = NULL;
