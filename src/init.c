@@ -10,12 +10,11 @@
 
 // Function to initialize the Soviet Package Manager
 void init() {
-    msg(INFO, "initializing");
     char* debug_env = getenv("SOVIET_DEBUG");
     // Set the debugging level based on the environment variable
     dbg(3, "DEBUG: %s", debug_env);
     DEBUG += debug_env ? atoi(debug_env) : 0;
-    dbg(1, "Initializing");
+    dbg(3, "Initializing");
 
     // Set the configuration file path
     setenv("SOVIET_CONFIG_FILE", "/etc/cccp.conf", 0);

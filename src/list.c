@@ -13,7 +13,7 @@
 //will print the content of INSTALLED_DB
 int list_installed()
 {
-    msg(INFO, "listing installed packages from %s", getenv("INSTALLED_DB"));
+    dbg(2, "listing installed packages from %s", getenv("INSTALLED_DB"));
 
     //shame that print_all_data uses msg, this could have been so clean
     sqlite3_stmt *stmt;
@@ -40,7 +40,7 @@ int list_installed()
         return -1;
     }
     
-    msg(INFO, "%d packages installed", count_installed());
+    dbg(2, "%d packages installed", count_installed());
     return 0;
 }
 
