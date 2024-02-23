@@ -92,7 +92,7 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
             char* str = calloc(2, sizeof(char));
             char* res = fgets(str, 2, stdin);
 
-            while (str[k] != '\n' && res[k] != '\0')
+            while (str[k] != '\n' && str[k] != '\0')
             {
                 k++;
             }
@@ -134,6 +134,10 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
                 f_install_package_source(pkg->name, 0, format);
 
                 remove(pkg->name);
+            }
+            else
+            {
+                msg(INFO, "Skipping %s", dependencies[i]);
             }
 
         } else {
