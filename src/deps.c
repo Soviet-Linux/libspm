@@ -159,6 +159,7 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
             {
                 msg(INFO, "Skipping %s", dependencies[i]);
             }
+            free(str);
 
         } else {
             dbg(3, "Dependency %s is installed", dependencies[i]);
