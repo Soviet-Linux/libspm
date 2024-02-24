@@ -71,7 +71,7 @@ int open(char* path,struct package* pkg)
 
 		{"dependencies",parsers[6]},
 		{"optional",parsers[7]},
-		{"locations",parsers[9]},
+		{"locations",parsers[8]},
 		{NULL,NULL}
 	};
 	void* infodict[][2] = {

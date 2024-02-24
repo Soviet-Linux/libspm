@@ -78,7 +78,7 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
 
     // Checking optional dependencies
     if (pkg.optional != NULL && pkg.optionalCount > 0 && strlen(pkg.optional[0]) > 0) {
-        dbg(3, "Checking optional dependencies : %s", pkg.optional);
+        dbg(1, "Checking optional dependencies...");
         check_optional_dependencies(pkg.optional, pkg.optionalCount);
     }
 
