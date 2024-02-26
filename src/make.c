@@ -37,6 +37,65 @@ int make(char* package_dir, struct package* pkg) {
     setenv("NAME", pkg->name, 1);
     setenv("VERSION", pkg->version, 1);
 
+    // Get user input
+
+    for (int i = 0; i < pkg->inputsCount; i++) {
+
+        msg(INFO, "%s", pkg->inputs[i]);
+
+        char* str = calloc(MAX_PATH, sizeof(char));
+
+        if(OVERWRITE_CHOISE != true)
+        {
+            char* res = fgets(str, MAX_PATH-1, stdin);
+
+            if ( strchr(str, '\n') == NULL )
+            {
+                while ((getchar()) != '\n');
+            }
+
+            int k = 0;
+
+            while (str[k] != '\n' && str[k] != '\0')
+            {
+                // This is awful, probably even worse than the shit i did in link.c, oh well.
+                if(str[k] == '~' || str[k] == '`' || str[k] == '#' || str[k] == '$' || str[k] == '&' || str[k] == '*' || str[k] == '(' || str[k] == ')' || str[k] == '\\' || str[k] == '|' || str[k] == '[' || str[k] == ']' || str[k] == '{' || str[k] == '}' || str[k] == ';' || str[k] == '\'' || str[k] == '<' || str[k] == '>' || str[k] == '?' || str[k] == '!')
+                {
+                    str[k] = ' ';
+                }
+                k++;
+            }
+
+            if (str[k] == '\n')
+            {
+                str[k] = '\0';
+            }
+
+
+            char* in = calloc(128, sizeof(char));
+            sprintf(in, "INPUT_%d", i);
+            setenv(in, str, 0);
+            free(in);
+
+        }
+        else
+        {
+            if(sizeof(USER_CHOISE[0]) <= sizeof(str))
+            {
+                sprintf(str, USER_CHOISE[0]);
+                char* in = calloc(128, sizeof(char));
+                sprintf(in, "INPUT_%d", i);
+                setenv(in, str, 0);
+                free(in);
+            }
+            else
+            {
+                msg(FATAL, "something somwhere went wrong");
+            }
+        }
+        free(str);
+    }
+
     // Extract URL from the package
     char excmd[64 + strlen(pkg->url)];
     sprintf(excmd, "echo -n %s", pkg->url);
