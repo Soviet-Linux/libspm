@@ -44,36 +44,37 @@ int open(char* path,struct package* pkg)
         return 1;
 	}
 	
-
 	void* parsers[][3] = {
-		{parseinfo,pkg,NULL},
+        {parseinfo,pkg,NULL},
 
-		{parseraw,&pkg->info.make,NULL},
-		{parseraw,&pkg->info.install,NULL},
-		{parseraw,&pkg->info.download,NULL},
-		{parseraw,&pkg->info.prepare,NULL},
-		{parseraw,&pkg->info.special,NULL},
+        {parseraw,&pkg->info.make,NULL},
+        {parseraw,&pkg->info.install,NULL},
+        {parseraw,&pkg->info.download,NULL},
+        {parseraw,&pkg->info.prepare,NULL},
+        {parseraw,&pkg->info.special,NULL},
 
-		{parsenl,&pkg->dependencies,&pkg->dependenciesCount},
-		{parsenl,&pkg->optional,&pkg->optionalCount},
-		{parsenl,&pkg->locations,&pkg->locationsCount},
+        {parsenl,&pkg->dependencies,&pkg->dependenciesCount},
+        {parsenl,&pkg->optional,&pkg->optionalCount},
+        {parsenl,&pkg->inputs,&pkg->inputsCount},
+        {parsenl,&pkg->locations,&pkg->locationsCount}
+    };
 
-	};
+    void* pairs[][2] = {
+        {"info",parsers[0]},
 
-	void* pairs[][2] = {
-		{"info",parsers[0]},
+        {"make",parsers[1]},
+        {"install",parsers[2]},
+        {"download",parsers[3]},
+        {"prepare",parsers[4]},
+        {"special",parsers[5]},
 
-		{"make",parsers[1]},
-		{"install",parsers[2]},
-		{"download",parsers[3]},
-		{"prepare",parsers[4]},
-		{"special",parsers[5]},
+        {"dependencies",parsers[6]},
+        {"optional",parsers[7]},
+        {"inputs",parsers[8]},
+        {"locations",parsers[9]},
+        {NULL,NULL}
+    };
 
-		{"dependencies",parsers[6]},
-		{"optional",parsers[7]},
-		{"locations",parsers[8]},
-		{NULL,NULL}
-	};
 	void* infodict[][2] = {
 		{"name",&pkg->name},
 		{"version",&pkg->version},

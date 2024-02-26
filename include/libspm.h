@@ -41,6 +41,9 @@ struct package
     char ** locations;
     int locationsCount;
 
+    char ** inputs;
+    int inputsCount;
+
     // cmds
     struct cmd info;
 
