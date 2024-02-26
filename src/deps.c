@@ -93,7 +93,7 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
             {
                 char* res = fgets(str, 2, stdin);
 
-                if(str[0]!= '\n')
+                if ( strchr(str, '\n') == NULL )
                 {
                     while ((getchar()) != '\n');
                 }
