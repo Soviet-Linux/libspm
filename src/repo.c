@@ -50,7 +50,9 @@ Repos* read_sources_list(const char* filename, int* num_repos) {
 void clone_repositories(Repos* repositories, int num_repos, const char* clone_directory) {
     char clone_command[MAX_URL_LENGTH + 150]; // Increased to accommodate directory path
 
+    printf("Cloning repositories:\n");
     for (int i = 0; i < num_repos; i++) {
+        printf("Repository Name: %s, URL: %s\n", repositories[i].name, repositories[i].url);
         char destination[MAX_URL_LENGTH + 50];
         snprintf(destination, sizeof(destination), "%s/%s", clone_directory, repositories[i].name);
 
@@ -61,6 +63,7 @@ void clone_repositories(Repos* repositories, int num_repos, const char* clone_di
             exit(EXIT_FAILURE);
         } else if (pid == 0) {
             sprintf(clone_command, "git clone %s %s", repositories[i].url, destination);
+            printf("Command: %s\n", clone_command);
             if (system(clone_command) != 0) {
                 fprintf(stderr, "Error cloning repository '%s'\n", repositories[i].name);
                 exit(EXIT_FAILURE);

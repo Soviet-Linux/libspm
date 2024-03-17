@@ -14,7 +14,6 @@
 
 
 #define STATIC
-
 extern int open_spm(char* path,struct package* pkg);
 extern int open_ecmp(char* path,struct package* pkg);
 
@@ -42,7 +41,6 @@ int test_config();
 int test_make(char* spm_path);
 
 char* assemble(char** list,int count);
-
 int main(int argc, char const *argv[])
 {
     dbg(1, "started spm-test");
@@ -58,7 +56,7 @@ int main(int argc, char const *argv[])
     DEBUG_UNIT = NULL;
 
    if (argc < 2 || strcmp(argv[1], "help") == 0) {
-        printf("Usage: %s [data|ecmp|all|make|install|uninstall|move|help|split|config|get]\n", argv[0]);
+        printf("Usage: %s [data|ecmp|all|make|install|uninstall|move|help|split|config|get|update]\n", argv[0]);
         return 0;
     }
 
@@ -82,9 +80,7 @@ int main(int argc, char const *argv[])
         EXIT += test_make(argv[2]);
         printf("Leaks: %d\n", check_leaks());
         return EXIT;
-    }
-    else if (strcmp(argv[1],"install") == 0)
-    {
+    } else if (strcmp(argv[1],"install") == 0) {
         dbg(1, "installing");
         init();
         install_package_source(argv[2], 0);
@@ -102,12 +98,14 @@ int main(int argc, char const *argv[])
         return test_config();
     } else if (strcmp(argv[1], "get") == 0) {
         return test_get();
+    } else if (strcmp(argv[1], "update") == 0) {
+        // Call the update function
+        update();
+        return 0;
     } else {
         printf("Invalid argument\n");
         return 1;
     }
-
-
 }
 
 int test_move()
@@ -434,3 +432,27 @@ char* assemble(char** list,int count)
     strcat(string,list[i]);
     return string;
 }
+
+int update() {
+    const char* filename = "dev/test.list"; // Change this to your input file
+    const char* clone_directory = "/tmp/repos"; // Change this to your desired directory
+
+    printf("Reading repositories from file: %s\n", filename);
+    int num_repos;
+    Repos* repositories = read_sources_list(filename, &num_repos);
+    if (repositories == NULL) {
+        fprintf(stderr, "Failed to read repositories from file.\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("Cloning repositories to directory: %s\n", clone_directory);
+    clone_repositories(repositories, num_repos, clone_directory);
+
+    // Clean up
+    free(repositories);
+
+    printf("Update completed successfully.\n");
+
+    return EXIT_SUCCESS;
+}
+
