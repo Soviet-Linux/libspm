@@ -29,7 +29,7 @@ SDIR = src
 
 
 
-CFLAGS = -Wall -g -fPIC -O2 -Wextra -L./bin -Iinclude
+CFLAGS = -Wno-error -Wno-format-security -g -fPIC -O2 -L./bin -Iinclude
 
 LIBS = lib/* -lcurl -lsqlite3 -lm 
 

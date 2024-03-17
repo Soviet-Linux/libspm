@@ -393,6 +393,15 @@ Returns:
 */
 int check_dependencies(char ** dependencies,int dependenciesCount);
 
+#define MAX_URL_LENGTH 100
+
+typedef struct {
+    char name[MAX_URL_LENGTH];
+    char url[MAX_URL_LENGTH];
+} Repos;
+
+Repos* read_sources_list(const char* filename, int* num_repos);
+void clone_repositories(Repos* repositories, int num_repos, const char* clone_directory);
 
 
 
