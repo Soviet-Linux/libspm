@@ -38,7 +38,7 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int f_install_package_source(const char* spm_path, int as_dep, const char* format) {
+int f_install_package_source(const char* spm_path, int as_dep, const char* repo) {
     // Check if spm_path is NULL
     if (spm_path == NULL) {
         msg(ERROR, "spm_path is NULL");
@@ -56,6 +56,8 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
 
     // Initialize the package structure
     struct package pkg = {0};
+
+    char* format = "ecmp";
 
     // Attempt to open the package archive
     if (open_pkg(spm_path, &pkg, format) != 0) {
@@ -128,15 +130,9 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
 
     // Format the path using sprintf
     char file_path[MAX_PATH];
-    sprintf(file_path, "%s/%s.%s", getenv("SOVIET_SPM_DIR"), pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
+    sprintf(file_path, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"), repo, pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
     create_pkg(file_path, &pkg, NULL);
 
-    // Store package data in the installed database
-    if (store_data_installed(INSTALLED_DB, &pkg, as_dep) != 0) {
-        msg(ERROR, "Failed to store data in %s", INSTALLED_DB);
-        msg(ERROR, "!! Package %s potentially corrupted !!", pkg.name);
-        return -1;
-    }
     dbg(1, "Package %s installed", pkg.name);
 
     // Clean up
@@ -231,15 +227,9 @@ int install_package_binary(const char* archivePath, int as_dep) {
 
     // Format the path using sprintf
     char file_path[MAX_PATH];
-    sprintf(file_path, "%s/%s.%s", spm_dir, pkg.name, default_format);
+    sprintf(file_path, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"), repo, pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
     create_pkg(file_path, &pkg, NULL);
 
-    // Store package data in the installed database
-    if (store_data_installed(INSTALLED_DB, &pkg, as_dep) != 0) {
-        msg(ERROR, "Failed to store data in %s", INSTALLED_DB);
-        msg(ERROR, "!! Package %s potentially corrupted !!", pkg.name);
-        return -1;
-    }
     dbg(1, "Package %s installed", pkg.name);
 
     // Clean up
