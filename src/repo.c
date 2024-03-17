@@ -37,7 +37,7 @@ Repos* read_sources_list(const char* filename, int* num_repos) {
     *num_repos = 0;
     char line[MAX_URL_LENGTH * 2];
     while (fgets(line, sizeof(line), file) != NULL) {
-        if (sscanf(line, "%s = %s", repositories[*num_repos].name, repositories[*num_repos].url) == 2) {
+        if (sscanf(line, "%99s = %99s", repositories[*num_repos].name, repositories[*num_repos].url) == 2) {
             (*num_repos)++;
         }
     }
@@ -52,7 +52,7 @@ void clone_repositories(Repos* repositories, int num_repos, const char* clone_di
 
     for (int i = 0; i < num_repos; i++) {
         char destination[MAX_URL_LENGTH + 50];
-        sprintf(destination, "%s/%s", clone_directory, repositories[i].name);
+        snprintf(destination, sizeof(destination), "%s/%s", clone_directory, repositories[i].name);
 
         pid_t pid = fork();
 
@@ -61,17 +61,20 @@ void clone_repositories(Repos* repositories, int num_repos, const char* clone_di
             exit(EXIT_FAILURE);
         } else if (pid == 0) {
             sprintf(clone_command, "git clone %s %s", repositories[i].url, destination);
-            if (system(clone_command) == -1) {
-                perror("Error cloning repository");
+            if (system(clone_command) != 0) {
+                fprintf(stderr, "Error cloning repository '%s'\n", repositories[i].name);
                 exit(EXIT_FAILURE);
             }
             exit(EXIT_SUCCESS);
-        } else {
-            int status;
-            waitpid(pid, &status, 0);
-            if (WIFEXITED(status) && WEXITSTATUS(status) != EXIT_SUCCESS) {
-                fprintf(stderr, "Error cloning repository '%s'\n", repositories[i].name);
-            }
+        }
+    }
+
+    // Wait for all child processes to finish
+    int status;
+    pid_t wpid;
+    while ((wpid = wait(&status)) > 0) {
+        if (WIFEXITED(status) && WEXITSTATUS(status) != EXIT_SUCCESS) {
+            fprintf(stderr, "Error cloning repository (pid: %d)\n", wpid);
         }
     }
 }
