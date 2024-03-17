@@ -394,8 +394,30 @@ Returns:
 int check_dependencies(char ** dependencies,int dependenciesCount);
 
 
+#define MAX_URL_LENGTH 100
 
+typedef struct {
+    char name[MAX_URL_LENGTH];
+    char url[MAX_URL_LENGTH];
+} Repos;
+// Function to read repository sources from a file
+/*
+Accepts:
+- const char* filename: Path to the file containing repository sources.
+- int* num_repos: Pointer to an integer to store the number of repositories.
 
+Returns:
+- Repos*: An array of repository structures.
+*/
+Repos* read_sources_list(const char* filename, int* num_repos);
 
+// Function to clone repositories
+/*
+Accepts:
+- Repos* repositories: An array of repository structures.
+- int num_repos: The number of repositories.
+- const char* clone_directory: The directory where repositories will be cloned.
 
-
+Returns: None
+*/
+void clone_repositories(Repos* repositories, int num_repos, const char* clone_directory);

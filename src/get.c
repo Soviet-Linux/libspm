@@ -69,6 +69,18 @@ char* get(struct package* i_pkg, const char* out_path)
 // Function to synchronize the local repository with a remote repository
 void sync()
 {
-    // Download the "all.db" file to the specified path
-    downloadRepo("all.db", getenv("ALL_DB"));
+    const char* filename = "/var/cccp/data/sources.list";
+    int num_repos;
+    Repos* repositories = read_sources_list(filename, &num_repos);
+    if (repositories != NULL) {
+        char* clone_directory = getenv("SOVIET_REPOS");
+        if (clone_directory == NULL) {
+            fprintf(stderr, "SOVIET_REPOS environment variable not set\n");
+            free(repositories);
+            return EXIT_FAILURE;
+        }
+        clone_repositories(repositories, num_repos, clone_directory);
+        free(repositories);
+    }
+    return 0;
 }
