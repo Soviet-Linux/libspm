@@ -74,7 +74,6 @@ int list_installed() {
     int num_files;
     char **files_array = getAllFiles(path, &num_files);
     if (files_array != NULL) {
-        printf("Total files found: %d\n", num_files);
         for (int i = 0; i < num_files; i++) {
             printf("%s\n", files_array[i]);
             free(files_array[i]);

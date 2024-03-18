@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 // Include custom headers
 #include "libspm.h"
@@ -25,16 +27,54 @@ char* get(struct package* i_pkg, const char* out_path)
         msg(ERROR, "Package name not specified!");
         return NULL;
     }
+    char* test = load_from_repo(i_pkg->name, out_path);
+    msg(INFO, "WHY TF DOES IT SEGFAUL? %s", test);
 
-    return load_from_repo(i_pkg, out_path);
+    return load_from_repo(i_pkg->name, out_path);
 }
 
-int get_repos(char** repo_list)
+int get_repos(char** list)
 {
-    char cmd[MAX_PATH + 64];
-    sprintf(cmd, "cd %s && ls", getenv("SOVIET_REPOS_DIR"));
-    char* res = exec(cmd);
-    return splita(res, ' ', &repo_list);
+    dbg(3, "checking for repos");
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(getenv("SOVIET_REPOS_DIR"));
+    int count = 0;
+    if (d)
+    {
+        while ((dir = readdir(d)) != NULL)
+        {
+            if (count > 512)
+            {
+                printf("Error : too many elements in list , reallocating\n");
+                list = realloc(list,(count+512) * sizeof(char*));
+            }
+            list[count] = dir->d_name;
+            count++;
+        }
+
+        closedir(d);
+    }
+
+    for (int i = 0; i < count - 1; i++)
+    {
+        if (strcmp(list[i], ".") == 0 || strcmp(list[i], "..") == 0)
+        {
+            // Move the . string to the end
+            char* temp = list[i];
+            dbg(3, "Moving: %s", temp);
+            for (int k = i; k < count - 1; k++)
+            {
+                list[k] = list[k + 1];
+            }
+            list[count - 1] = temp;
+            i--;
+            count--;
+        }
+    }
+
+    dbg(3, "done checking for repos");
+    return count;
 }
 
 // Function to synchronize the local repository with a remote repository

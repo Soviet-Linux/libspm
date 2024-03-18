@@ -129,6 +129,11 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* repo)
 
     // Format the path using sprintf
     char file_path[MAX_PATH];
+    dbg(1, "spm dir is %s", getenv("SOVIET_SPM_DIR"));
+    dbg(1, "repo is %s", repo);
+    dbg(1, "name is %s", pkg.name);
+    dbg(1, "format is %s", pkg.name);
+
     sprintf(file_path, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"), repo, pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
     create_pkg(file_path, &pkg, NULL);
 
