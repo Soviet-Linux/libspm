@@ -114,7 +114,7 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
             {
                 if(sizeof(USER_CHOISE[0]) == sizeof(str))
                 {
-                    sprintf(str, USER_CHOISE[0]);
+                    sprintf(str, "%s", USER_CHOISE[0]);
                 }
                 else
                 {

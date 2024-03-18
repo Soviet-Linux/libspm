@@ -2,114 +2,106 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "sqlite3.h"      // SQLite database library
+#include <dirent.h>
+#include <sys/stat.h>
+#include <errno.h>
 
-// Include necessary headers
-#include "libspm.h"
-#include "cutils.h"
+#define MAX_PATH_LENGTH 1024
+#define OPEN_ERROR -1
+#define READ_ERROR -2 // You can define appropriate error codes
 
-//should probably add there to the header when we are done
+char **getAllFiles(const char *path, int *num_files) {
+    char **files_array = NULL;
+    int file_count = 0;
 
-//will print the content of INSTALLED_DB
-int list_installed()
-{
-    dbg(2, "listing installed packages from %s", getenv("INSTALLED_DB"));
+    DIR *dir;
+    struct dirent *entry;
+    struct stat stat_buf;
 
-    //shame that print_all_data uses msg, this could have been so clean
-    sqlite3_stmt *stmt;
-    char *zErrMsg = 0;
-    int rc;
+    if (!(dir = opendir(path)))
+        return NULL;
 
-    // Prepare the SQL query
-    const char *sql = "SELECT Name, Version, Type FROM Packages";
-    rc = sqlite3_prepare_v2(INSTALLED_DB, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", zErrMsg); // compiler doesn't complain about this but it might be bad
-        sqlite3_free(zErrMsg);
-        return 1;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_DIR) {
+            char next_path[MAX_PATH_LENGTH];
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+            snprintf(next_path, sizeof(next_path), "%s/%s", path, entry->d_name);
+            getAllFiles(next_path, num_files);
+        } else {
+            char full_path[MAX_PATH_LENGTH];
+            snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+            if (stat(full_path, &stat_buf) == 0 && S_ISREG(stat_buf.st_mode)) {
+                files_array = (char **)realloc(files_array, (file_count + 1) * sizeof(char *));
+                files_array[file_count] = (char *)malloc(MAX_PATH_LENGTH * sizeof(char));
+                // Extract the last directory name from the path
+                char *last_dir = strrchr(path, '/');
+                if (last_dir != NULL)
+                    last_dir++; // Move past the '/'
+                else
+                    last_dir = (char *)path; // No '/' found, use the path itself
+                snprintf(files_array[file_count], MAX_PATH_LENGTH, "%s/%s", last_dir, entry->d_name);
+                file_count++;
+            }
+        }
     }
+    closedir(dir);
 
-    // Execute the SQL query
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        printf("\x1b[31;1;1m %s \x1b[0m %s - %s \n", sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), sqlite3_column_text(stmt, 2));
-    }
+    if (num_files != NULL)
+        *num_files = file_count;
 
-    // Check if the SQL query was successful
-    if (rc != SQLITE_DONE) {
-        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
-        return -1;
-    }
-    
-    dbg(2, "%d packages installed", count_installed());
-    return 0;
+    if (file_count == 0)
+        return NULL;
+
+    return files_array;
 }
 
-//count installed
-int count_installed()
-{
+int count_installed() {
+    DIR *dirp;
+    struct dirent *dp;
+    int fileCount = 0;
+    char *directory = "/var/cccp/data/spm";
+
+    dirp = opendir(directory);
+    if (dirp == NULL) {
+        perror("Error opening directory");
+        return OPEN_ERROR;
+    }
+
+    while ((dp = readdir(dirp)) != NULL) {
+        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
+            fileCount++;
+        }
+    }
+
+    if (errno != 0) {
+        perror("Error reading directory");
+        closedir(dirp);
+        return READ_ERROR;
+    }
+
+    closedir(dirp);
+    return fileCount;
+}
+
+
+int list_installed() {
+    char* path = "/var/cccp/data/spm";
+    DIR *d;
+    struct dirent *dir;
     int count = 0;
+    d = opendir(path);
 
-    sqlite3_stmt *stmt;
-    int rc;
-    
-    // Prepare the SQL query
-    const char *sql = "SELECT COUNT(*) FROM Packages";
-    rc = sqlite3_prepare_v2(INSTALLED_DB, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
-        return 1;
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            if (dir->d_type == DT_REG) // Check if it's a regular file
+                count++;
+        }
+        closedir(d);
+    } else {
+        printf("Error: Unable to open directory %s\n", path);
+        return -1; // Return -1 to indicate an error
     }
-    // Execute the SQL query
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        count = (int)sqlite3_column_int(stmt, 0);
-    }
-
-    // Check if the SQL query was successful
-    if (rc != SQLITE_DONE) {
-        msg(ERROR, "Error executing statement: %s\n", sqlite3_errmsg(INSTALLED_DB));
-        return -1;
-    }
-
 
     return count;
-}
-
-int search(char* in)
-{
-    msg(INFO, "searching for %s", in);
-    
-    sqlite3_stmt *stmt;
-    int rc;
-    int _found = 0;
-
-    // Prepare the SQL query
-    const char *sql = "SELECT Name, Section FROM Packages";
-    rc = sqlite3_prepare_v2(ALL_DB, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", sqlite3_errmsg(ALL_DB));
-        return 1;
-    }
-    
-    // Execute the SQL query
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        struct package* remote = calloc(1, sizeof(struct package));
-        remote->name = (char*)sqlite3_column_text(stmt, 0);
-        
-        if(strstr(remote->name, in) != 0)
-        {
-             printf("found \x1b[31;1;1m %s \x1b[0m in %s \n", remote->name, (char*)sqlite3_column_text(stmt, 1));
-             _found++;
-        }
-        free(remote);
-    }
-
-    // Check if the SQL query was successful
-    if (rc != SQLITE_DONE) {
-        msg(ERROR, "SQL error: %s", sqlite3_errmsg(ALL_DB));
-        return -1;
-    }
-
-    msg(WARNING, "found %d packages that match %s", _found, in);
-
-    return 0;
 }
