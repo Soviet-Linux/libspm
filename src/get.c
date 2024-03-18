@@ -1,4 +1,3 @@
-#include <curl/curl.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -8,7 +7,6 @@
 #include "libspm.h"
 #include "globals.h"
 #include "cutils.h"
-#include "data.h"
 
 // Function to retrieve a package from a data repository
 /*
@@ -33,7 +31,7 @@ char* get(struct package* i_pkg, const char* out_path)
 
 int get_repos(char** repo_list)
 {
-    char cmd[PATH_MAX + 64];
+    char cmd[MAX_PATH + 64];
     sprintf(cmd, "cd %s && ls", getenv("SOVIET_REPOS_DIR"));
     char* res = exec(cmd);
     return splita(res, ' ', &repo_list);
