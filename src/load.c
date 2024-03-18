@@ -28,7 +28,7 @@ char* load_from_repo(const char* in, const char* file_path)
     //TODO write a way to chose if multiple files are found
 
     char** REPOS;
-    int REPO_COUNT = get_repos(char** REPOS)
+    int REPO_COUNT = get_repos(char** REPOS);
 
     // Iterate over repositories
     for (int i = 0; i < REPO_COUNT; i++)
