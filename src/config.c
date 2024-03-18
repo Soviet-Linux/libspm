@@ -21,10 +21,8 @@ ConfigEntry configEntries[] = {
     { "SOVIET_DEFAULT_FORMAT", "ecmp" },
     { "MAIN_DIR", "/var/cccp" },
     { "WORK_DIR", "/var/cccp/work" },
-    { "INSTALLED_DB", "/var/cccp/data/installed.db" },
-    { "ALL_DB", "/var/cccp/data/all.db" },
     { "CONFIG_FILE", DEFAULT_CONFIG_FILE },
-    { "SOVIET_REPOS", "/var/cccp/repos" },
+    { "SOVIET_REPOS_DIR", "/var/cccp/sources" },
     { "MAKE_FLAGS", "-j1" },
     { "SOVIET_FORMATS", "ecmp" },
     // Add more key-value pairs with default values as needed
