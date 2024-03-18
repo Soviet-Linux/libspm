@@ -4,8 +4,11 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #define MAX_PATH_LENGTH 1024
+#define OPEN_ERROR -1
+#define READ_ERROR -2 // You can define appropriate error codes
 
 char **getAllFiles(const char *path, int *num_files) {
     char **files_array = NULL;
@@ -53,39 +56,51 @@ char **getAllFiles(const char *path, int *num_files) {
     return files_array;
 }
 
-int count_installed(char *basePath) {
-    int file_count = 0;
-    DIR * dirp;
-    struct dirent * entry;
-    while ((entry = readdir(basePath)) != NULL) {
-        if (entry->d_type == DT_REG) { /* If the entry is a regular file */
-            file_count++;
+int count_installed(const char *directory) {
+    DIR *dirp;
+    struct dirent *dp;
+    int fileCount = 0;
+
+    dirp = opendir(directory);
+    if (dirp == NULL) {
+        perror("Error opening directory");
+        return OPEN_ERROR;
+    }
+
+    while ((dp = readdir(dirp)) != NULL) {
+        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
+            fileCount++;
         }
     }
-    closedir(basePath);
+
+    if (errno != 0) {
+        perror("Error reading directory");
+        closedir(dirp);
+        return READ_ERROR;
+    }
+
+    closedir(dirp);
+    return fileCount;
 }
 
 
-int list_installed(const char *path) {
+int list_installed() {
+    char* path = "/var/cccp/data/spm";
+    DIR *d;
+    struct dirent *dir;
     int count = 0;
-    DIR *dir;
-    struct dirent *entry;
+    d = opendir(path);
 
-    // Open directory
-    if ((dir = opendir(path)) == NULL) {
-        perror("opendir");
-        return -1;
-    }
-
-    // Iterate through directory entries
-    while ((entry = readdir(dir)) != NULL) {
-        // Ignore current directory and parent directory entries
-        if (entry->d_type == DT_REG) {
-            count++;
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            if (dir->d_type == DT_REG) // Check if it's a regular file
+                count++;
         }
+        closedir(d);
+    } else {
+        printf("Error: Unable to open directory %s\n", path);
+        return -1; // Return -1 to indicate an error
     }
 
-    closedir(dir);
-    printf("%s", count);
-    return 0;
+    return count;
 }

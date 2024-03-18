@@ -442,5 +442,5 @@ int list() {
     list_installed();
 }
 int count() {
-    count_installed();
+    printf("%d", count_installed());
 }
