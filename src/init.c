@@ -6,7 +6,6 @@
 #include "libspm.h"
 #include "cutils.h"
 #include "globals.h"
-#include "data.h"
 
 // Function to initialize the Soviet Package Manager
 void init() {

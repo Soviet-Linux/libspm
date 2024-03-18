@@ -110,7 +110,7 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int install_package_binary(const char* archivePath,int as_dep);
+int install_package_binary(const char* archivePath, int as_dep, const char* repo);
 
 // Function to uninstall packages
 /*

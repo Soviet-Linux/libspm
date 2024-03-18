@@ -9,7 +9,6 @@
 // Include necessary headers
 #include "libspm.h"
 #include "cutils.h"
-#include "data.h"
 
 // Function to install a package from source (archive)
 /*
@@ -173,7 +172,7 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int install_package_binary(const char* archivePath, int as_dep) {
+int install_package_binary(const char* archivePath, int as_dep, const char* repo) {
     struct package pkg;
 
     // Get required environment variables
