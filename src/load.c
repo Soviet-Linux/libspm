@@ -26,25 +26,31 @@ Returns:
 char* load_from_repo(const char* in, const char* file_path)
 {
     //TODO write a way to chose if multiple files are found
-
-    char** REPOS;
+    dbg(3, "loading repositories");
+    char** REPOS = calloc(512,sizeof(char));
     int REPO_COUNT = get_repos(REPOS);
+    dbg(3, "Got %d repos", REPO_COUNT);
+
+    for(int p = 0; p < REPO_COUNT; p++)
+    {
+        dbg(3, "%s", REPOS[p]);
+    }
 
     // Iterate over repositories
     for (int i = 0; i < REPO_COUNT; i++)
     {
         // Get the path for the current repository
-        char* repo = REPOS[i];
-        printf("REPOS[%d] is '%s'\n", i, repo);
+        char* repo = NULL;
+        repo = calloc(strlen(REPOS[i] + 1), sizeof(char));
+        strcpy(repo, REPOS[i]);
 
-        dbg(3, "Loading package %s \n", in);
+        dbg(3, "Loading package %s from %s", in, repo);
 
         // Try to find package in repo
         char cmd[PATH_MAX*2 + 64];
-        sprintf(cmd, "cd %s/%s find . -name %s.ecmp", getenv("SOVIET_REPOS_DIR"), REPOS[i],  in);
+        sprintf(cmd, "cd %s/%s && find . -name %s.ecmp", getenv("SOVIET_REPOS_DIR"), repo,  in);
         char* res = exec(cmd);
         char** found;
-
         int count = splita(res, '\n', &found);
 
         if(count == 0)
@@ -52,7 +58,6 @@ char* load_from_repo(const char* in, const char* file_path)
             msg(ERROR, "Failed to find %s", in);
             return NULL;
         }
-
         for(int j = 0; j < count; j++)
         {
             //TODO loop over all of the options that share the same name and ask the user to choose
@@ -60,9 +65,8 @@ char* load_from_repo(const char* in, const char* file_path)
             // Create the full PATH by combining the repository URL and the provided path
             char* path = calloc(strlen(repo) + strlen(getenv("SOVIET_REPOS_DIR")) + 8, sizeof(char));
             sprintf(path, "%s/%s/%s", getenv("SOVIET_REPOS_DIR"), repo, found[j]);
-
+            dbg(3, "Loading package from path: %s", path);
             // Log a message about the download process
-            msg(INFO, "Getting %s", path);
 
             // Attempt to load the file
             if (loadFile(path, file_path) == 0)
@@ -97,15 +101,15 @@ Returns:
 */
 int loadFile(const char* path, const char* file_path)
 {
-    char cmd[PATH_MAX*2 + 64];
+    char cmd[PATH_MAX + 64];
     sprintf(cmd, "cp %s %s", path, file_path);
+    exec(cmd);
 
     // Check if the download was successful
     if (!exec(cmd))
     {
         return -1;
     }
-
     // Return success
     return 0;
 }
