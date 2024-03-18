@@ -8,39 +8,43 @@
 
 #define MAX_PATH_LENGTH 1024
 #define OPEN_ERROR -1
-#define READ_ERROR -2 // You can define appropriate error codes
+#define READ_ERROR -2
 
 char **getAllFiles(const char *path, int *num_files) {
-    char **files_array = NULL;
-    int file_count = 0;
-
     DIR *dir;
     struct dirent *entry;
     struct stat stat_buf;
 
-    if (!(dir = opendir(path)))
+    dir = opendir(path);
+    if (dir == NULL) {
+        fprintf(stderr, "Error opening directory %s: %s\n", path, strerror(errno));
         return NULL;
+    }
+
+    char **files_array = NULL;
+    int file_count = 0;
 
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_DIR) {
-            char next_path[MAX_PATH_LENGTH];
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-                continue;
-            snprintf(next_path, sizeof(next_path), "%s/%s", path, entry->d_name);
-            getAllFiles(next_path, num_files);
-        } else {
-            char full_path[MAX_PATH_LENGTH];
-            snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
-            if (stat(full_path, &stat_buf) == 0 && S_ISREG(stat_buf.st_mode)) {
-                files_array = (char **)realloc(files_array, (file_count + 1) * sizeof(char *));
-                files_array[file_count] = (char *)malloc(MAX_PATH_LENGTH * sizeof(char));
-                // Extract the last directory name from the path
-                char *last_dir = strrchr(path, '/');
-                if (last_dir != NULL)
-                    last_dir++; // Move past the '/'
-                else
-                    last_dir = (char *)path; // No '/' found, use the path itself
-                snprintf(files_array[file_count], MAX_PATH_LENGTH, "%s/%s", last_dir, entry->d_name);
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+            continue;
+
+        char full_path[MAX_PATH_LENGTH];
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+
+        if (stat(full_path, &stat_buf) == 0) {
+            if (S_ISDIR(stat_buf.st_mode)) {
+                int sub_files_count;
+                char **sub_files = getAllFiles(full_path, &sub_files_count);
+                if (sub_files != NULL) {
+                    files_array = realloc(files_array, (file_count + sub_files_count) * sizeof(char *));
+                    for (int i = 0; i < sub_files_count; i++) {
+                        files_array[file_count++] = sub_files[i];
+                    }
+                    free(sub_files);
+                }
+            } else if (S_ISREG(stat_buf.st_mode)) {
+                files_array = realloc(files_array, (file_count + 1) * sizeof(char *));
+                files_array[file_count] = strdup(full_path);
                 file_count++;
             }
         }
@@ -50,58 +54,34 @@ char **getAllFiles(const char *path, int *num_files) {
     if (num_files != NULL)
         *num_files = file_count;
 
-    if (file_count == 0)
-        return NULL;
-
     return files_array;
 }
 
 int count_installed() {
-    DIR *dirp;
-    struct dirent *dp;
-    int fileCount = 0;
-    char *directory = "/var/cccp/data/spm";
-
-    dirp = opendir(directory);
-    if (dirp == NULL) {
-        perror("Error opening directory");
-        return OPEN_ERROR;
+    const char *path = "/var/cccp/data/spm";
+    int num_files;
+    char **files_array = getAllFiles(path, &num_files);
+    if (files_array != NULL) {
+        return num_files;
+    } else {
+        printf("No files found.\n");
     }
-
-    while ((dp = readdir(dirp)) != NULL) {
-        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
-            fileCount++;
-        }
-    }
-
-    if (errno != 0) {
-        perror("Error reading directory");
-        closedir(dirp);
-        return READ_ERROR;
-    }
-
-    closedir(dirp);
-    return fileCount;
+    return 1;
 }
 
-
 int list_installed() {
-    char* path = "/var/cccp/data/spm";
-    DIR *d;
-    struct dirent *dir;
-    int count = 0;
-    d = opendir(path);
-
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            if (dir->d_type == DT_REG) // Check if it's a regular file
-                count++;
+    const char *path = "/var/cccp/data/spm";
+    int num_files;
+    char **files_array = getAllFiles(path, &num_files);
+    if (files_array != NULL) {
+        printf("Total files found: %d\n", num_files);
+        for (int i = 0; i < num_files; i++) {
+            printf("%s\n", files_array[i]);
+            free(files_array[i]);
         }
-        closedir(d);
+        free(files_array);
     } else {
-        printf("Error: Unable to open directory %s\n", path);
-        return -1; // Return -1 to indicate an error
+        printf("No files found.\n");
     }
-
-    return count;
+    return 0;
 }
