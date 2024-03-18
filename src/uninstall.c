@@ -6,7 +6,6 @@
 // Include the necessary headers for the class file and utility functions
 #include  "libspm.h"
 #include "cutils.h"
-#include "data.h"
 
 // Function to uninstall packages
 /*
@@ -55,9 +54,6 @@ int uninstall(char* name)
         dbg(3, "Removing %s", r_pkg.locations[i]);
         dbg(3, "Remove exited with code %d", remove(r_pkg.locations[i]));
     }
-
-    // Remove the entries in the packages.json file
-    remove_data_installed(INSTALLED_DB, r_pkg.name);
 
     // Remove the SPM file from DATA_DIR
     remove(dataSpmPath);
