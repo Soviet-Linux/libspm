@@ -102,6 +102,10 @@ int main(int argc, char const *argv[])
         return test_config();
     } else if (strcmp(argv[1], "get") == 0) {
         return test_get();
+    } else if (strcmp(argv[1], "list") == 0) {
+        return list_installed();
+    } else if (strcmp(argv[1], "count") == 0) {
+        return count();
     } else {
         printf("Invalid argument\n");
         return 1;
@@ -433,4 +437,10 @@ char* assemble(char** list,int count)
     }
     strcat(string,list[i]);
     return string;
+}
+int list() {
+    list_installed();
+}
+int count() {
+    printf("%d", count_installed());
 }
