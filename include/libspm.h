@@ -52,7 +52,7 @@ struct package
 //test
 int list_installed();
 int count_installed();
-int search(char *term)
+int search(char *term);
 int update();
 int upgrade();
 void create_links(char build_loc[4096], char dest_loc[4096]);
@@ -83,8 +83,6 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int f_install_package_source(const char* spm_path,int as_dep,const char* format);
-
 // Function to install a package from source with a specific format
 /*
 Accepts:

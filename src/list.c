@@ -114,7 +114,7 @@ int search(char *term) {
     DIR *dir;
     struct dirent *entry;
 
-    dir = opendir("/var/cccp/data/repos"); // Open the current directory. Change "." to the directory path you want to search in.
+    dir = opendir(getenv("SOVIET_REPOS_DIR")); // Open the current directory. Change "." to the directory path you want to search in.
     if (dir == NULL) {
         perror("Error opening directory");
         return 1;
