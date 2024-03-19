@@ -92,9 +92,12 @@ int list_installed() {
     int num_files;
     char **files_array = getAllFiles(path, &num_files);
     if (files_array != NULL) {
+<<<<<<< HEAD
         // Print the total number of files found
         printf("Total files found: %d\n", num_files);
         // Print each file path
+=======
+>>>>>>> 8d4bbf981eafa0b8a6ff40fd5acbfd708c088429
         for (int i = 0; i < num_files; i++) {
             printf("%s\n", files_array[i]);
             // Free each file path string
