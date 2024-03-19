@@ -52,7 +52,7 @@ struct package
 //test
 int list_installed();
 int count_installed();
-int search(char* in);
+int search(char *term)
 int update();
 int upgrade();
 void create_links(char build_loc[4096], char dest_loc[4096]);
