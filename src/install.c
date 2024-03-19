@@ -39,6 +39,7 @@ Returns:
 */
 int f_install_package_source(const char* spm_path, int as_dep, const char* repo) {
     // Check if spm_path is NULL
+
     if (spm_path == NULL) {
         msg(ERROR, "spm_path is NULL");
         return -1;
@@ -86,7 +87,7 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* repo)
     // Legacy directory path for compatibility
     char legacy_dir[MAX_PATH];
     sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
-    
+
     // Build the package
     dbg(1, "Making %s", pkg.name);
     if (make(legacy_dir, &pkg) != 0) {
@@ -132,11 +133,17 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* repo)
     dbg(1, "spm dir is %s", getenv("SOVIET_SPM_DIR"));
     dbg(1, "repo is %s", repo);
     dbg(1, "name is %s", pkg.name);
-    dbg(1, "format is %s", pkg.name);
+
+    char repo_path[MAX_PATH];
+    sprintf(repo_path, "%s/%s", getenv("SOVIET_SPM_DIR"), repo);
+
+    if(isdir(repo_path) != 0)
+    {
+        pmkdir(repo_path);
+    }
 
     sprintf(file_path, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"), repo, pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
     create_pkg(file_path, &pkg, NULL);
-
     dbg(1, "Package %s installed", pkg.name);
 
     // Clean up
@@ -148,7 +155,6 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* repo)
 
     // Free allocated memory
     free_pkg(&pkg);
-
     return 0;
 }
 

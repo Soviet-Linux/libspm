@@ -208,6 +208,6 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
             free(buffer);
         }
         free(target);
+        free(links);
     }
-    free(links);
 }

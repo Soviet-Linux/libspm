@@ -27,8 +27,6 @@ char* get(struct package* i_pkg, const char* out_path)
         msg(ERROR, "Package name not specified!");
         return NULL;
     }
-    char* test = load_from_repo(i_pkg->name, out_path);
-    msg(INFO, "WHY TF DOES IT SEGFAUL? %s", test);
 
     return load_from_repo(i_pkg->name, out_path);
 }
@@ -49,11 +47,10 @@ int get_repos(char** list)
                 printf("Error : too many elements in list , reallocating\n");
                 list = realloc(list,(count+512) * sizeof(char*));
             }
-            list[count] = dir->d_name;
+            list[count] = calloc(strlen(dir->d_name) + 1, sizeof(char));
+            strcpy(list[count], dir->d_name);
             count++;
         }
-
-        closedir(d);
     }
 
     for (int i = 0; i < count - 1; i++)
@@ -72,6 +69,8 @@ int get_repos(char** list)
             count--;
         }
     }
+
+    closedir(d);
 
     dbg(3, "done checking for repos");
     return count;
