@@ -121,7 +121,6 @@ int make(char* package_dir, struct package* pkg) {
     {
         pkg->sha256 = "Not provided";
     }
-
     // Check if the checksum shall be bypassed
     if (!INSECURE)
     {

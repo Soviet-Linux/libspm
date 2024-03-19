@@ -1,7 +1,7 @@
 #include "math.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "string.h"
+#include <string.h>
 
 #include <curl/curl.h>
 
@@ -40,9 +40,11 @@ char* load_from_repo(const char* in, const char* file_path)
     for (int i = 0; i < REPO_COUNT; i++)
     {
         // Get the path for the current repository
-        char* repo = NULL;
-        repo = calloc(strlen(REPOS[i] + 1), sizeof(char));
-        strcpy(repo, REPOS[i]);
+        char* repo = calloc(strlen(REPOS[i]) + 1, sizeof(char));
+        if(REPOS[i] != NULL)
+        {
+            strcpy(repo, REPOS[i]);
+        }
 
         dbg(3, "Loading package %s from %s", in, repo);
 
@@ -63,7 +65,7 @@ char* load_from_repo(const char* in, const char* file_path)
             //TODO loop over all of the options that share the same name and ask the user to choose
 
             // Create the full PATH by combining the repository URL and the provided path
-            char* path = calloc(strlen(repo) + strlen(getenv("SOVIET_REPOS_DIR")) + 8, sizeof(char));
+            char* path = calloc(strlen(repo) + strlen(getenv("SOVIET_REPOS_DIR")) + MAX_PATH, sizeof(char));
             sprintf(path, "%s/%s/%s", getenv("SOVIET_REPOS_DIR"), repo, found[j]);
             dbg(3, "Loading package from path: %s", path);
             // Log a message about the download process
@@ -101,15 +103,15 @@ Returns:
 */
 int loadFile(const char* path, const char* file_path)
 {
-    char cmd[PATH_MAX + 64];
+    char cmd[PATH_MAX*2 + 64];
     sprintf(cmd, "cp %s %s", path, file_path);
-    exec(cmd);
 
     // Check if the download was successful
-    if (!exec(cmd))
+    if (system(cmd) == -1)
     {
         return -1;
     }
     // Return success
+
     return 0;
 }
