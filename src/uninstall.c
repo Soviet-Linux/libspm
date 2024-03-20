@@ -64,6 +64,6 @@ int uninstall(char* name)
 
     // Remove the SPM file from DATA_DIR
     remove(dataSpmPath);
-
+    free(REPOS);
     return 0;
 }
