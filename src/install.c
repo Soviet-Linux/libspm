@@ -38,6 +38,11 @@ Returns:
   - -1: Installation failed.
 */
 int f_install_package_source(const char* spm_path, int as_dep, const char* repo) {
+
+    // Read the config in case anything got overwritten in the ecmp file
+
+    readConfig(getenv("SOVIET_CONFIG_FILE"));
+
     // Check if spm_path is NULL
 
     if (spm_path == NULL) {
@@ -184,6 +189,11 @@ Returns:
   - -1: Installation failed.
 */
 int install_package_binary(const char* archivePath, int as_dep, const char* repo) {
+
+    // Read the config in case anything got overwritten in the ecmp file
+
+    readConfig(getenv("SOVIET_CONFIG_FILE"));
+
     struct package pkg;
 
     // Get required environment variables
@@ -267,15 +277,22 @@ bool is_installed(const char* name) {
     char** FORMATS;
     int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")),' ',&FORMATS);
 
+    char** REPOS = calloc(512,sizeof(char));
+    int REPO_COUNT = get_repos(REPOS);
+
     // loop through all formats
     for (int i = 0; i < FORMAT_COUNT; i++)
     {
-        sprintf(path,"%s/%s.%s",getenv("SOVIET_SPM_DIR"),name,FORMATS[i]);
-        if (access(path,F_OK) == 0)
+        // loop through all repos
+        for (int j = 0; j < REPO_COUNT; j++)
         {
-            //free(*FORMATS);
-            free(FORMATS);
-            return true;
+            sprintf(path,"%s/%s/%s.%s",getenv("SOVIET_SPM_DIR"), REPOS[j],name,FORMATS[i]);
+            if (access(path,F_OK) == 0)
+            {
+                free(REPOS);
+                free(FORMATS);
+                return true;
+            }
         }
     }
     return false;

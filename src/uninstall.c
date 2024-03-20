@@ -27,17 +27,24 @@ int uninstall(char* name)
     // Get the SPM directory from the environment variables
     char* SPM_DIR = getenv("SOVIET_SPM_DIR");
 
-    // Generate the path to the package's SPM file
+    char** REPOS = calloc(512,sizeof(char));
+    int REPO_COUNT = get_repos(REPOS);
     char* dataSpmPath[MAX_PATH];
-    sprintf(dataSpmPath, "%s/%s.%s", getenv("SOVIET_SPM_DIR"), name, getenv("SOVIET_DEFAULT_FORMAT"));
-    
-    // Verify if the package is installed
-    dbg(3, "Verifying if the package is installed at %s", dataSpmPath);
 
-    // Check if the SPM file exists
-    if (access(dataSpmPath, F_OK) != 0) {
-        msg(ERROR, "Package %s is not installed!", name);
-        return -1;
+
+    for (int j = 0; j < REPO_COUNT; j++)
+    {
+        // Generate the path to the package's SPM file
+        sprintf(dataSpmPath, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"),REPOS[j], name, getenv("SOVIET_DEFAULT_FORMAT"));
+
+        // Verify if the package is installed
+        dbg(3, "Verifying if the package is installed at %s", dataSpmPath);
+
+        // Check if the SPM file exists
+        if (access(dataSpmPath, F_OK) != 0) {
+            msg(ERROR, "Package %s is not installed!", name);
+            return -1;
+        }
     }
 
     // Create a struct to store package information
@@ -57,6 +64,6 @@ int uninstall(char* name)
 
     // Remove the SPM file from DATA_DIR
     remove(dataSpmPath);
-
+    free(REPOS);
     return 0;
 }
