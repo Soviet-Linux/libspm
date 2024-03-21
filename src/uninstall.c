@@ -43,23 +43,22 @@ int uninstall(char* name)
         // Check if the SPM file exists
         if (access(tmpSpmPath, F_OK) == 0) {
             sprintf(dataSpmPath, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"),REPOS[j], name, getenv("SOVIET_DEFAULT_FORMAT"));
-                    // Create a struct to store package information
-        struct package r_pkg;
+            // Create a struct to store package information
+            struct package r_pkg;
 
-        // Open the package's SPM file and populate the r_pkg struct
-        open_pkg(dataSpmPath, &r_pkg, NULL);
+            // Open the package's SPM file and populate the r_pkg struct
+            open_pkg(dataSpmPath, &r_pkg, NULL);
 
-        dbg(3, "Found %d locations", r_pkg.locationsCount);
+            dbg(3, "Found %d locations", r_pkg.locationsCount);
 
-        // Remove all the files in the data["locations"]
-        for (int i = 0; i < r_pkg.locationsCount; i++) {
-            // Debug
-            dbg(3, "Removing %s", r_pkg.locations[i]);
-            dbg(3, "Remove exited with code %d", remove(r_pkg.locations[i]));
-        }
-
-        // Remove the SPM file from DATA_DIR
-        remove(dataSpmPath);
+            // Remove all the files in the data["locations"]
+            for (int i = 0; i < r_pkg.locationsCount; i++) {
+                // Debug
+                dbg(3, "Removing %s", r_pkg.locations[i]);
+                dbg(3, "Remove exited with code %d", remove(r_pkg.locations[i]));
+            }
+            // Remove the SPM file from DATA_DIR
+            remove(dataSpmPath);
         }
         else
         {
