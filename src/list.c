@@ -11,16 +11,17 @@
 #define READ_ERROR -2
 
 // Function to recursively retrieve all files in a directory and its subdirectories
-char **getAllFiles(const char *path, int *num_files) {
+char **getAllFiles(const char* root, const char *path, int *num_files) {
     DIR *dir;
     struct dirent *entry;
     struct stat stat_buf;
-
+    char* origin = strdup(path);
     // Open the directory
     dir = opendir(path);
     if (dir == NULL) {
         // Print an error message if directory couldn't be opened
         fprintf(stderr, "Error opening directory %s: %s\n", path, strerror(errno));
+        free(origin);
         return NULL;
     }
 
@@ -43,7 +44,7 @@ char **getAllFiles(const char *path, int *num_files) {
             // If it's a directory, recursively call getAllFiles
             if (S_ISDIR(stat_buf.st_mode)) {
                 int sub_files_count;
-                char **sub_files = getAllFiles(full_path, &sub_files_count);
+                char **sub_files = getAllFiles(root, full_path, &sub_files_count);
                 if (sub_files != NULL) {
                     // Resize files_array and copy contents of sub_files into it
                     files_array = realloc(files_array, (file_count + sub_files_count) * sizeof(char *));
@@ -55,7 +56,7 @@ char **getAllFiles(const char *path, int *num_files) {
             } else if (S_ISREG(stat_buf.st_mode)) {
                 // If it's a regular file, add it to files_array
                 files_array = realloc(files_array, (file_count + 1) * sizeof(char *));
-                files_array[file_count] = strdup(full_path);
+                files_array[file_count] = strdup(full_path + strlen(root) + 1);
                 file_count++;
             }
         }
@@ -68,14 +69,16 @@ char **getAllFiles(const char *path, int *num_files) {
         *num_files = file_count;
 
     // Return the array of file paths
+    free(origin);
+
     return files_array;
 }
 
 // Function to count the number of installed packages
 int count_installed() {
-    const char *path = "/var/cccp/data/spm";
+    const char *path = getenv("SOVIET_SPM_DIR");
     int num_files;
-    char **files_array = getAllFiles(path, &num_files);
+    char **files_array = getAllFiles(path, path, &num_files);
     if (files_array != NULL) {
         // Return the number of files
         return num_files;
@@ -88,15 +91,20 @@ int count_installed() {
 
 // Function to list all installed packages
 int list_installed() {
-    const char *path = "/var/cccp/data/spm";
+    const char *path = getenv("SOVIET_SPM_DIR");
     int num_files;
-    char **files_array = getAllFiles(path, &num_files);
+    char **files_array = getAllFiles(path, path, &num_files);
     if (files_array != NULL) {
-        // Print the total number of files found
-        printf("Total files found: %d\n", num_files);
         // Print each file path
         for (int i = 0; i < num_files; i++) {
-            printf("%s\n", files_array[i]);
+
+            // This will break if the files are not separated into repos
+            // But it doesnt cause a crash, just a visual bug
+            // I think
+            char* repo = strtok(files_array[i], "/");
+            char* package = strchr(files_array[i], '\0') + 1;
+            printf("%s from %s\n", package, repo);
+
             // Free each file path string
             free(files_array[i]);
         }
@@ -111,24 +119,41 @@ int list_installed() {
 
 // Function to search for a term in installed files
 int search(char *term) {
-    DIR *dir;
-    struct dirent *entry;
+    int found = 0;
+    const char *path = getenv("SOVIET_REPOS_DIR");
+    int num_files;
+    char **files_array = getAllFiles(path, path, &num_files);
 
-    dir = opendir(getenv("SOVIET_REPOS_DIR")); // Open the current directory. Change "." to the directory path you want to search in.
-    if (dir == NULL) {
-        perror("Error opening directory");
-        return 1;
-    }
+    if (files_array != NULL) {
+        // Print each file path
+        for (int i = 0; i < num_files; i++) {
 
-    while ((entry = readdir(dir)) != NULL) {
-        if (strcmp(entry->d_name, term) == 0) { // Compare the filename
-            printf("Package not found: %s\n", entry->d_name);
-            closedir(dir);
-            return 0;
+            // This will break if the files are not separated into repos
+            // But it doesnt cause a crash, just a visual bug
+            // I think
+            char* repo = strtok(files_array[i], "/");
+            char* package = strchr(files_array[i], '\0') + 1;
+
+            if (strstr(package, term) != 0)
+            {
+                // Compare the filename
+                printf("Found package: %s in %s \n", package, repo);
+                found++;
+            }
+
+            // Free each file path string
+            free(files_array[i]);
         }
+        // Free the array of file paths
+        free(files_array);
+    } else {
+        // If no files found, print a message
+        printf("All repositories are empty.\n");
     }
 
-    printf("Package: %s\n", term);
-    closedir(dir);
+    if(found == 0)
+    {
+        printf("Package not found: %s\n", term);
+    }
     return 0;
 }
