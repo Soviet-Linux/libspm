@@ -26,11 +26,72 @@ Returns:
 char* load_from_repo(const char* in, const char* file_path)
 {
     // Try to find package in repos
-    char cmd[PATH_MAX*2 + 64];
-    sprintf(cmd, "cd %s/ && find . -name %s.ecmp", getenv("SOVIET_REPOS_DIR"),  in);
-    char* res = exec(cmd);
-    char** found;
-    int count = splita(res, '\n', &found);
+    dbg(3, "loading %s", in);
+
+
+    const char *path = getenv("SOVIET_REPOS_DIR");
+    int count;
+    char **found = getAllFiles(path, path, &count);
+    char* pkg = calloc(strlen(in) + strlen(getenv("SOVIET_DEFAULT_FORMAT")) + 1, sizeof(char));
+    sprintf(pkg, "%s.%s", in, getenv("SOVIET_DEFAULT_FORMAT"));
+
+    dbg(3, "Going trough the repositories");
+
+
+    if (found != NULL)
+        {
+        // Print each file path
+        for (int i = 0; i < count; i++) {
+
+            // This will break if the files are not separated into repos
+            // But it doesnt cause a crash, just a visual bug
+            // I think
+            dbg(3, "checking %s", found[i]);
+            char* temp = strdup(found[i]);
+
+            char* tok = strtok(temp, "/");
+            char* repo = strdup(tok);
+            char* package;
+            while(tok != NULL )
+            {
+                tok = strtok(NULL, "/");
+                if(tok != NULL)
+                {
+                    if(strstr(tok, ".ecmp"))
+                    {
+                        package = strdup(tok);
+                    }
+                }
+            }
+
+            dbg(3, "Comparing %s and %s", package, pkg);
+
+
+            if (strcmp(package, pkg) == 0)
+            {
+                // Compare the filename
+                msg(INFO, "Found package: %s in %s \n", package, repo);
+            }
+            else
+            {
+                // Move the file to the end
+                char* tar = found[i];
+                for (int k = i; k < count - 1; k++)
+                {
+                    found[k] = found[k + 1];
+                }
+                found[count - 1] = tar;
+                count--;
+                i--;
+            }
+
+            // Free each file path string
+            free(package);
+            free(repo);
+            free(temp);
+        }
+    }
+
 
     switch (count)
     {
@@ -41,7 +102,6 @@ char* load_from_repo(const char* in, const char* file_path)
         case 1:
             if(strlen(found[0]) > 3)
             {
-                found[0] += 2;
                 char* repo = strtok(found[0], "/");
                 char* package = strchr(found[0], '\0') + 1;
 
@@ -67,7 +127,7 @@ char* load_from_repo(const char* in, const char* file_path)
             }
             break;
         default:
-            msg(INFO, "Multiple packages that match %s found, list %d results? y/N", in, count);
+            msg(INFO, "Multiple packages that match %s found, list %d results? Y/n", in, count);
 
             char* str = calloc(2, sizeof(char));
 
@@ -103,7 +163,11 @@ char* load_from_repo(const char* in, const char* file_path)
                     msg(FATAL, "something somwhere went wrong");
                 }
             }
-            if((strcmp(str, "Y") == 0 || strcmp(str, "y") == 0))
+            if((strcmp(str, "N") == 0 || strcmp(str, "n") == 0))
+            {
+                return NULL;
+            }
+            else
             {
                 msg(INFO, "Listing all");
 
@@ -111,7 +175,6 @@ char* load_from_repo(const char* in, const char* file_path)
                 {
                     if(strlen(found[i]) > 3)
                     {
-                        found[i] += 2;
                         char* repo = strtok(found[i], "/");
                         char* package = strchr(found[i], '\0') + 1;
                         msg(INFO, "%d. %s from %s", i, package, repo);
@@ -131,33 +194,6 @@ char* load_from_repo(const char* in, const char* file_path)
                     dbg(3, "choise is %s", found[int_]);
                     char* repo = strtok(found[int_], "/");
                     char* package = strchr(found[int_], '\0') + 1;
-                    msg(INFO, "Loading package %s from %s", package, repo);
-                    // Create the full PATH by combining the repository URL and the provided path
-                    char* path = calloc(strlen(repo) + strlen(getenv("SOVIET_REPOS_DIR")) + MAX_PATH, sizeof(char));
-                    sprintf(path, "%s/%s/%s", getenv("SOVIET_REPOS_DIR"), repo, package);
-                    dbg(3, "Loading package from path: %s", path);
-                    // Log a message about the download process
-
-                    // Attempt to load the file
-                    if (loadFile(path, file_path) == 0)
-                    {
-                        // Clean up and return success
-                        free(path);
-                        free(found);
-                        return repo;
-                    }
-                    free(path);
-                    free(found);
-                    // Clean up URL memory
-                }
-            }
-            else
-            {
-                if(strlen(found[0]) > 3)
-                {
-                    found[0] += 2;
-                    char* repo = strtok(found[0], "/");
-                    char* package = strchr(found[0], '\0') + 1;
                     msg(INFO, "Loading package %s from %s", package, repo);
                     // Create the full PATH by combining the repository URL and the provided path
                     char* path = calloc(strlen(repo) + strlen(getenv("SOVIET_REPOS_DIR")) + MAX_PATH, sizeof(char));
@@ -199,6 +235,7 @@ int loadFile(const char* path, const char* file_path)
     sprintf(cmd, "cp %s %s", path, file_path);
 
     // Check if the download was successful
+    // lmao
     if (system(cmd) == -1)
     {
         return -1;
