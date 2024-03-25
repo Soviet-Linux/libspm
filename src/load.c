@@ -32,8 +32,15 @@ char* load_from_repo(const char* in, const char* file_path)
     const char *path = getenv("SOVIET_REPOS_DIR");
     int count;
     char **found = getAllFiles(path, path, &count);
-    char* pkg = calloc(strlen(in) + strlen(getenv("SOVIET_DEFAULT_FORMAT")) + 1, sizeof(char));
-    sprintf(pkg, "%s.%s", in, getenv("SOVIET_DEFAULT_FORMAT"));
+    char* pkg = calloc(MAX_PATH + strlen(getenv("SOVIET_DEFAULT_FORMAT")) + 1, sizeof(char));
+    if(!strstr(in, ".ecmp"))
+    {
+        sprintf(pkg, "%s.%s", in, getenv("SOVIET_DEFAULT_FORMAT"));
+    }
+    else
+    {
+        pkg = strdup(in);
+    }
 
     dbg(3, "Going trough the repositories");
 
@@ -51,7 +58,7 @@ char* load_from_repo(const char* in, const char* file_path)
 
             char* tok = strtok(temp, "/");
             char* repo = strdup(tok);
-            char* package;
+            char* package = NULL;
             while(tok != NULL )
             {
                 tok = strtok(NULL, "/");
@@ -63,17 +70,9 @@ char* load_from_repo(const char* in, const char* file_path)
                     }
                 }
             }
-
-            dbg(3, "Comparing %s and %s", package, pkg);
-
-
-            if (strcmp(package, pkg) == 0)
+            if(package == NULL)
             {
-                // Compare the filename
-                msg(INFO, "Found package: %s in %s \n", package, repo);
-            }
-            else
-            {
+                dbg(3, "%s not .ecmp package, moving on", found[i]);
                 // Move the file to the end
                 char* tar = found[i];
                 for (int k = i; k < count - 1; k++)
@@ -84,11 +83,34 @@ char* load_from_repo(const char* in, const char* file_path)
                 count--;
                 i--;
             }
+            else
+            {
+                dbg(3, "Comparing %s and %s", package, pkg);
 
-            // Free each file path string
-            free(package);
-            free(repo);
-            free(temp);
+
+                if (strcmp(package, pkg) == 0)
+                {
+                    // Compare the filename
+                    msg(INFO, "Found package: %s in %s \n", package, repo);
+                }
+                else
+                {
+                    // Move the file to the end
+                    char* tar = found[i];
+                    for (int k = i; k < count - 1; k++)
+                    {
+                        found[k] = found[k + 1];
+                    }
+                    found[count - 1] = tar;
+                    count--;
+                    i--;
+                }
+
+                // Free each file path string
+                free(package);
+                free(repo);
+                free(temp);
+            }
         }
     }
 

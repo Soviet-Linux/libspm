@@ -96,6 +96,11 @@ int make(char* package_dir, struct package* pkg) {
         free(str);
     }
 
+    // Thinking about putting the package caching here
+    // Maybe it will check if the installed version matches $VERSION
+    // If so, it will just copy the dir from /usr/src/$NAME-$VERSION
+    // Instead of executing the following:
+    //
     // Extract URL from the package
     char excmd[64 + strlen(pkg->url)];
     sprintf(excmd, "echo -n %s", pkg->url);
