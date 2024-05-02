@@ -75,18 +75,22 @@ void create_links(char build_loc[PATH_MAX], char dest_loc[PATH_MAX])
                 free(temp_path);
             }
 
-            switch (mvsp(start, end))
+            if ((access(start, F_OK) == 0) && (access(end, F_OK) != 0))
             {
-                case -1:
-                    msg(FATAL, "Moving %s to %s failed, could not create dir", start, end);
-                    break;
-                case -2:
-                    msg(FATAL, "Moving %s to %s failed, destination not a dir", start, end);
-                    break;
-                case 0:
-                    msg(WARNING, "Moved %s to %s", start, end);
-                    break;
+                switch (mvsp(start, end))
+                {
+                    case -1:
+                        msg(FATAL, "Moving %s to %s failed, could not create dir", start, end);
+                        break;
+                    case -2:
+                        msg(FATAL, "Moving %s to %s failed, destination not a dir", start, end);
+                        break;
+                    case 0:
+                        msg(WARNING, "Moved %s to %s", start, end);
+                        break;
+                }
             }
+   
             
             symlink(target, links[i]);
             
