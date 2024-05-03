@@ -52,7 +52,7 @@ int xisdir (const char *d);
 // create dir recursivelty (similar to mkdir -p)
 int pmkdir (const char *dir);
 //  move a file and create the dir if it doesn't exist
-int mvsp(char* old_path,char* new_path);
+int mvsp(char* old_path,char* new_path,char* root);
 // LIST  file in a dir
 char** ls(char* path);
 // exec a shell command and return the output
