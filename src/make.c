@@ -58,7 +58,7 @@ int make(char* package_dir, struct package* pkg) {
 
             while (str[k] != '\n' && str[k] != '\0')
             {
-                // This is awful, probably even worse than the shit i did in link.c, oh well.
+                // This is awful, oh well.
                 if(str[k] == '~' || str[k] == '`' || str[k] == '#' || str[k] == '$' || str[k] == '&' || str[k] == '*' || str[k] == '(' || str[k] == ')' || str[k] == '\\' || str[k] == '|' || str[k] == '[' || str[k] == ']' || str[k] == '{' || str[k] == '}' || str[k] == ';' || str[k] == '\'' || str[k] == '<' || str[k] == '>' || str[k] == '?' || str[k] == '!')
                 {
                     str[k] = ' ';
