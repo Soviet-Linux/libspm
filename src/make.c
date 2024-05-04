@@ -73,7 +73,7 @@ int make(char* package_dir, struct package* pkg) {
 
 
             char* in = calloc(128, sizeof(char));
-            sprintf(in, "INPUT_%d", i);
+            sprintf("%s", in, "INPUT_%d", i);
             setenv(in, str, 0);
             free(in);
 
@@ -82,7 +82,7 @@ int make(char* package_dir, struct package* pkg) {
         {
             if(sizeof(USER_CHOISE[0]) <= sizeof(str))
             {
-                sprintf(str, USER_CHOISE[0]);
+                sprintf(str, "%s", USER_CHOISE[0]);
                 char* in = calloc(128, sizeof(char));
                 sprintf(in, "INPUT_%d", i);
                 setenv(in, str, 0);

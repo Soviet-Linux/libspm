@@ -77,7 +77,57 @@ int get_repos(char** list)
 }
 
 // Function to synchronize the local repository with a remote repository
-void sync()
-{
-    // copy tht's syncing code here
+void sync() {
+    const char* repo_dir = "/var/cccp/sources";
+    const char* repo_url = "https://github.com/Soviet-Linux/OUR.git";
+    const char* submodule_name = "OUR";
+
+    char cmd[1024];
+
+    // Check if the repository directory exists
+    if (access(repo_dir, F_OK) != 0) {
+        // Create the repository directory if it doesn't exist
+        snprintf(cmd, sizeof(cmd), "mkdir -p %s", repo_dir);
+        if (system(cmd) != 0) {
+            printf("Failed to create directory %s\n", repo_dir);
+            return;
+        }
+    }
+
+    // Check if repo_dir is a git repository
+    if (access(repo_dir, X_OK) == 0) {
+        // Change directory to repo_dir
+        if (chdir(repo_dir) != 0) {
+            printf("Failed to change directory to %s\n", repo_dir);
+            return;
+        }
+
+        // Check if it's a git repository
+        if (system("git rev-parse --is-inside-work-tree >/dev/null 2>&1") != 0) {
+            // Initialize a new Git repository
+            if (system("git init") != 0) {
+                printf("Failed to initialize git repository in %s\n", repo_dir);
+                return;
+            }
+        }
+
+        // Check if submodule exists
+        snprintf(cmd, sizeof(cmd), "git submodule status %s | grep -qF ' %s '", repo_dir, submodule_name);
+        if (system(cmd) != 0) {
+            // Add the submodule
+            snprintf(cmd, sizeof(cmd), "git submodule add %s %s", repo_url, submodule_name);
+            if (system(cmd) != 0) {
+                printf("Failed to add submodule %s\n", submodule_name);
+                return;
+            }
+        }
+
+        // Update submodules
+        if (system("git submodule update --init --recursive") != 0) {
+            printf("Failed to update submodules in %s\n", repo_dir);
+            return;
+        }
+    } else {
+        printf("%s is not a directory or cannot be accessed.\n", repo_dir);
+    }
 }
