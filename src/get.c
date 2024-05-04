@@ -123,7 +123,7 @@ void sync() {
         }
 
         // Update submodules
-        if (system("git submodule update --init --recursive") != 0) {
+        if (system("git submodule update --remote --init --recursive") != 0) {
             printf("Failed to update submodules in %s\n", repo_dir);
             return;
         }
