@@ -78,9 +78,9 @@ int get_repos(char** list)
 
 // Function to synchronize the local repository with a remote repository
 void sync() {
-    const char* repo_dir = "/var/cccp/sources";
-    const char* repo_url = "https://github.com/Soviet-Linux/OUR.git";
-    const char* submodule_name = "OUR";
+    const char* repo_dir = getenv("SOVIET_REPOS_DIR");
+    const char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
+    const char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
 
     char cmd[1024];
 
