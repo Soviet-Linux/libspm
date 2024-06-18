@@ -20,20 +20,10 @@ void init() {
     setenv("SOVIET_REPOS_LIST", "/etc/sources.list", 0);
     dbg(3, "Cleaning...");
     readConfig(getenv("SOVIET_CONFIG_FILE"));
-    //tht, do your thing here
 
     dbg(3, "Setting variables");
 
     // Set global variables for various paths and directories
-    setenv("ROOT", "/", 0);
-    setenv("MAIN_DIR", "/var/cccp", 0);
-    setenv("SOVIET_REPOS_DIR", "/var/cccp/sources", 0);
-    setenv("WORK_DIR", "/var/cccp/work", 0);
-    setenv("SOVIET_SPM_DIR", "/var/cccp/spm", 0);
-    setenv("SOVIET_LOG_DIR", "/var/cccp/log", 0);
-    setenv("SOVIET_PLUGIN_DIR", "/var/cccp/plugins", 0);
-    setenv("SOVIET_BUILD_DIR", "/var/cccp/work/build", 0);
-    setenv("SOVIET_MAKE_DIR", "/var/cccp/work/make", 0);
     setenv("SOVIET_TEST_LOG", "/var/cccp/log/test.log", 0);
    
     // Clean the working directories
@@ -65,17 +55,17 @@ void init() {
 
     // Verify if required directories exist, and create them if not
     struct stat st = {0};
-    if (stat(getenv("ROOT"), &st) == -1) {
-        mkdir(getenv("ROOT"), 0777);
+    if (stat(getenv("SOVIET_ROOT"), &st) == -1) {
+        mkdir(getenv("SOVIET_ROOT"), 0777);
     }
-    if (stat(getenv("MAIN_DIR"), &st) == -1) {
-        mkdir(getenv("MAIN_DIR"), 0777);
+    if (stat(getenv("SOVIET_MAIN_DIR"), &st) == -1) {
+        mkdir(getenv("SOVIET_MAIN_DIR"), 0777);
     }
     if (stat(getenv("SOVIET_REPOS_DIR"), &st) == -1) {
         mkdir(getenv("SOVIET_REPOS_DIR"), 0777);
     }
-    if (stat(getenv("WORK_DIR"), &st) == -1) {
-        mkdir(getenv("WORK_DIR"), 0777);
+    if (stat(getenv("SOVIET_WORK_DIR"), &st) == -1) {
+        mkdir(getenv("SOVIET_WORK_DIR"), 0777);
     }
     if (stat(getenv("SOVIET_SPM_DIR"), &st) == -1) {
         mkdir(getenv("SOVIET_SPM_DIR"), 0777);
