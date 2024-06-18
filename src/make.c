@@ -242,14 +242,12 @@ Returns:
   - 1: An error occurred during special command execution.
 */
 int exec_special(const char* cmd, const char* package_dir) {
-    dbg(2, "Executing special command: %s");
     char* special_cmd = calloc(64 + strlen(package_dir) + strlen(cmd), sizeof(char));
+    dbg(2, "Executing special command: %s", cmd);
 
-    if (system(special_cmd) != 0) {
-        free(special_cmd);
+    if (system(cmd) != 0) {
         return 1;
     }
-    free(special_cmd);
     dbg(1, "Special command executed!");
     return 0;
 }

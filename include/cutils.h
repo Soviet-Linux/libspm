@@ -48,7 +48,7 @@ int wrnfile(const char* filePath,char* buffer,long size);
         * 1 - exists
         * 2 - Not a directory
 */
-int xisdir (const char *d);
+int isdir (const char *d);
 // create dir recursivelty (similar to mkdir -p)
 int pmkdir (const char *dir);
 //  move a file and create the dir if it doesn't exist
