@@ -37,7 +37,7 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int f_install_package_source(const char* spm_path, int as_dep, const char* repo) {
+int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
 
     // Read the config in case anything got overwritten in the ecmp file
 
@@ -133,6 +133,12 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* repo)
 
     // Format the path using sprintf
     char file_path[MAX_PATH];
+
+    if(!repo)
+    {
+        repo = "local";
+    }
+
     dbg(1, "spm dir is %s", getenv("SOVIET_SPM_DIR"));
     dbg(1, "repo is %s", repo);
     dbg(1, "name is %s", pkg.name);

@@ -97,7 +97,7 @@ Returns:
   - -1: Installation failed.
 */
 int install_package_source(const char* spm_path,int as_dep);
-int f_install_package_source(const char* spm_path, int as_dep, const char* repo);
+int f_install_package_source(const char* spm_path, int as_dep,  char* repo);
 
 // Function to install a package from a binary archive
 /*
