@@ -29,9 +29,9 @@ SDIR = src
 
 
 
-CFLAGS = -Wall -g -fPIC -O2 -Wextra -L./bin -Iinclude
+CFLAGS = -Wall -g -fPIC -O2 -Wextra -L./bin -Iinclude 
 
-LIBS = lib/* -lcurl -lsqlite3 -lm
+LIBS = lib/* -lcurl -lsqlite3 -lm -lcrypto
 
 # change these to proper directories where each file should be
 SRCDIR   = src
