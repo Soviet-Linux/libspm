@@ -17,12 +17,17 @@ typedef struct {
 } ConfigEntry;
 
 ConfigEntry configEntries[] = {
-    { "ROOT", "/" },
+    { "SOVIET_ROOT", "/" },
     { "SOVIET_DEFAULT_FORMAT", "ecmp" },
-    { "MAIN_DIR", "/var/cccp" },
-    { "WORK_DIR", "/var/cccp/work" },
-    { "CONFIG_FILE", DEFAULT_CONFIG_FILE },
+    { "SOVIET_MAIN_DIR", "/var/cccp" },
+    { "SOVIET_WORK_DIR", "/var/cccp/work" },
+    { "SOVIET_CONFIG_FILE", DEFAULT_CONFIG_FILE },
     { "SOVIET_REPOS_DIR", "/var/cccp/sources" },
+    { "SOVIET_SPM_DIR", "/var/cccp/spm" },
+    { "SOVIET_LOG_DIR", "/var/cccp/log" },
+    { "SOVIET_PLUGIN_DIR", "/var/cccp/plugins" },
+    { "SOVIET_BUILD_DIR", "/var/cccp/work/build" },
+    { "SOVIET_MAKE_DIR", "/var/cccp/work/make" },
     { "MAKE_FLAGS", "-j1" },
     { "SOVIET_DEFAULT_REPO", "OUR" },
     { "SOVIET_DEFAULT_REPO_URL", "https://github.com/Soviet-Linux/OUR.git" },
