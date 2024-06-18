@@ -126,6 +126,7 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* repo)
 
     // Execute post-install scripts
     if (pkg.info.special != NULL && strlen(pkg.info.special) > 0) {
+        msg(WARNING, "Special: %s", pkg.info.special);
         dbg(1, "Executing post install script for %s", pkg.name);
         exec_special(pkg.info.special, getenv("SOVIET_BUILD_DIR"));
     }
@@ -145,7 +146,7 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* repo)
     }
 
     sprintf(file_path, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"), repo, pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
-    create_pkg(file_path, &pkg, NULL);
+    create_pkg(file_path, &pkg, NULL); 
     dbg(1, "Package %s installed", pkg.name);
 
     // Clean up
