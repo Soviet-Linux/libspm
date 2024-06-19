@@ -76,6 +76,10 @@ void move_binaries(char** locations, long loc_size) {
                 new_ptr = fopen(dest_loc,"w"); 
                 fwrite(buffer, sizeof(char), size, new_ptr); 
                 fclose(new_ptr);
+                
+                chown(dest_loc, getuid(), getgid());
+                chmod(dest_loc, 0755);
+
             } else {
                 msg(FATAL, "Terminating the program");
             }
