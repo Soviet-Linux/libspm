@@ -93,12 +93,37 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     char legacy_dir[MAX_PATH];
     sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
 
-    // Build the package
-    dbg(1, "Making %s", pkg.name);
-    if (make(legacy_dir, &pkg) != 0) {
-        msg(ERROR, "Failed to make %s", pkg.name);
-        return -1;
-    }
+    // ...
+    chmod(getenv("SOVIET_MAKE_DIR"), 0777);
+    chmod(getenv("SOVIET_BUILD_DIR"), 0777);
+    
+    pid_t p = fork(); 
+    int status = 0;
+    if ( p == 0)
+    {
+
+        if (getuid() == 0) 
+        {
+            /* process is running as root, drop privileges */
+            if (setgid(1000) != 0)
+            {
+                msg(ERROR, "setgid: Unable to drop group privileges");
+            }
+            if (setuid(1000) != 0)
+            {
+                msg(ERROR, "setuid: Unable to drop user privileges");
+            }
+        }
+        // Build the package
+        dbg(1, "Making %s", pkg.name);
+        if (make(legacy_dir, &pkg) != 0) {
+            msg(ERROR, "Failed to make %s", pkg.name);
+            return -1;
+        }
+        exit(0);
+    } 
+    while(wait(NULL) > 0);
+
     dbg(1, "Making %s done", pkg.name);
 
     // Get package locations
