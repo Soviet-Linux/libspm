@@ -45,7 +45,7 @@ int make(char* package_dir, struct package* pkg) {
         msg(INFO, "%s", pkg->inputs[i]);
         char* str = calloc(MAX_PATH, sizeof(char));
 
-        if(OVERWRITE_CHOISE != true)
+        if(!OVERWRITE_CHOISE)
         {
             char* res = fgets(str, MAX_PATH-1, stdin);
 
@@ -77,20 +77,13 @@ int make(char* package_dir, struct package* pkg) {
         }
             else
             {
-                if(sizeof(USER_CHOISE[0]) <= sizeof(str))
-                {
-                    sprintf(str, "%s", USER_CHOISE[0]);
-                    char* in = calloc(128, sizeof(char));
-                    sprintf(in, "INPUT_%d", i);
-                    setenv(in, str, 0);
-                    free(in);
-                }
-                    else
-                    {
-                        msg(FATAL, "something somwhere went wrong");
-                    }
+                sprintf(str, "%s", USER_CHOISE[0]);
+                char* in = calloc(128, sizeof(char));
+                sprintf(in, "INPUT_%d", i);
+                setenv(in, str, 0);
+                free(in);
             }
-        free(str);
+            free(str);
     }
 
     // Thinking about putting the package caching here
@@ -251,7 +244,6 @@ Returns:
   - 1: An error occurred during special command execution.
 */
 int exec_special(const char* cmd, const char* package_dir) {
-    char* special_cmd = calloc(64 + strlen(package_dir) + strlen(cmd), sizeof(char));
     dbg(2, "Executing special command: %s", cmd);
 
     if (system(cmd) != 0) {
