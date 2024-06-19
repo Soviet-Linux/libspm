@@ -6,7 +6,6 @@
 // Include the necessary headers for the class file and utility functions
 #include  "libspm.h"
 #include "cutils.h"
-#include "data.h"
 
 // Function to uninstall packages
 /*
@@ -28,39 +27,41 @@ int uninstall(char* name)
     // Get the SPM directory from the environment variables
     char* SPM_DIR = getenv("SOVIET_SPM_DIR");
 
-    // Generate the path to the package's SPM file
-    char* dataSpmPath[MAX_PATH];
-    sprintf(dataSpmPath, "%s/%s.%s", getenv("SOVIET_SPM_DIR"), name, getenv("SOVIET_DEFAULT_FORMAT"));
-    
-    // Verify if the package is installed
-    dbg(3, "Verifying if the package is installed at %s", dataSpmPath);
+    char** REPOS = calloc(512,sizeof(char));
+    int REPO_COUNT = get_repos(REPOS);
+    char* dataSpmPath = calloc(MAX_PATH, sizeof(char));
 
-    // Check if the SPM file exists
-    if (access(dataSpmPath, F_OK) != 0) {
-        msg(ERROR, "Package %s is not installed!", name);
-        return -1;
+    for (int j = 0; j < REPO_COUNT; j++)
+    {
+        // Generate the path to the package's SPM file
+        char* tmpSpmPath[MAX_PATH];
+        sprintf(tmpSpmPath, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"),REPOS[j], name, getenv("SOVIET_DEFAULT_FORMAT"));
+
+        // Verify if the package is installed
+        dbg(3, "Verifying if the package is installed at %s", tmpSpmPath);
+
+        // Check if the SPM file exists
+        if (access(tmpSpmPath, F_OK) == 0) {
+            sprintf(dataSpmPath, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"),REPOS[j], name, getenv("SOVIET_DEFAULT_FORMAT"));
+            // Create a struct to store package information
+            struct package r_pkg;
+
+            // Open the package's SPM file and populate the r_pkg struct
+            open_pkg(dataSpmPath, &r_pkg, NULL);
+
+            dbg(3, "Found %d locations", r_pkg.locationsCount);
+
+            // Remove all the files in the data["locations"]
+            for (int i = 0; i < r_pkg.locationsCount; i++) {
+                // Debug
+                dbg(3, "Removing %s", r_pkg.locations[i]);
+                dbg(3, "Remove exited with code %d", remove(r_pkg.locations[i]));
+            }
+            // Remove the SPM file from DATA_DIR
+            remove(dataSpmPath);
+            return 0;
+        }
     }
-
-    // Create a struct to store package information
-    struct package r_pkg;
-
-    // Open the package's SPM file and populate the r_pkg struct
-    open_pkg(dataSpmPath, &r_pkg, NULL);
-
-    dbg(3, "Found %d locations", r_pkg.locationsCount);
-
-    // Remove all the files in the data["locations"]
-    for (int i = 0; i < r_pkg.locationsCount; i++) {
-        // Debug
-        dbg(3, "Removing %s", r_pkg.locations[i]);
-        dbg(3, "Remove exited with code %d", remove(r_pkg.locations[i]));
-    }
-
-    // Remove the entries in the packages.json file
-    remove_data_installed(INSTALLED_DB, r_pkg.name);
-
-    // Remove the SPM file from DATA_DIR
-    remove(dataSpmPath);
-
+    msg(ERROR, "package not installed");
     return 0;
 }

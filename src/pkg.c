@@ -102,7 +102,7 @@ int create_pkg(const char* path, struct package* pkg, const char* format) {
                 dbg(2,"Opening package with %s format",FORMATS[i]);
                 runFormatLib(FORMATS[i],"create",path,pkg);
                 //free(*FORMATS);
-                free(FORMATS);
+                //free(FORMATS);
                 return 0;
             }
         }

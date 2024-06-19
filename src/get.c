@@ -1,14 +1,14 @@
-#include <curl/curl.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 // Include custom headers
 #include "libspm.h"
 #include "globals.h"
 #include "cutils.h"
-#include "data.h"
 
 // Function to retrieve a package from a data repository
 /*
@@ -28,47 +28,106 @@ char* get(struct package* i_pkg, const char* out_path)
         return NULL;
     }
 
-    dbg(3, "Loading package %s from ALL_DB\n", i_pkg->name);
+    return load_from_repo(i_pkg->name, out_path);
+}
 
-    // Allocate memory for package format and section
-    char* pkg_format = calloc(64, sizeof(char));
-    char* pkg_section = calloc(64, sizeof(char));
-
-    // Retrieve data from the ALL_DB repository
-    retrieve_data_repo(ALL_DB, i_pkg, &pkg_format, &pkg_section);
-
-    dbg(3, "Got %s %s %s %s from DB", pkg_format, pkg_section, i_pkg->version, i_pkg->type);
-
-    // Check if data retrieval was successful
-    if (!pkg_format || !pkg_section || !i_pkg->version || !i_pkg->type) {
-        msg(FATAL, "Failed to retrieve data from ALL_DB");
-        return NULL;
-    }
-
-    dbg(3, "format is '%s'\n", pkg_format);
-    dbg(3, "section is '%s'\n", pkg_section);
-
-    dbg(1, "Downloading %s %s %s", i_pkg->name, i_pkg->version, i_pkg->type);
-
-    // Construct the URL for the package download
-    char url[64 + strlen(i_pkg->type) + strlen(i_pkg->name) + strlen(pkg_format)];
-    sprintf(url, "%s/%s/%s.%s", pkg_section, i_pkg->type, i_pkg->name, pkg_format);
-
-    // Download the package to the specified output path
-    if (downloadRepo(url, out_path) != 0)
+int get_repos(char** list)
+{
+    dbg(3, "checking for repos");
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(getenv("SOVIET_REPOS_DIR"));
+    int count = 0;
+    if (d)
     {
-        msg(ERROR, "Failed to download %s", url);
-        return NULL;
+        while ((dir = readdir(d)) != NULL)
+        {
+            if (count > 512)
+            {
+                printf("Error : too many elements in list , reallocating\n");
+                list = realloc(list,(count+512) * sizeof(char*));
+            }
+            list[count] = calloc(strlen(dir->d_name) + 1, sizeof(char));
+            strcpy(list[count], dir->d_name);
+            count++;
+        }
     }
 
-    // Free allocated memory
-    free(pkg_section);
-    return pkg_format;
+    for (int i = 0; i < count - 1; i++)
+    {
+        if (strcmp(list[i], ".") == 0 || strcmp(list[i], "..") == 0)
+        {
+            // Move the . string to the end
+            char* temp = list[i];
+            dbg(3, "Moving: %s", temp);
+            for (int k = i; k < count - 1; k++)
+            {
+                list[k] = list[k + 1];
+            }
+            list[count - 1] = temp;
+            i--;
+            count--;
+        }
+    }
+
+    closedir(d);
+
+    dbg(3, "done checking for repos");
+    return count;
 }
 
 // Function to synchronize the local repository with a remote repository
-void sync()
-{
-    // Download the "all.db" file to the specified path
-    downloadRepo("all.db", getenv("ALL_DB"));
+void sync() {
+    const char* repo_dir = getenv("SOVIET_REPOS_DIR");
+    const char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
+    const char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
+
+    char cmd[1024];
+
+    // Check if the repository directory exists
+    if (access(repo_dir, F_OK) != 0) {
+        // Create the repository directory if it doesn't exist
+        snprintf(cmd, sizeof(cmd), "mkdir -p %s", repo_dir);
+        if (system(cmd) != 0) {
+            printf("Failed to create directory %s\n", repo_dir);
+            return;
+        }
+    }
+
+    // Check if repo_dir is a git repository
+    if (access(repo_dir, X_OK) == 0) {
+        // Change directory to repo_dir
+        if (chdir(repo_dir) != 0) {
+            printf("Failed to change directory to %s\n", repo_dir);
+            return;
+        }
+
+        // Check if it's a git repository
+        if (system("git rev-parse --is-inside-work-tree >/dev/null 2>&1") != 0) {
+            // Initialize a new Git repository
+            if (system("git init") != 0) {
+                printf("Failed to initialize git repository in %s\n", repo_dir);
+                return;
+            }
+        }
+
+        // Check if submodule exists
+        snprintf(cmd, sizeof(cmd), "git submodule status %s | grep -qF ' %s '", repo_dir, submodule_name);
+        if (system(cmd) != 0) {
+            // Add the submodule
+            snprintf(cmd, sizeof(cmd), "git submodule add %s %s", repo_url, submodule_name);
+            if (system(cmd) != 0) {
+                printf("Failed to add submodule %s\n", submodule_name);
+                return;
+            }
+        }
+
+        // Update submodules
+        if (system("git submodule update --remote --init --recursive") != 0) {
+            printf("Failed to update submodules in %s\n", repo_dir);
+            return;
+        }
+    } else {
+        printf("%s is not a directory or cannot be accessed.\n", repo_dir);
+    }
 }

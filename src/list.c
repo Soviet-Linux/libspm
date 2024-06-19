@@ -2,114 +2,158 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "sqlite3.h"      // SQLite database library
+#include <dirent.h>
+#include <sys/stat.h>
+#include <errno.h>
 
-// Include necessary headers
-#include "libspm.h"
-#include "cutils.h"
+#define MAX_PATH_LENGTH 1024
+#define OPEN_ERROR -1
+#define READ_ERROR -2
 
-//should probably add there to the header when we are done
-
-//will print the content of INSTALLED_DB
-int list_installed()
-{
-    dbg(2, "listing installed packages from %s", getenv("INSTALLED_DB"));
-
-    //shame that print_all_data uses msg, this could have been so clean
-    sqlite3_stmt *stmt;
-    char *zErrMsg = 0;
-    int rc;
-
-    // Prepare the SQL query
-    const char *sql = "SELECT Name, Version, Type FROM Packages";
-    rc = sqlite3_prepare_v2(INSTALLED_DB, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", zErrMsg); // compiler doesn't complain about this but it might be bad
-        sqlite3_free(zErrMsg);
-        return 1;
+// Function to recursively retrieve all files in a directory and its subdirectories
+char **getAllFiles(const char* root, const char *path, int *num_files) {
+    DIR *dir;
+    struct dirent *entry;
+    struct stat stat_buf;
+    char* origin = strdup(path);
+    // Open the directory
+    dir = opendir(path);
+    if (dir == NULL) {
+        // Print an error message if directory couldn't be opened
+        fprintf(stderr, "Error opening directory %s: %s\n", path, strerror(errno));
+        free(origin);
+        return NULL;
     }
 
-    // Execute the SQL query
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        printf("\x1b[31;1;1m %s \x1b[0m %s - %s \n", sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), sqlite3_column_text(stmt, 2));
-    }
+    // Initialize variables
+    char **files_array = NULL;
+    int file_count = 0;
 
-    // Check if the SQL query was successful
-    if (rc != SQLITE_DONE) {
-        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
-        return -1;
+    // Loop through directory entries
+    while ((entry = readdir(dir)) != NULL) {
+        // Skip '.' and '..' entries
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+            continue;
+
+        // Construct full path of the current entry
+        char full_path[MAX_PATH_LENGTH];
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+
+        // Get information about the current entry
+        if (stat(full_path, &stat_buf) == 0) {
+            // If it's a directory, recursively call getAllFiles
+            if (S_ISDIR(stat_buf.st_mode)) {
+                int sub_files_count;
+                char **sub_files = getAllFiles(root, full_path, &sub_files_count);
+                if (sub_files != NULL) {
+                    // Resize files_array and copy contents of sub_files into it
+                    files_array = realloc(files_array, (file_count + sub_files_count) * sizeof(char *));
+                    for (int i = 0; i < sub_files_count; i++) {
+                        files_array[file_count++] = sub_files[i];
+                    }
+                    free(sub_files);
+                }
+            } else if (S_ISREG(stat_buf.st_mode)) {
+                // If it's a regular file, add it to files_array
+                files_array = realloc(files_array, (file_count + 1) * sizeof(char *));
+                files_array[file_count] = strdup(full_path + strlen(root) + 1);
+                file_count++;
+            }
+        }
     }
-    
-    dbg(2, "%d packages installed", count_installed());
+    // Close the directory
+    closedir(dir);
+
+    // Update num_files if it's not NULL
+    if (num_files != NULL)
+        *num_files = file_count;
+
+    // Return the array of file paths
+    free(origin);
+
+    return files_array;
+}
+
+// Function to count the number of installed packages
+int count_installed() {
+    const char *path = getenv("SOVIET_SPM_DIR");
+    int num_files;
+    char **files_array = getAllFiles(path, path, &num_files);
+    if (files_array != NULL) {
+        // Return the number of files
+        return num_files;
+    } else {
+        // If no files found, print a message
+        printf("No files found.\n");
+    }
+    return 1;
+}
+
+// Function to list all installed packages
+int list_installed() {
+    const char *path = getenv("SOVIET_SPM_DIR");
+    int num_files;
+    char **files_array = getAllFiles(path, path, &num_files);
+    if (files_array != NULL) {
+        // Print each file path
+        for (int i = 0; i < num_files; i++) {
+
+            // This will break if the files are not separated into repos
+            // But it doesnt cause a crash, just a visual bug
+            // I think
+            char* repo = strtok(files_array[i], "/");
+            char* package = strchr(files_array[i], '\0') + 1;
+            printf("%s from %s\n", package, repo);
+
+            // Free each file path string
+            free(files_array[i]);
+        }
+        // Free the array of file paths
+        free(files_array);
+    } else {
+        // If no files found, print a message
+        printf("No files found.\n");
+    }
     return 0;
 }
 
-//count installed
-int count_installed()
-{
-    int count = 0;
+// Function to search for a term in installed files
+int search(char *term) {
+    int found = 0;
+    const char *path = getenv("SOVIET_REPOS_DIR");
+    int num_files;
+    char **files_array = getAllFiles(path, path, &num_files);
 
-    sqlite3_stmt *stmt;
-    int rc;
-    
-    // Prepare the SQL query
-    const char *sql = "SELECT COUNT(*) FROM Packages";
-    rc = sqlite3_prepare_v2(INSTALLED_DB, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", sqlite3_errmsg(INSTALLED_DB));
-        return 1;
-    }
-    // Execute the SQL query
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        count = (int)sqlite3_column_int(stmt, 0);
-    }
+    if (files_array != NULL) {
+        // Print each file path
+        for (int i = 0; i < num_files; i++) {
 
-    // Check if the SQL query was successful
-    if (rc != SQLITE_DONE) {
-        msg(ERROR, "Error executing statement: %s\n", sqlite3_errmsg(INSTALLED_DB));
-        return -1;
-    }
+            // This will break if the files are not separated into repos
+            // But it doesnt cause a crash, just a visual bug
+            // I think
+            char* repo = strtok(files_array[i], "/");
+            char* package = strchr(files_array[i], '\0') + 1;
 
+            if (strstr(package, term) != 0)
+            {
+                // Compare the filename
+                printf("Found package: %s in %s \n", package, repo);
+                found++;
+            }
 
-    return count;
-}
-
-int search(char* in)
-{
-    msg(INFO, "searching for %s", in);
-    
-    sqlite3_stmt *stmt;
-    int rc;
-    int _found = 0;
-
-    // Prepare the SQL query
-    const char *sql = "SELECT Name, Section FROM Packages";
-    rc = sqlite3_prepare_v2(ALL_DB, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        msg(ERROR, "SQL error: %s", sqlite3_errmsg(ALL_DB));
-        return 1;
-    }
-    
-    // Execute the SQL query
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        struct package* remote = calloc(1, sizeof(struct package));
-        remote->name = (char*)sqlite3_column_text(stmt, 0);
-        
-        if(strstr(remote->name, in) != 0)
-        {
-             printf("found \x1b[31;1;1m %s \x1b[0m in %s \n", remote->name, (char*)sqlite3_column_text(stmt, 1));
-             _found++;
+            // Free each file path string
+            free(files_array[i]);
         }
-        free(remote);
+        // Free the array of file paths
+        free(files_array);
+    } else {
+        // If no files found, print a message
+        printf("All repositories are empty.\n");
     }
 
-    // Check if the SQL query was successful
-    if (rc != SQLITE_DONE) {
-        msg(ERROR, "SQL error: %s", sqlite3_errmsg(ALL_DB));
-        return -1;
+    if(found == 0)
+    {
+        printf("Package not found: %s\n", term);
     }
-
-    msg(WARNING, "found %d packages that match %s", _found, in);
-
     return 0;
 }

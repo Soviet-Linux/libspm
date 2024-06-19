@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include <sys/stat.h>
+#include <openssl/sha.h>
 
 // Include necessary headers
 #include "libspm.h"
@@ -39,13 +40,12 @@ int make(char* package_dir, struct package* pkg) {
 
     // Get user input
 
-    for (int i = 0; i < pkg->inputsCount; i++) {
-
+    for (int i = 0; i < pkg->inputsCount; i++) 
+    {
         msg(INFO, "%s", pkg->inputs[i]);
-
         char* str = calloc(MAX_PATH, sizeof(char));
 
-        if(OVERWRITE_CHOISE != true)
+        if(!OVERWRITE_CHOISE)
         {
             char* res = fgets(str, MAX_PATH-1, stdin);
 
@@ -58,8 +58,7 @@ int make(char* package_dir, struct package* pkg) {
 
             while (str[k] != '\n' && str[k] != '\0')
             {
-                // This is awful, probably even worse than the shit i did in link.c, oh well.
-                if(str[k] == '~' || str[k] == '`' || str[k] == '#' || str[k] == '$' || str[k] == '&' || str[k] == '*' || str[k] == '(' || str[k] == ')' || str[k] == '\\' || str[k] == '|' || str[k] == '[' || str[k] == ']' || str[k] == '{' || str[k] == '}' || str[k] == ';' || str[k] == '\'' || str[k] == '<' || str[k] == '>' || str[k] == '?' || str[k] == '!')
+                if(strstr(str[k], "~`#$&*()\\|[]{};\'<>?!"))
                 {
                     str[k] = ' ';
                 }
@@ -71,31 +70,27 @@ int make(char* package_dir, struct package* pkg) {
                 str[k] = '\0';
             }
 
-
             char* in = calloc(128, sizeof(char));
-            sprintf(in, "INPUT_%d", i);
+            sprintf("%s", in, "INPUT_%d", i);
             setenv(in, str, 0);
             free(in);
-
         }
-        else
-        {
-            if(sizeof(USER_CHOISE[0]) <= sizeof(str))
+            else
             {
-                sprintf(str, USER_CHOISE[0]);
+                sprintf(str, "%s", USER_CHOISE[0]);
                 char* in = calloc(128, sizeof(char));
                 sprintf(in, "INPUT_%d", i);
                 setenv(in, str, 0);
                 free(in);
             }
-            else
-            {
-                msg(FATAL, "something somwhere went wrong");
-            }
-        }
-        free(str);
+            free(str);
     }
 
+    // Thinking about putting the package caching here
+    // Maybe it will check if the installed version matches $VERSION
+    // If so, it will just copy the dir from /usr/src/$NAME-$VERSION
+    // Instead of executing the following:
+    //
     // Extract URL from the package
     char excmd[64 + strlen(pkg->url)];
     sprintf(excmd, "echo -n %s", pkg->url);
@@ -121,54 +116,65 @@ int make(char* package_dir, struct package* pkg) {
     {
         pkg->sha256 = "Not provided";
     }
-
     // Check if the checksum shall be bypassed
     if (!INSECURE)
     {
         // Check the hash, abort if mismatch
         char* exec_cmd_1 = calloc(MAX_PATH, sizeof(char));
-        char* exec_cmd_2 = calloc(MAX_PATH, sizeof(char));
+        unsigned char hash[SHA256_DIGEST_LENGTH];
+        char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
 
+        // TODO, fix this
         sprintf(exec_cmd_1, "( cd %s && find . -maxdepth 1 -type f  | cut -c3- ) ", getenv("SOVIET_MAKE_DIR"));
         dbg(1, "Executing  %s to search for package tarball", exec_cmd_1);
         char* file = exec(exec_cmd_1);
-
         file[strcspn(file, "\n")] = 0;
 
-        if (!((file == NULL) || (file[0] == '\0')))
-        {
-            dbg(1, "Checking file %s, if this is not the package tarball, the author of this line is stupid", file);
+        char* filename = calloc(MAX_PATH, sizeof(char));
+        sprintf(filename, "%s/%s", getenv("SOVIET_MAKE_DIR"), file);
 
-            sprintf(exec_cmd_2, "( cd %s && sha256sum %s | cut -d ' ' -f 1)", getenv("SOVIET_MAKE_DIR"), file);
-            dbg(1, "Executing  %s to check the hash", exec_cmd_2);
-            char* hash = exec(exec_cmd_2);
+        dbg(1, "Checking file %s, if this is not the package tarball, the author of this line is stupid", file);
+        struct stat st;
+        stat(filename, &st);
+        int size = st.st_size;
+
+        char* buffer = malloc(size);
+        FILE *ptr;
+        ptr = fopen(filename,"r"); 
+        fread(buffer, sizeof(char), size, ptr); 
+
+        if (!(buffer == NULL))
+        {
+            SHA256(buffer, size, hash);
 
             if (!((hash == NULL) || (hash[0] == '\0')))
             {
                 dbg(1, "Hash is %s", pkg->sha256);
-                dbg(1, "Got %s", hash);
+                for(int k = 0; k < SHA256_DIGEST_LENGTH; k++)
+                {
+                    char* temp = calloc(8, 1);
+                    sprintf(temp, "%02x", hash[k]);
+                    strcat(hash_str, temp);
+                }
 
-                hash[strcspn(hash, "\n")] = 0;
-
-
-                if(strcmp(hash, pkg->sha256) != 0)
+                dbg(1, "Got %s", hash_str);
+                if(strcmp(hash_str, pkg->sha256) != 0)
                 {
                     msg(FATAL, "Hash mismatch, aborting");
                 }
             }
         }
-        else
-        {
-            msg(FATAL, "Could not verify the file's hash");
-        }
+            else
+            {
+                msg(FATAL, "Could not verify the file's hash");
+            }
 
-        free(exec_cmd_1);
-        free(exec_cmd_2);
+            free(exec_cmd_1);
     } 
-    else 
-    {
-        msg(WARNING, "The Checksum is being skipped");
-    }
+        else 
+        {
+            msg(WARNING, "The Checksum is being skipped");
+        }
 
     // Run 'prepare' command
     if (pkg->info.prepare != NULL && strlen(pkg->info.prepare) > 0) {
@@ -238,14 +244,11 @@ Returns:
   - 1: An error occurred during special command execution.
 */
 int exec_special(const char* cmd, const char* package_dir) {
-    dbg(2, "Executing special command: %s");
-    char* special_cmd = calloc(64 + strlen(package_dir) + strlen(cmd), sizeof(char));
+    dbg(2, "Executing special command: %s", cmd);
 
-    if (system(special_cmd) != 0) {
-        free(special_cmd);
+    if (system(cmd) != 0) {
         return 1;
     }
-    free(special_cmd);
     dbg(1, "Special command executed!");
     return 0;
 }

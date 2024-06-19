@@ -1,5 +1,4 @@
 #include "stdbool.h"
-#include <sqlite3.h>
 
 #define QUEUE_MAX 64
 
@@ -22,10 +21,6 @@ extern bool INSECURE;
 extern bool OVERWRITE_CHOISE;
 // Choise for passing N or Y to a prompt by default
 extern char* USER_CHOISE[2];
-
-
-extern sqlite3* INSTALLED_DB;
-extern sqlite3* ALL_DB;
 
 extern char* PACKAGE_QUEUE[QUEUE_MAX];
 extern int QUEUE_COUNT;

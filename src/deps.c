@@ -89,7 +89,7 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
             char* str = calloc(2, sizeof(char));
 
             msg(INFO, "Do you want to download optional package %s, y/N", dependencies[i]);
-            if(OVERWRITE_CHOISE != true)
+            if(!OVERWRITE_CHOISE)
             {
                 char* res = fgets(str, 2, stdin);
 
@@ -110,21 +110,13 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
                     str[k] = '\0';
                 }
             }
-            else
-            {
-                if(sizeof(USER_CHOISE[0]) == sizeof(str))
-                {
-                    sprintf(str, USER_CHOISE[0]);
-                }
                 else
                 {
-                    msg(FATAL, "something somwhere went wrong");
+                    sprintf(str, "%s", USER_CHOISE[0]);
                 }
-            }
 
             if((strcmp(str, "Y") == 0 || strcmp(str, "y") == 0))
             {
-                // TODO: We need to install the dependency
                 msg(INFO, "Installing %s", dependencies[i]);
 
                 // Check if the dependency is in the queue
