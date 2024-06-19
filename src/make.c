@@ -71,7 +71,7 @@ int make(char* package_dir, struct package* pkg) {
             }
 
             char* in = calloc(128, sizeof(char));
-            sprintf("%s", in, "INPUT_%d", i);
+            sprintf(in, "INPUT_%d", i);
             setenv(in, str, 0);
             free(in);
         }
