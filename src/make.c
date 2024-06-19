@@ -122,7 +122,7 @@ int make(char* package_dir, struct package* pkg) {
         // Check the hash, abort if mismatch
         char* exec_cmd_1 = calloc(MAX_PATH, sizeof(char));
         unsigned char hash[SHA256_DIGEST_LENGTH];
-        char* hash_str = calloc(SHA256_DIGEST_LENGTH + 1, 1);
+        char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
 
         // TODO, fix this
         sprintf(exec_cmd_1, "( cd %s && find . -maxdepth 1 -type f  | cut -c3- ) ", getenv("SOVIET_MAKE_DIR"));
@@ -152,7 +152,7 @@ int make(char* package_dir, struct package* pkg) {
                 dbg(1, "Hash is %s", pkg->sha256);
                 for(int k = 0; k < SHA256_DIGEST_LENGTH; k++)
                 {
-                    char* temp = calloc(1, 1);
+                    char* temp = calloc(8, 1);
                     sprintf(temp, "%02x", hash[k]);
                     strcat(hash_str, temp);
                 }

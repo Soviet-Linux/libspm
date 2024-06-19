@@ -142,6 +142,8 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     dbg(1, "spm dir is %s", getenv("SOVIET_SPM_DIR"));
     dbg(1, "repo is %s", repo);
     dbg(1, "name is %s", pkg.name);
+    dbg(1, "description is %s", pkg.info.description);
+
 
     char repo_path[MAX_PATH];
     sprintf(repo_path, "%s/%s", getenv("SOVIET_SPM_DIR"), repo);

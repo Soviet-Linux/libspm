@@ -21,6 +21,7 @@ struct cmd
     char* install;
     char* special;
     char* download;
+    char* description;
 };
 struct package
 {
