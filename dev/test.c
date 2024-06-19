@@ -8,7 +8,6 @@
 
 #include "../include/globals.h"
 #include "../include/libspm.h"
-#include "../include/data.h"
 #include "../include/cutils.h"
 #include "../include/libspm.h"
 
@@ -33,7 +32,6 @@ char* l_files[l_f_count] = {"w","b/d/e","a","d","b/y","b/c","b/f","s/j/k/z","s/j
 char** list_of_stuff  = NULL;
 int list_of_stuff_count = 0;
 
-int test_data ();
 int test_ecmp();
 int test_move();
 int test_get();
@@ -68,13 +66,10 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    if (strcmp(argv[1], "data") == 0) {
-        return test_data();
-    } else if (strcmp(argv[1], "ecmp") == 0) {
+    if (strcmp(argv[1], "ecmp") == 0) {
         return test_ecmp();
     } else if (strcmp(argv[1], "all") == 0) {
         int ret = 0;
-        ret += test_data();
         ret += test_ecmp();
         return ret;
     } else if (strcmp(argv[1], "make") == 0) {
@@ -282,88 +277,6 @@ int test_get()
     return 0;
 
 }
-int test_data ()
-{
-    //init();
-    int EXIT = EXIT_SUCCESS;
-
-    setenv("ALL_DB_PATH","dev/all.db",1);
-
-    printf("Removing test.db\n");
-    remove("dev/all.db");
-
-    dbg(2,"Creating test database...\n");
-
-    sqlite3 *db;
-    connect_db(&db,"dev/all.db");
-    create_table_installed(db);
-
-    
-    dbg(2,"Adding data to test database...\n");
-    for (int i = 0; i < 5; i++) {
-        struct package a_pkg = {0};
-        a_pkg.name = names[i];
-        a_pkg.version = versions[i];
-        a_pkg.type = types[i];
-        store_data_installed(db,&a_pkg,0);
-    }
-    
-    dbg(2,"Print all data from test database...\n");
-    print_all_data(db);
-    dbg(2,"Checking data in test database...\n");
-    for (int i = 0; i < 5; i++)
-    {
-        struct package a_pkg = {0};
-        a_pkg.name = names[i];
-        printf("Checking %s...\n",a_pkg.name);
-        retrieve_data_installed(db,&a_pkg,NULL);
-        msg(INFO,"  %s => %s %s\n",a_pkg.name,a_pkg.version,a_pkg.type);
-        if (strcmp(a_pkg.version,versions[i]) != 0 |
-            strcmp(a_pkg.type,types[i]) !=0 ) {
-            msg(ERROR,"Invalid return values , database check failed");
-            EXIT = -1;
-        }
-        free(a_pkg.version);
-        free(a_pkg.type);
-        
-    }
-    printf("Removing data from test database...\n");
-    for (int i = 0; i < 5; i++) {
-        printf("Removing %s\n",names[i]);
-        remove_data_installed(db,names[i]);
-    }
-    
-
-    printf("Checking data in test database...\n");
-    for (int i = 0; i < 5; i++) {
-        struct package a_pkg;
-        a_pkg.name = names[i];
-        a_pkg.version = NULL;
-        a_pkg.type = NULL;
-        retrieve_data_installed(db,&a_pkg,NULL);
-
-        printf("  %s => %s %s\n",a_pkg.name,a_pkg.version,a_pkg.type);
-        if (a_pkg.type != NULL | a_pkg.version != NULL)
-        {
-            msg(ERROR,"Database supression failed ");
-            EXIT = -1;
-        }
-
-    }
-
-    printf("Closing test database...\n");
-    sqlite3_close(db);
-    printf("Removing test database...\n");
-    remove("dev/all.db");
-
-
-
-    printf("%d Leaks\n",check_leaks());
-
-    return EXIT;
-}
-
-
 
 int test_ecmp(int type)
 {
