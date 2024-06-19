@@ -59,11 +59,9 @@ int uninstall(char* name)
             }
             // Remove the SPM file from DATA_DIR
             remove(dataSpmPath);
-        }
-        else
-        {
-            msg(ERROR, "package not installed");
+            return 0;
         }
     }
+    msg(ERROR, "package not installed");
     return 0;
 }

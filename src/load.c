@@ -153,7 +153,7 @@ char* load_from_repo(const char* in, const char* file_path)
 
             char* str = calloc(2, sizeof(char));
 
-            if(OVERWRITE_CHOISE != true)
+            if(!OVERWRITE_CHOISE)
             {
                 char* res_2 = fgets(str, 2, stdin);
 
@@ -174,68 +174,62 @@ char* load_from_repo(const char* in, const char* file_path)
                     str[k] = '\0';
                 }
             }
-            else
-            {
-                if(sizeof(USER_CHOISE[0]) == sizeof(str))
+                else
                 {
                     sprintf(str, "%s", USER_CHOISE[0]);
                 }
-                else
-                {
-                    msg(FATAL, "something somwhere went wrong");
-                }
-            }
+
             if((strcmp(str, "N") == 0 || strcmp(str, "n") == 0))
             {
                 return NULL;
             }
-            else
-            {
-                msg(INFO, "Listing all");
-
-                for (int i = 0; i < count; i++)
+                else
                 {
-                    if(strlen(found[i]) > 3)
-                    {
-                        char* repo = strtok(found[i], "/");
-                        char* package = strchr(found[i], '\0') + 1;
-                        msg(INFO, "%d. %s from %s", i, package, repo);
+                    msg(INFO, "Listing all");
 
+                    for (int i = 0; i < count; i++)
+                    {
+                        if(strlen(found[i]) > 3)
+                        {
+                            char* repo = strtok(found[i], "/");
+                            char* package = strchr(found[i], '\0') + 1;
+                            msg(INFO, "%d. %s from %s", i, package, repo);
+
+                        }
                     }
-                }
 
-                msg(INFO, "Choose which package to install");
+                    msg(INFO, "Choose which package to install");
 
-                int int_ = calloc(2, sizeof(int));
-                char* res_1 = scanf("%d", &int_);
+                    int int_ = calloc(2, sizeof(int));
+                    char* res_1 = scanf("%d", &int_);
 
-                while ((getchar()) != '\n');
+                    while ((getchar()) != '\n');
 
-                if(int_ < count)
-                {
-                    dbg(3, "choise is %s", found[int_]);
-                    char* repo = strtok(found[int_], "/");
-                    char* package = strchr(found[int_], '\0') + 1;
-                    msg(INFO, "Loading package %s from %s", package, repo);
-                    // Create the full PATH by combining the repository URL and the provided path
-                    char* path = calloc(strlen(repo) + strlen(getenv("SOVIET_REPOS_DIR")) + MAX_PATH, sizeof(char));
-                    sprintf(path, "%s/%s/%s", getenv("SOVIET_REPOS_DIR"), repo, package);
-                    dbg(3, "Loading package from path: %s", path);
-                    // Log a message about the download process
-
-                    // Attempt to load the file
-                    if (loadFile(path, file_path) == 0)
+                    if(int_ < count)
                     {
-                        // Clean up and return success
+                        dbg(3, "choise is %s", found[int_]);
+                        char* repo = strtok(found[int_], "/");
+                        char* package = strchr(found[int_], '\0') + 1;
+                        msg(INFO, "Loading package %s from %s", package, repo);
+                        // Create the full PATH by combining the repository URL and the provided path
+                        char* path = calloc(strlen(repo) + strlen(getenv("SOVIET_REPOS_DIR")) + MAX_PATH, sizeof(char));
+                        sprintf(path, "%s/%s/%s", getenv("SOVIET_REPOS_DIR"), repo, package);
+                        dbg(3, "Loading package from path: %s", path);
+                        // Log a message about the download process
+
+                        // Attempt to load the file
+                        if (loadFile(path, file_path) == 0)
+                        {
+                            // Clean up and return success
+                            free(path);
+                            free(found);
+                            return repo;
+                        }
                         free(path);
                         free(found);
-                        return repo;
+                        // Clean up URL memory
                     }
-                    free(path);
-                    free(found);
-                    // Clean up URL memory
                 }
-            }
     }
     return NULL;
 }
