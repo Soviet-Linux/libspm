@@ -27,9 +27,9 @@ void move_binaries(char** locations, long loc_size) {
     // Iterate through locations and move the binaries to their correct locations
     for (int i = 0; i < loc_size; i++) {
         char dest_loc[PATH_MAX];
-        sprintf(dest_loc, "%s/%s", getenv("SOVIET_ROOT"), locations[i]);
+        sprintf(dest_loc, "%s%s", getenv("SOVIET_ROOT"), locations[i]);
         char build_loc[PATH_MAX];
-        sprintf(build_loc, "%s/%s", getenv("SOVIET_BUILD_DIR"), locations[i]);
+        sprintf(build_loc, "%s%s", getenv("SOVIET_BUILD_DIR"), locations[i]);
 
         // Check if the destination location is empty
         if (!(access(dest_loc, F_OK) == 0)) {
