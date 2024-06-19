@@ -50,7 +50,7 @@ void move_binaries(char** locations, long loc_size) {
                     msg(WARNING, "Moving %s to %s failed, file absent, continuing...", build_loc, dest_loc);
                     break;
                 case 0:
-                    msg(WARNING, "Moved %s to %s", build_loc, dest_loc);
+                    dbg(1, "Moved %s to %s", build_loc, dest_loc);
                     break;
             }
             
