@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+
 #include "limits.h"
 
 // Include necessary headers
@@ -58,7 +60,22 @@ void move_binaries(char** locations, long loc_size) {
             msg(WARNING, "%s is already here, use --overwrite?", locations[i]);
             if (OVERWRITE) {
                 // Rename the file in the build directory to the destination location
-                rename(build_loc, dest_loc);
+                struct stat st;
+                stat(build_loc, &st);
+                int size = st.st_size;
+
+                char* buffer = malloc(size);
+
+                FILE *old_ptr;
+                FILE *new_ptr;
+
+                old_ptr = fopen(build_loc,"r"); 
+                fread(buffer, sizeof(char), size, old_ptr); 
+                fclose(old_ptr);
+
+                new_ptr = fopen(dest_loc,"w"); 
+                fwrite(buffer, sizeof(char), size, new_ptr); 
+                fclose(new_ptr);
             } else {
                 msg(FATAL, "Terminating the program");
             }
