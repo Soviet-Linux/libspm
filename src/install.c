@@ -88,66 +88,69 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         dbg(1, "Checking optional dependencies...");
         check_optional_dependencies(pkg.optional, pkg.optionalCount);
     }
-
-    // Legacy directory path for compatibility
-    char legacy_dir[MAX_PATH];
-    sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
-
-    // ...
-    chmod(getenv("SOVIET_MAKE_DIR"), 0777);
-    chmod(getenv("SOVIET_BUILD_DIR"), 0777);
-    
-    pid_t p = fork(); 
-    int status = 0;
-    if ( p == 0)
+    // Check if a package is a collection
+    if(strcmp(pkg.type, "con") != 0)
     {
+        // Legacy directory path for compatibility
+        char legacy_dir[MAX_PATH];
+        sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
 
-        if (getuid() == 0) 
+        // ...
+        chmod(getenv("SOVIET_MAKE_DIR"), 0777);
+        chmod(getenv("SOVIET_BUILD_DIR"), 0777);
+        
+        pid_t p = fork(); 
+        int status = 0;
+        if ( p == 0)
         {
-            /* process is running as root, drop privileges */
-            if (setgid(1000) != 0)
+
+            if (getuid() == 0) 
             {
-                msg(ERROR, "setgid: Unable to drop group privileges");
+                /* process is running as root, drop privileges */
+                if (setgid(1000) != 0)
+                {
+                    msg(ERROR, "setgid: Unable to drop group privileges");
+                }
+                if (setuid(1000) != 0)
+                {
+                    msg(ERROR, "setuid: Unable to drop user privileges");
+                }
             }
-            if (setuid(1000) != 0)
-            {
-                msg(ERROR, "setuid: Unable to drop user privileges");
+            // Build the package
+            dbg(1, "Making %s", pkg.name);
+            if (make(legacy_dir, &pkg) != 0) {
+                msg(ERROR, "Failed to make %s", pkg.name);
+                return -1;
             }
-        }
-        // Build the package
-        dbg(1, "Making %s", pkg.name);
-        if (make(legacy_dir, &pkg) != 0) {
-            msg(ERROR, "Failed to make %s", pkg.name);
+            exit(0);
+        } 
+        while(wait(NULL) > 0);
+
+        dbg(1, "Making %s done", pkg.name);
+
+        // Get package locations
+        dbg(1, "Getting locations for %s", pkg.name);
+        pkg.locationsCount = get_locations(&pkg.locations, getenv("SOVIET_BUILD_DIR"));
+        
+        if (pkg.locationsCount <= 0) {
+            msg(ERROR, "Failed to get locations for %s", pkg.name);
             return -1;
         }
-        exit(0);
-    } 
-    while(wait(NULL) > 0);
 
-    dbg(1, "Making %s done", pkg.name);
+        dbg(1, "Got %d locations for %s", pkg.locationsCount, pkg.name);
 
-    // Get package locations
-    dbg(1, "Getting locations for %s", pkg.name);
-    pkg.locationsCount = get_locations(&pkg.locations, getenv("SOVIET_BUILD_DIR"));
-    
-    if (pkg.locationsCount <= 0) {
-        msg(ERROR, "Failed to get locations for %s", pkg.name);
-        return -1;
+        // Check if the package is already installed
+        if (is_installed(pkg.name)) {
+            msg(WARNING, "Package %s is already installed, reinstalling", pkg.name);
+            uninstall(pkg.name);
+        } else {
+            dbg(3, "Package %s is not installed", pkg.name);
+        }
+
+        // Move binaries to their destination
+        dbg(1, "Moving binaries for %s", pkg.name);
+        move_binaries(pkg.locations, pkg.locationsCount);
     }
-
-    dbg(1, "Got %d locations for %s", pkg.locationsCount, pkg.name);
-
-    // Check if the package is already installed
-    if (is_installed(pkg.name)) {
-        msg(WARNING, "Package %s is already installed, reinstalling", pkg.name);
-        uninstall(pkg.name);
-    } else {
-        dbg(3, "Package %s is not installed", pkg.name);
-    }
-
-    // Move binaries to their destination
-    dbg(1, "Moving binaries for %s", pkg.name);
-    move_binaries(pkg.locations, pkg.locationsCount);
 
     // Execute post-install scripts
     if (pkg.info.special != NULL && strlen(pkg.info.special) > 0) {
