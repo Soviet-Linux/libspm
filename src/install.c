@@ -9,7 +9,6 @@
 // Include necessary headers
 #include "libspm.h"
 #include "cutils.h"
-#include "data.h"
 
 // Function to install a package from source (archive)
 /*
@@ -38,8 +37,14 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int f_install_package_source(const char* spm_path, int as_dep, const char* format) {
+int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
+
+    // Read the config in case anything got overwritten in the ecmp file
+
+    readConfig(getenv("SOVIET_CONFIG_FILE"));
+
     // Check if spm_path is NULL
+
     if (spm_path == NULL) {
         msg(ERROR, "spm_path is NULL");
         return -1;
@@ -56,6 +61,8 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
 
     // Initialize the package structure
     struct package pkg = {0};
+
+    char* format = "ecmp";
 
     // Attempt to open the package archive
     if (open_pkg(spm_path, &pkg, format) != 0) {
@@ -81,62 +88,101 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
         dbg(1, "Checking optional dependencies...");
         check_optional_dependencies(pkg.optional, pkg.optionalCount);
     }
+    // Check if a package is a collection
+    if(strcmp(pkg.type, "con") != 0)
+    {
+        // Legacy directory path for compatibility
+        char legacy_dir[MAX_PATH];
+        sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
 
-    // Legacy directory path for compatibility
-    char legacy_dir[MAX_PATH];
-    sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
-    
-    // Build the package
-    dbg(1, "Making %s", pkg.name);
-    if (make(legacy_dir, &pkg) != 0) {
-        msg(ERROR, "Failed to make %s", pkg.name);
-        return -1;
+        // ...
+        chmod(getenv("SOVIET_MAKE_DIR"), 0777);
+        chmod(getenv("SOVIET_BUILD_DIR"), 0777);
+        
+        pid_t p = fork(); 
+        int status = 0;
+        if ( p == 0)
+        {
+
+            if (getuid() == 0) 
+            {
+                /* process is running as root, drop privileges */
+                if (setgid(1000) != 0)
+                {
+                    msg(ERROR, "setgid: Unable to drop group privileges");
+                }
+                if (setuid(1000) != 0)
+                {
+                    msg(ERROR, "setuid: Unable to drop user privileges");
+                }
+            }
+            // Build the package
+            dbg(1, "Making %s", pkg.name);
+            if (make(legacy_dir, &pkg) != 0) {
+                msg(ERROR, "Failed to make %s", pkg.name);
+                return -1;
+            }
+            exit(0);
+        } 
+        while(wait(NULL) > 0);
+
+        dbg(1, "Making %s done", pkg.name);
+
+        // Get package locations
+        dbg(1, "Getting locations for %s", pkg.name);
+        pkg.locationsCount = get_locations(&pkg.locations, getenv("SOVIET_BUILD_DIR"));
+        
+        if (pkg.locationsCount <= 0) {
+            msg(ERROR, "Failed to get locations for %s", pkg.name);
+            return -1;
+        }
+
+        dbg(1, "Got %d locations for %s", pkg.locationsCount, pkg.name);
+
+        // Check if the package is already installed
+        if (is_installed(pkg.name)) {
+            msg(WARNING, "Package %s is already installed, reinstalling", pkg.name);
+            uninstall(pkg.name);
+        } else {
+            dbg(3, "Package %s is not installed", pkg.name);
+        }
+
+        // Move binaries to their destination
+        dbg(1, "Moving binaries for %s", pkg.name);
+        move_binaries(pkg.locations, pkg.locationsCount);
     }
-    dbg(1, "Making %s done", pkg.name);
-
-    // Create links for the package
-    // This bypasses getting the locations for links
-    // Not optimal
-    create_links(getenv("SOVIET_BUILD_DIR"), getenv("ROOT"));
-
-    // Get package locations
-    dbg(1, "Getting locations for %s", pkg.name);
-    pkg.locationsCount = get_locations(&pkg.locations, getenv("SOVIET_BUILD_DIR"));
-    if (pkg.locationsCount <= 0) {
-        msg(ERROR, "Failed to get locations for %s", pkg.name);
-        return -1;
-    }
-    dbg(1, "Got %d locations for %s", pkg.locationsCount, pkg.name);
-
-    // Check if the package is already installed
-    if (is_installed(pkg.name)) {
-        msg(WARNING, "Package %s is already installed, reinstalling", pkg.name);
-        uninstall(pkg.name);
-    } else {
-        dbg(3, "Package %s is not installed", pkg.name);
-    }
-
-    // Move binaries to their destination
-    dbg(1, "Moving binaries for %s", pkg.name);
-    move_binaries(pkg.locations, pkg.locationsCount);
 
     // Execute post-install scripts
     if (pkg.info.special != NULL && strlen(pkg.info.special) > 0) {
+        msg(WARNING, "Special: %s", pkg.info.special);
         dbg(1, "Executing post install script for %s", pkg.name);
         exec_special(pkg.info.special, getenv("SOVIET_BUILD_DIR"));
     }
 
     // Format the path using sprintf
     char file_path[MAX_PATH];
-    sprintf(file_path, "%s/%s.%s", getenv("SOVIET_SPM_DIR"), pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
-    create_pkg(file_path, &pkg, NULL);
 
-    // Store package data in the installed database
-    if (store_data_installed(INSTALLED_DB, &pkg, as_dep) != 0) {
-        msg(ERROR, "Failed to store data in %s", INSTALLED_DB);
-        msg(ERROR, "!! Package %s potentially corrupted !!", pkg.name);
-        return -1;
+    if(!repo)
+    {
+        repo = "local";
     }
+
+    dbg(1, "spm dir is %s", getenv("SOVIET_SPM_DIR"));
+    dbg(1, "repo is %s", repo);
+    dbg(1, "name is %s", pkg.name);
+    dbg(1, "description is %s", pkg.info.description);
+
+
+    char repo_path[MAX_PATH];
+    sprintf(repo_path, "%s/%s", getenv("SOVIET_SPM_DIR"), repo);
+
+    if(isdir(repo_path) != 0)
+    {
+        pmkdir(repo_path);
+    }
+
+    sprintf(file_path, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"), repo, pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
+    create_pkg(file_path, &pkg, NULL); 
     dbg(1, "Package %s installed", pkg.name);
 
     // Clean up
@@ -148,7 +194,6 @@ int f_install_package_source(const char* spm_path, int as_dep, const char* forma
 
     // Free allocated memory
     free_pkg(&pkg);
-
     return 0;
 }
 
@@ -177,7 +222,12 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int install_package_binary(const char* archivePath, int as_dep) {
+int install_package_binary(const char* archivePath, int as_dep, const char* repo) {
+
+    // Read the config in case anything got overwritten in the ecmp file
+
+    readConfig(getenv("SOVIET_CONFIG_FILE"));
+
     struct package pkg;
 
     // Get required environment variables
@@ -231,15 +281,9 @@ int install_package_binary(const char* archivePath, int as_dep) {
 
     // Format the path using sprintf
     char file_path[MAX_PATH];
-    sprintf(file_path, "%s/%s.%s", spm_dir, pkg.name, default_format);
+    sprintf(file_path, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"), repo, pkg.name, getenv("SOVIET_DEFAULT_FORMAT"));
     create_pkg(file_path, &pkg, NULL);
 
-    // Store package data in the installed database
-    if (store_data_installed(INSTALLED_DB, &pkg, as_dep) != 0) {
-        msg(ERROR, "Failed to store data in %s", INSTALLED_DB);
-        msg(ERROR, "!! Package %s potentially corrupted !!", pkg.name);
-        return -1;
-    }
     dbg(1, "Package %s installed", pkg.name);
 
     // Clean up
@@ -267,15 +311,22 @@ bool is_installed(const char* name) {
     char** FORMATS;
     int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")),' ',&FORMATS);
 
+    char** REPOS = calloc(512,sizeof(char));
+    int REPO_COUNT = get_repos(REPOS);
+
     // loop through all formats
     for (int i = 0; i < FORMAT_COUNT; i++)
     {
-        sprintf(path,"%s/%s.%s",getenv("SOVIET_SPM_DIR"),name,FORMATS[i]);
-        if (access(path,F_OK) == 0)
+        // loop through all repos
+        for (int j = 0; j < REPO_COUNT; j++)
         {
-            //free(*FORMATS);
-            free(FORMATS);
-            return true;
+            sprintf(path,"%s/%s/%s.%s",getenv("SOVIET_SPM_DIR"), REPOS[j],name,FORMATS[i]);
+            if (access(path,F_OK) == 0)
+            {
+                free(REPOS);
+                free(FORMATS);
+                return true;
+            }
         }
     }
     return false;

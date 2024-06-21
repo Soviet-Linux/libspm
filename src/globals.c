@@ -27,10 +27,6 @@ bool OVERWRITE_CHOISE = false;
 // Choise for passing N or Y to a prompt by default
 char* USER_CHOISE[2];
 
-// Database handles for installed and all packages
-sqlite3* INSTALLED_DB = NULL;
-sqlite3* ALL_DB = NULL;
-
 // Array for package queue and its count
 char* PACKAGE_QUEUE[QUEUE_MAX];
 int QUEUE_COUNT;

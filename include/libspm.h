@@ -21,6 +21,7 @@ struct cmd
     char* install;
     char* special;
     char* download;
+    char* description;
 };
 struct package
 {
@@ -52,11 +53,13 @@ struct package
 //test
 int list_installed();
 int count_installed();
-int search(char* in);
+int search(char *term);
 int update();
 int upgrade();
 void create_links(char build_loc[4096], char dest_loc[4096]);
 int check_optional_dependencies(char ** dependencies,int dependenciesCount);
+int get_repos(char** list);
+char** getAllFiles(const char* root, const char *path, int *num_files);
 //end test
 
 // package info
@@ -82,8 +85,6 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int f_install_package_source(const char* spm_path,int as_dep,const char* format);
-
 // Function to install a package from source with a specific format
 /*
 Accepts:
@@ -97,7 +98,7 @@ Returns:
   - -1: Installation failed.
 */
 int install_package_source(const char* spm_path,int as_dep);
-int f_install_package_binary(const char* spm_path,int as_dep,const char* format);
+int f_install_package_source(const char* spm_path, int as_dep,  char* repo);
 
 // Function to install a package from a binary archive
 /*
@@ -110,7 +111,7 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int install_package_binary(const char* archivePath,int as_dep);
+int install_package_binary(const char* archivePath, int as_dep, const char* repo);
 
 // Function to uninstall packages
 /*
@@ -354,7 +355,7 @@ Returns:
   - 0: Download success.
   - -1: Download failure.
 */
-int downloadFile(const char* url,const char* file_path);
+char* load_from_repo(const char* in, const char* file_path);
 
 // Function to download a repository from a given URL
 /*
@@ -367,7 +368,7 @@ Returns:
   - 0: Download success.
   - 1: Download failure.
 */
-int downloadRepo(const char* url_path,const char* file_path);
+int loadFile(const char* path, const char* file_path);
 
 // Function to retrieve file locations within a directory
 /*

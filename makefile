@@ -29,9 +29,9 @@ SDIR = src
 
 
 
-CFLAGS = -Wall -g -fPIC -O2 -Wextra -L./bin -Iinclude
+CFLAGS = -Wall -g -fPIC -O2 -Wextra -L./bin -Iinclude 
 
-LIBS = lib/* -lcurl -lsqlite3 -lm 
+LIBS = lib/* -lcurl -lsqlite3 -lm -lcrypto
 
 # change these to proper directories where each file should be
 SRCDIR   = src
@@ -51,7 +51,7 @@ FMT_DIR = formats
 MEMCHECK = 0
 
 
-all: $(BINDIR)/$(LIBOUT)
+all: $(BINDIR)/$(LIBOUT) formats
 	@echo "BUILD SUCESSFUL"
 
 $(BINDIR)/$(LIBOUT): $(OBJECTS)
@@ -71,17 +71,11 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 test:
 	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin
 
-
-check-data:
-	@echo "Checking data..."
-	bin/spm-test data
-	@echo "Data test passed"
-
 check-ecmp:
 	bin/spm-test ecmp
 	@echo "ECMP test passed"
 
-check: test check-data check-ecmp
+check: test check-ecmp
 	@echo "All Tests Passed"
 
 

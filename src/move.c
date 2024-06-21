@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+
 #include "limits.h"
 
 // Include necessary headers
@@ -27,9 +29,9 @@ void move_binaries(char** locations, long loc_size) {
     // Iterate through locations and move the binaries to their correct locations
     for (int i = 0; i < loc_size; i++) {
         char dest_loc[PATH_MAX];
-        sprintf(dest_loc, "%s/%s", getenv("ROOT"), locations[i]);
+        sprintf(dest_loc, "%s%s", getenv("SOVIET_ROOT"), locations[i]);
         char build_loc[PATH_MAX];
-        sprintf(build_loc, "%s/%s", getenv("SOVIET_BUILD_DIR"), locations[i]);
+        sprintf(build_loc, "%s%s", getenv("SOVIET_BUILD_DIR"), locations[i]);
 
         // Check if the destination location is empty
         if (!(access(dest_loc, F_OK) == 0)) {
@@ -38,7 +40,7 @@ void move_binaries(char** locations, long loc_size) {
             }
 
             // Move the files from the build directory to the destination location
-            switch (mvsp(build_loc, dest_loc))
+            switch (mvsp(build_loc, dest_loc, getenv("SOVIET_BUILD_DIR")))
             {
                 case -1:
                     msg(FATAL, "Moving %s to %s failed, could not create dir", build_loc, dest_loc);
@@ -47,10 +49,10 @@ void move_binaries(char** locations, long loc_size) {
                     msg(FATAL, "Moving %s to %s failed, destination not a dir", build_loc, dest_loc);
                     break;
                 case -3:
-                    msg(FATAL, "Moving %s to %s failed, destination parent not a dir", build_loc, dest_loc);
+                    msg(WARNING, "Moving %s to %s failed, file absent, continuing...", build_loc, dest_loc);
                     break;
                 case 0:
-                    msg(WARNING, "Moved %s to %s", build_loc, dest_loc);
+                    dbg(1, "Moved %s to %s", build_loc, dest_loc);
                     break;
             }
             
@@ -58,7 +60,26 @@ void move_binaries(char** locations, long loc_size) {
             msg(WARNING, "%s is already here, use --overwrite?", locations[i]);
             if (OVERWRITE) {
                 // Rename the file in the build directory to the destination location
-                rename(build_loc, dest_loc);
+                struct stat st;
+                stat(build_loc, &st);
+                int size = st.st_size;
+
+                char* buffer = malloc(size);
+
+                FILE *old_ptr;
+                FILE *new_ptr;
+
+                old_ptr = fopen(build_loc,"r"); 
+                fread(buffer, sizeof(char), size, old_ptr); 
+                fclose(old_ptr);
+
+                new_ptr = fopen(dest_loc,"w"); 
+                fwrite(buffer, sizeof(char), size, new_ptr); 
+                fclose(new_ptr);
+                
+                chown(dest_loc, getuid(), getgid());
+                chmod(dest_loc, 0755);
+
             } else {
                 msg(FATAL, "Terminating the program");
             }

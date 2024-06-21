@@ -56,7 +56,8 @@ int open(char* path,struct package* pkg)
         {parsenl,&pkg->dependencies,&pkg->dependenciesCount},
         {parsenl,&pkg->optional,&pkg->optionalCount},
         {parsenl,&pkg->inputs,&pkg->inputsCount},
-        {parsenl,&pkg->locations,&pkg->locationsCount}
+        {parsenl,&pkg->locations,&pkg->locationsCount},
+		{parseraw,&pkg->info.description,NULL}
     };
 
     void* pairs[][2] = {
@@ -72,6 +73,7 @@ int open(char* path,struct package* pkg)
         {"optional",parsers[7]},
         {"inputs",parsers[8]},
         {"locations",parsers[9]},
+		{"description",parsers[10]},
         {NULL,NULL}
     };
 
@@ -258,6 +260,7 @@ int create(const char* path,struct package* pkg)
 
 		{"dependencies",pkg->dependencies,&pkg->dependenciesCount},
 		{"optional",pkg->optional,&pkg->optionalCount},
+		{"description",pkg->info.description,NULL},		
 
 		{"locations",pkg->locations,&pkg->locationsCount},
 	};
