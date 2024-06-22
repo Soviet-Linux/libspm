@@ -264,7 +264,7 @@ int test_get()
     t_pkg.name = "test";
 
 
-    char* fmt = get(&t_pkg,"dev/test");
+    char* fmt = get(&t_pkg,getenv("SOVIET_DEFAULT_REPO"),"dev/test");
     
     // print fmt and all package info
     printf("fmt: %s\n",fmt);
