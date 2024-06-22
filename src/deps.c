@@ -26,7 +26,6 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
         dbg(3, "Checking if %s is installed", dependencies[i]);
         if (!is_installed(dependencies[i])) {
             dbg(3, "Dependency %s is not installed", dependencies[i]);
-            // TODO: We need to install the dependency
             msg(INFO, "Installing %s", dependencies[i]);
 
             // Check if the dependency is in the queue
@@ -46,12 +45,47 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
             struct package* pkg = calloc(1, sizeof(struct package));
             pkg->name = dependencies[i];
 
-            char* format = get(pkg, pkg->name);
-
-            if (format == NULL) {
-            msg(ERROR, "Failed to download package %s", pkg->name);
-            return 1;
+            char* format;
+            char* pkg_name = calloc(strlen(pkg->name) + 1, sizeof(char));
+            if(!strstr(pkg->name, ".ecmp"))
+            {
+                sprintf(pkg_name, "%s.%s", pkg->name, getenv("SOVIET_DEFAULT_FORMAT"));
             }
+                else
+                {
+                    pkg_name = strdup(pkg->name);
+                }
+
+            int num_results;
+            char** results = search(pkg_name, &num_results);
+                
+            if(results != NULL)
+            {
+                for ( int i = 0; i < num_results; i++)
+                {
+                    // Package name
+                    char* temp_1 = strtok(results[i], ">");
+                    // Repo it's in
+                    char* temp_2 = strchr(results[i], '\0') + 1;
+
+                    if(strcmp(getenv("SOVIET_DEFAULT_REPO"), temp_2) == 0)
+                    {
+                        format = temp_2;
+                        break;
+                    }
+                        else if (i == num_results) 
+                        {
+                            format = temp_2;
+                        }
+                }
+            }
+            
+            if (format == NULL) {
+                msg(ERROR, "Failed to download package %s", pkg->name);
+                return 1;
+            }
+
+            get(pkg, format, pkg->name);
 
             f_install_package_source(pkg->name, 0, format);
 
@@ -136,12 +170,52 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
                 struct package* pkg = calloc(1, sizeof(struct package));
                 pkg->name = dependencies[i];
 
-                char* format = get(pkg, pkg->name);
+                char* format;
+                char* pkg_name = calloc(strlen(pkg->name) + 1, sizeof(char));
+                if(!strstr(pkg->name, ".ecmp"))
+                {
+                    sprintf(pkg_name, "%s.%s", pkg->name, getenv("SOVIET_DEFAULT_FORMAT"));
+                }
+                    else
+                    {
+                        pkg_name = strdup(pkg->name);
+                    }
+
+                int num_results;
+                char** results = search(pkg_name, &num_results);
+                    
+                if(results != NULL)
+                {
+                    for ( int i = 0; i < num_results; i++)
+                    {
+                        // Package name
+                        char* temp_1 = strtok(results[i], ">");
+                        // Repo it's in
+                        char* temp_2 = strchr(results[i], '\0') + 1;
+
+                        if(strcmp(getenv("SOVIET_DEFAULT_REPO"), temp_2) == 0)
+                        {
+                            format = temp_2;
+                            break;
+                        }
+                            else if (i == num_results) 
+                            {
+                                format = temp_2;
+                            }
+                    }
+                }
+                
+                if (format == NULL) {
+                    msg(ERROR, "Failed to download package %s", pkg->name);
+                    return 1;
+                }
 
                 if (format == NULL) {
                 msg(ERROR, "Failed to download package %s", pkg->name);
                 return 1;
                 }
+
+                get(pkg, format, pkg->name);
 
                 f_install_package_source(pkg->name, 0, format);
 

@@ -30,6 +30,7 @@ int open_pkg(const char* path, struct package* pkg, const char* format) {
 
     // Print make dependencies count
     dbg(3, "make dependencies count: %d", pkg->optionalCount);
+    dbg(3, "path: %s", path);
 
     // Check if the file exists
     if (access(path, F_OK) != 0) {

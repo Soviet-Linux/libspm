@@ -38,54 +38,6 @@ int make(char* package_dir, struct package* pkg) {
     setenv("NAME", pkg->name, 1);
     setenv("VERSION", pkg->version, 1);
 
-    // Get user input
-
-    for (int i = 0; i < pkg->inputsCount; i++) 
-    {
-        msg(INFO, "%s", pkg->inputs[i]);
-        char* str = calloc(MAX_PATH, sizeof(char));
-
-        if(!OVERWRITE_CHOISE)
-        {
-            char* res = fgets(str, MAX_PATH-1, stdin);
-
-            if ( strchr(str, '\n') == NULL )
-            {
-                while ((getchar()) != '\n');
-            }
-
-            int k = 0;
-
-            while (str[k] != '\n' && str[k] != '\0')
-            {
-                if(strstr(str[k], "~`#$&*()\\|[]{};\'<>?!"))
-                {
-                    str[k] = ' ';
-                }
-                k++;
-            }
-
-            if (str[k] == '\n')
-            {
-                str[k] = '\0';
-            }
-
-            char* in = calloc(128, sizeof(char));
-            sprintf(in, "INPUT_%d", i);
-            setenv(in, str, 0);
-            free(in);
-        }
-            else
-            {
-                sprintf(str, "%s", USER_CHOISE[0]);
-                char* in = calloc(128, sizeof(char));
-                sprintf(in, "INPUT_%d", i);
-                setenv(in, str, 0);
-                free(in);
-            }
-            free(str);
-    }
-
     // Thinking about putting the package caching here
     // Maybe it will check if the installed version matches $VERSION
     // If so, it will just copy the dir from /usr/src/$NAME-$VERSION
@@ -124,7 +76,7 @@ int make(char* package_dir, struct package* pkg) {
         unsigned char hash[SHA256_DIGEST_LENGTH];
         char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
 
-        // TODO, fix this
+        // TODO: fix this
         sprintf(exec_cmd_1, "( cd %s && find . -maxdepth 1 -type f  | cut -c3- ) ", getenv("SOVIET_MAKE_DIR"));
         dbg(1, "Executing  %s to search for package tarball", exec_cmd_1);
         char* file = exec(exec_cmd_1);
