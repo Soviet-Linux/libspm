@@ -83,11 +83,6 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         check_dependencies(pkg.dependencies, pkg.dependenciesCount);
     }
 
-    // Checking optional dependencies
-    if (pkg.optional != NULL && pkg.optionalCount > 0 && strlen(pkg.optional[0]) > 0) {
-        dbg(1, "Checking optional dependencies...");
-        check_optional_dependencies(pkg.optional, pkg.optionalCount);
-    }
     // Check if a package is a collection
     if(strcmp(pkg.type, "con") != 0)
     {

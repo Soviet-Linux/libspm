@@ -6,6 +6,10 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+// Include necessary headers
+#include "libspm.h"
+#include "cutils.h"
+
 #define MAX_PATH_LENGTH 1024
 #define OPEN_ERROR -1
 #define READ_ERROR -2
@@ -118,15 +122,17 @@ int list_installed() {
 }
 
 // Function to search for a term in installed files
-int search(char *term) {
+char ** search(char *term, int *num_results) {
     int found = 0;
     const char *path = getenv("SOVIET_REPOS_DIR");
     int num_files;
     char **files_array = getAllFiles(path, path, &num_files);
+    char **searched_array = NULL;
 
     if (files_array != NULL) {
         // Print each file path
-        for (int i = 0; i < num_files; i++) {
+        for (int i = 0; i < num_files-1; i++) 
+        {
 
             // This will break if the files are not separated into repos
             // But it doesnt cause a crash, just a visual bug
@@ -134,10 +140,33 @@ int search(char *term) {
             char* repo = strtok(files_array[i], "/");
             char* package = strchr(files_array[i], '\0') + 1;
 
-            if (strstr(package, term) != 0)
+            char* package_name = calloc(strlen(package) + 2, sizeof(char));
+            strcpy(package_name, package);
+
+            while(strtok(package_name, "/"))
+            {
+                char* tmp = package_name;
+                package_name = strchr(package_name, '\0') + 1;
+                if(*package_name == '\0')
+                {
+                    package_name = tmp;
+                    break;
+                }
+            }
+
+            dbg(1, "repos is %s, package is %s, name is %s",repo, package, package_name);
+
+            if (strstr(package_name, term) != 0)
             {
                 // Compare the filename
-                printf("Found package: %s in %s \n", package, repo);
+                printf("Found package: %s in %s \n", package_name, repo);
+                searched_array = realloc(searched_array, (found + 1) * sizeof(char *));
+                // Stupid
+                char* tmp = calloc(strlen(package_name) + strlen(repo) * 2, 1);
+                sprintf(tmp, "%s>%s\0", package_name, repo);
+
+                searched_array[found] = strdup(tmp);
+                free(tmp);
                 found++;
             }
 
@@ -146,9 +175,16 @@ int search(char *term) {
         }
         // Free the array of file paths
         free(files_array);
+
+        // Update num_results if it's not NULL
+        if (num_results != NULL)
+            *num_results = found;
+
+        return searched_array;
     } else {
         // If no files found, print a message
         printf("All repositories are empty.\n");
+        return NULL;
     }
 
     if(found == 0)

@@ -19,7 +19,7 @@ Accepts:
 Returns:
 - char*: A pointer to the package format or NULL if there's an error.
 */
-char* get(struct package* i_pkg, const char* out_path)
+char* get(struct package* i_pkg, const char* repo, const char* out_path)
 {
     // Check if the package name is specified
     if (i_pkg->name == NULL)
@@ -28,7 +28,7 @@ char* get(struct package* i_pkg, const char* out_path)
         return NULL;
     }
 
-    return load_from_repo(i_pkg->name, out_path);
+    return load_from_repo(i_pkg->name, repo, out_path);
 }
 
 int get_repos(char** list)

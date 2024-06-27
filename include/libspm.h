@@ -53,7 +53,7 @@ struct package
 //test
 int list_installed();
 int count_installed();
-int search(char *term);
+char** search(char *term,  int *num_results);
 int update();
 int upgrade();
 void create_links(char build_loc[4096], char dest_loc[4096]);
@@ -181,7 +181,7 @@ Accepts:
 Returns:
 - char*: A pointer to the package format or NULL if there's an error.
 */
-char* get(struct package *i_pkg,const char* out_path);
+char* get(struct package *i_pkg, const char* repo, const char* out_path);
 
 // Function to move binaries to the correct locations
 /*
@@ -355,7 +355,7 @@ Returns:
   - 0: Download success.
   - -1: Download failure.
 */
-char* load_from_repo(const char* in, const char* file_path);
+char* load_from_repo(const char* in, const char* repo, const char* file_path);
 
 // Function to download a repository from a given URL
 /*
