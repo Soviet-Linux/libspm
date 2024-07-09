@@ -35,8 +35,6 @@ int make(char* package_dir, struct package* pkg) {
 
     // Set environment variables for building
     setenv("BUILD_ROOT", build_dir, 1);
-    setenv("NAME", pkg->name, 1);
-    setenv("VERSION", pkg->version, 1);
 
     // Thinking about putting the package caching here
     // Maybe it will check if the installed version matches $VERSION
