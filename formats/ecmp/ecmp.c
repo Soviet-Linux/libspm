@@ -53,6 +53,7 @@ int open(char* path,struct package* pkg)
         {parseraw,&pkg->info.prepare,NULL},
         {parseraw,&pkg->info.special,NULL},
 
+        {parsenl,&pkg->files,&pkg->filesCount},
         {parsenl,&pkg->dependencies,&pkg->dependenciesCount},
         {parsenl,&pkg->optional,&pkg->optionalCount},
         {parsenl,&pkg->inputs,&pkg->inputsCount},
@@ -69,11 +70,12 @@ int open(char* path,struct package* pkg)
         {"prepare",parsers[4]},
         {"special",parsers[5]},
 
-        {"dependencies",parsers[6]},
-        {"optional",parsers[7]},
-        {"inputs",parsers[8]},
-        {"locations",parsers[9]},
-		{"description",parsers[10]},
+        {"files",parsers[6]},
+        {"dependencies",parsers[7]},
+        {"optional",parsers[8]},
+        {"inputs",parsers[9]},
+        {"locations",parsers[10]},
+		{"description",parsers[11]},
         {NULL,NULL}
     };
 

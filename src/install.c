@@ -83,8 +83,30 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         check_dependencies(pkg.dependencies, pkg.dependenciesCount);
     }
 
+    // Set the package info section as environment vadiables for make script
+
     setenv("NAME", pkg.name, 1);
     setenv("VERSION", pkg.version, 1);
+
+    if (pkg->url != NULL)
+    {
+        setenv("URL", pkg->url, 1);
+    }
+
+    if (pkg->type != NULL)
+    {
+        setenv("TYPE", pkg->type, 1);
+    }
+
+    if (pkg->license != NULL)
+    {
+        setenv("LICENSE", pkg->license, 1);
+    }
+
+    if (pkg->sha256 != NULL)
+    {
+        setenv("SHA256", pkg->sha256, 1);
+    }
 
     // Check if a package is a collection
     if(strcmp(pkg.type, "con") != 0)
@@ -388,7 +410,6 @@ int free_pkg(struct package* pkg) {
         if (*pkg->locations) free(*pkg->locations);
         free(pkg->locations);
     }
-
     if (pkg->dependencies) {
         if (*pkg->dependencies) free(*pkg->dependencies);
         free(pkg->dependencies);
@@ -397,9 +418,9 @@ int free_pkg(struct package* pkg) {
         if (*pkg->optional) free(*pkg->optional);
         free(pkg->optional);
     }
-    if (pkg->optional) {
-        if (*pkg->optional) free(*pkg->optional);
-        free(pkg->optional);
+    if (pkg->files) {
+        if (*pkg->files) free(*pkg->files);
+        free(pkg->files);
     }
     return 0;
 }

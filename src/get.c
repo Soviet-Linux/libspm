@@ -115,7 +115,7 @@ void sync() {
         snprintf(cmd, sizeof(cmd), "git submodule status %s | grep -qF ' %s '", repo_dir, submodule_name);
         if (system(cmd) != 0) {
             // Add the submodule
-            snprintf(cmd, sizeof(cmd), "git submodule add %s %s", repo_url, submodule_name);
+            snprintf(cmd, sizeof(cmd), "git submodule add --depth 1 %s %s", repo_url, submodule_name);
             if (system(cmd) != 0) {
                 printf("Failed to add submodule %s\n", submodule_name);
                 return;
@@ -123,7 +123,7 @@ void sync() {
         }
 
         // Update submodules
-        if (system("git submodule update --remote --init --recursive") != 0) {
+        if (system("git submodule update --depth 1 --remote --init --recursive") != 0) {
             printf("Failed to update submodules in %s\n", repo_dir);
             return;
         }

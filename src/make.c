@@ -43,10 +43,68 @@ int make(char* package_dir, struct package* pkg) {
     // If so, it will just copy the dir from /usr/src/$NAME-$VERSION
     // Instead of executing the following:
     //
-    // Extract URL from the package
-    if (pkg->url != NULL)
+    // Parse the files
+    for (int i = 0; i < pkg->filesCount; i++)
     {
-        setenv("URL", pkg->url, 1);
+        char* location = calloc(MAX_PATH, 1);
+
+        // This seems stupid, but should work
+        char* file_name = strtok(pkg->files[i], " ");
+        char* file_url = strtok(NULL, " ");
+        char* file_sha256 = strtok(NULL, " ");
+
+        sprintf(location, "%s/%s", getenv("SOVIET_MAKE_DIR"), file_name);
+
+        FILE* fp = fopen(location, "wb");
+        download(file_url, fp);
+        fclose(fp);
+
+        // Check if the checksum shall be bypassed
+        if (!INSECURE)
+        {
+            // Check the hash, abort if mismatch
+            unsigned char hash[SHA256_DIGEST_LENGTH];
+            char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
+
+            struct stat st;
+            stat(location, &st);
+            int size = st.st_size;
+
+            char* buffer = malloc(size);
+            FILE *ptr;
+            ptr = fopen(location,"r"); 
+            fread(buffer, sizeof(char), size, ptr); 
+
+            if (!(buffer == NULL))
+            {
+                SHA256(buffer, size, hash);
+
+                if (!((hash == NULL) || (hash[0] == '\0')))
+                {
+                    dbg(1, "Hash is %s", file_sha256);
+                    for(int k = 0; k < SHA256_DIGEST_LENGTH; k++)
+                    {
+                        char* temp = calloc(8, 1);
+                        sprintf(temp, "%02x", hash[k]);
+                        strcat(hash_str, temp);
+                    }
+
+                    dbg(1, "Got %s", hash_str);
+                    if(strcmp(hash_str, file_sha256) != 0)
+                    {
+                        msg(FATAL, "Hash mismatch, aborting");
+                    }
+                }
+            }
+            else
+            {
+                msg(FATAL, "Could not verify the file's hash");
+            }
+        } 
+        else 
+        {
+            msg(WARNING, "The Checksum is being skipped");
+        }
     }
 
     // Download package sources
@@ -62,70 +120,6 @@ int make(char* package_dir, struct package* pkg) {
             return -1;
         }
     }
-
-    if ((pkg->sha256 == NULL) || (pkg->sha256[0] == '\0'))
-    {
-        pkg->sha256 = "Not provided";
-    }
-    // Check if the checksum shall be bypassed
-    if (!INSECURE)
-    {
-        // Check the hash, abort if mismatch
-        char* exec_cmd_1 = calloc(MAX_PATH, sizeof(char));
-        unsigned char hash[SHA256_DIGEST_LENGTH];
-        char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
-
-        // TODO: Use the file field to check the hash
-        sprintf(exec_cmd_1, "( cd %s && find . -maxdepth 1 -type f  | cut -c3- ) ", getenv("SOVIET_MAKE_DIR"));
-        dbg(1, "Executing  %s to search for package tarball", exec_cmd_1);
-        char* file = exec(exec_cmd_1);
-        file[strcspn(file, "\n")] = 0;
-
-        char* filename = calloc(MAX_PATH, sizeof(char));
-        sprintf(filename, "%s/%s", getenv("SOVIET_MAKE_DIR"), file);
-
-        dbg(1, "Checking file %s, if this is not the package tarball, the author of this line is stupid", file);
-        struct stat st;
-        stat(filename, &st);
-        int size = st.st_size;
-
-        char* buffer = malloc(size);
-        FILE *ptr;
-        ptr = fopen(filename,"r"); 
-        fread(buffer, sizeof(char), size, ptr); 
-
-        if (!(buffer == NULL))
-        {
-            SHA256(buffer, size, hash);
-
-            if (!((hash == NULL) || (hash[0] == '\0')))
-            {
-                dbg(1, "Hash is %s", pkg->sha256);
-                for(int k = 0; k < SHA256_DIGEST_LENGTH; k++)
-                {
-                    char* temp = calloc(8, 1);
-                    sprintf(temp, "%02x", hash[k]);
-                    strcat(hash_str, temp);
-                }
-
-                dbg(1, "Got %s", hash_str);
-                if(strcmp(hash_str, pkg->sha256) != 0)
-                {
-                    msg(FATAL, "Hash mismatch, aborting");
-                }
-            }
-        }
-            else
-            {
-                msg(FATAL, "Could not verify the file's hash");
-            }
-
-            free(exec_cmd_1);
-    } 
-        else 
-        {
-            msg(WARNING, "The Checksum is being skipped");
-        }
 
     // Run 'prepare' command
     if (pkg->info.prepare != NULL && strlen(pkg->info.prepare) > 0) {
