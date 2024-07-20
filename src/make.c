@@ -47,9 +47,11 @@ int make(char* package_dir, struct package* pkg) {
     for (int i = 0; i < pkg->filesCount; i++)
     {
         struct stat st_source = {0};
+        struct stat st_source_loc = {0};
 
         char* location = calloc(MAX_PATH, 1);
         char* source_location = calloc(MAX_PATH, 1);
+        char* source_file_location = calloc(MAX_PATH, 1);
 
         // This seems stupid, but should work
         char* file_name = strtok(pkg->files[i], " ");
@@ -57,12 +59,17 @@ int make(char* package_dir, struct package* pkg) {
         char* file_sha256 = strtok(NULL, " ");
 
         sprintf(location, "%s/%s", getenv("SOVIET_MAKE_DIR"), file_name);
-        sprintf(source_location, "%s/%s", getenv("SOVIET_SOURCE_DIR"), file_name);
+        sprintf(source_location, "%s/%s-%s", getenv("SOVIET_SOURCE_DIR"), getenv("NAME"), getenv("VERSION"));
+        sprintf(source_file_location, "%s/%s-%s/%s", getenv("SOVIET_SOURCE_DIR"), getenv("NAME"), getenv("VERSION"), file_name);
 
         dbg(1, "Downloading %s", file_name);
 
+        if (stat(source_location, &st_source_loc) == -1) {
+            mkdir(source_location, 0777);
+        }
 
-        if (stat(source_location, &st_source) == -1)
+
+        if (stat(source_file_location, &st_source) == -1)
         {
             FILE* fp = fopen(location, "wb");
             download(file_url, fp);
@@ -117,16 +124,17 @@ int make(char* package_dir, struct package* pkg) {
 
             dbg(1, "Download finished");
 
-            loadFile(location, source_location);            
+            loadFile(location, source_file_location);            
         }
         else
         {
-            dbg(1, "Loading form %s", getenv("SOVIET_SOURCE_DIR"));
-            loadFile(source_location, location);
+            dbg(1, "Loading form %s", source_location);
+            loadFile(source_file_location, location);
         }
-        
+
         free(location);
         free(source_location);
+        free(source_file_location);
     }
 
     // Download package sources

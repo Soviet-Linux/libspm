@@ -5,7 +5,7 @@
 
 
 
-#define LIBSPM_VERSION 0.503
+#define LIBSPM_VERSION 1.000
 
 #define SOURCE "src"
 #define BINARY "bin"
