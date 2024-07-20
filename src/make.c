@@ -36,17 +36,18 @@ int make(char* package_dir, struct package* pkg) {
     // Set environment variables for building
     setenv("BUILD_ROOT", build_dir, 1);
 
+
+    // TODO: this
     // Thinking about putting the package caching here
     // Maybe it will check if the installed version matches $VERSION
     // If so, it will just copy the dir from /usr/src/$NAME-$VERSION
     // Instead of executing the following:
     //
     // Extract URL from the package
-    char excmd[64 + strlen(pkg->url)];
-    sprintf(excmd, "echo -n %s", pkg->url);
-    char* exurl = exec(excmd);
-    setenv("URL", exurl, 1);
-    free(exurl);
+    if (pkg->url != NULL)
+    {
+        setenv("URL", pkg->url, 1);
+    }
 
     // Download package sources
     if (pkg->info.download != NULL && strlen(pkg->info.download) > 0) {
@@ -74,7 +75,7 @@ int make(char* package_dir, struct package* pkg) {
         unsigned char hash[SHA256_DIGEST_LENGTH];
         char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
 
-        // TODO: fix this
+        // TODO: Use the file field to check the hash
         sprintf(exec_cmd_1, "( cd %s && find . -maxdepth 1 -type f  | cut -c3- ) ", getenv("SOVIET_MAKE_DIR"));
         dbg(1, "Executing  %s to search for package tarball", exec_cmd_1);
         char* file = exec(exec_cmd_1);

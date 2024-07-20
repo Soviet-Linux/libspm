@@ -96,7 +96,7 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         // ...
         chmod(getenv("SOVIET_MAKE_DIR"), 0777);
         chmod(getenv("SOVIET_BUILD_DIR"), 0777);
-        
+
         pid_t p = fork(); 
         int status = 0;
         if ( p == 0)
@@ -118,11 +118,16 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
             dbg(1, "Making %s", pkg.name);
             if (make(legacy_dir, &pkg) != 0) {
                 msg(ERROR, "Failed to make %s", pkg.name);
-                return -1;
+                exit(1);
             }
             exit(0);
         } 
-        while(wait(NULL) > 0);
+        while(wait(&status) > 0);
+
+        if(WEXITSTATUS(status) != 0)
+        {
+            msg(FATAL, "make exited with error code %d", pkg.name, status);
+        }
 
         dbg(1, "Making %s done", pkg.name);
 
