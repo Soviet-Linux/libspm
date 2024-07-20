@@ -88,24 +88,24 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     setenv("NAME", pkg.name, 1);
     setenv("VERSION", pkg.version, 1);
 
-    if (pkg->url != NULL)
+    if (pkg.url != NULL)
     {
-        setenv("URL", pkg->url, 1);
+        setenv("URL", pkg.url, 1);
     }
 
-    if (pkg->type != NULL)
+    if (pkg.type != NULL)
     {
-        setenv("TYPE", pkg->type, 1);
+        setenv("TYPE", pkg.type, 1);
     }
 
-    if (pkg->license != NULL)
+    if (pkg.license != NULL)
     {
-        setenv("LICENSE", pkg->license, 1);
+        setenv("LICENSE", pkg.license, 1);
     }
 
-    if (pkg->sha256 != NULL)
+    if (pkg.sha256 != NULL)
     {
-        setenv("SHA256", pkg->sha256, 1);
+        setenv("SHA256", pkg.sha256, 1);
     }
 
     // Check if a package is a collection

@@ -46,7 +46,10 @@ int make(char* package_dir, struct package* pkg) {
     // Parse the files
     for (int i = 0; i < pkg->filesCount; i++)
     {
+        struct stat st_source = {0};
+
         char* location = calloc(MAX_PATH, 1);
+        char* source_location = calloc(MAX_PATH, 1);
 
         // This seems stupid, but should work
         char* file_name = strtok(pkg->files[i], " ");
@@ -54,57 +57,76 @@ int make(char* package_dir, struct package* pkg) {
         char* file_sha256 = strtok(NULL, " ");
 
         sprintf(location, "%s/%s", getenv("SOVIET_MAKE_DIR"), file_name);
+        sprintf(source_location, "%s/%s", getenv("SOVIET_SOURCE_DIR"), file_name);
 
-        FILE* fp = fopen(location, "wb");
-        download(file_url, fp);
-        fclose(fp);
+        dbg(1, "Downloading %s", file_name);
 
-        // Check if the checksum shall be bypassed
-        if (!INSECURE)
+
+        if (stat(source_location, &st_source) == -1)
         {
-            // Check the hash, abort if mismatch
-            unsigned char hash[SHA256_DIGEST_LENGTH];
-            char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
+            FILE* fp = fopen(location, "wb");
+            download(file_url, fp);
+            fclose(fp);
 
-            struct stat st;
-            stat(location, &st);
-            int size = st.st_size;
-
-            char* buffer = malloc(size);
-            FILE *ptr;
-            ptr = fopen(location,"r"); 
-            fread(buffer, sizeof(char), size, ptr); 
-
-            if (!(buffer == NULL))
+            // Check if the checksum shall be bypassed
+            if (!INSECURE)
             {
-                SHA256(buffer, size, hash);
+                // Check the hash, abort if mismatch
+                unsigned char hash[SHA256_DIGEST_LENGTH];
+                char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
 
-                if (!((hash == NULL) || (hash[0] == '\0')))
+                struct stat st;
+                stat(location, &st);
+                int size = st.st_size;
+
+                char* buffer = malloc(size);
+                FILE *ptr;
+                ptr = fopen(location,"r"); 
+                fread(buffer, sizeof(char), size, ptr); 
+
+                if (!(buffer == NULL))
                 {
-                    dbg(1, "Hash is %s", file_sha256);
-                    for(int k = 0; k < SHA256_DIGEST_LENGTH; k++)
-                    {
-                        char* temp = calloc(8, 1);
-                        sprintf(temp, "%02x", hash[k]);
-                        strcat(hash_str, temp);
-                    }
+                    SHA256(buffer, size, hash);
 
-                    dbg(1, "Got %s", hash_str);
-                    if(strcmp(hash_str, file_sha256) != 0)
+                    if (!((hash == NULL) || (hash[0] == '\0')))
                     {
-                        msg(FATAL, "Hash mismatch, aborting");
+                        dbg(1, "Hash is %s", file_sha256);
+                        for(int k = 0; k < SHA256_DIGEST_LENGTH; k++)
+                        {
+                            char* temp = calloc(8, 1);
+                            sprintf(temp, "%02x", hash[k]);
+                            strcat(hash_str, temp);
+                        }
+
+                        dbg(1, "Got %s", hash_str);
+                        if(strcmp(hash_str, file_sha256) != 0)
+                        {
+                            msg(FATAL, "Hash mismatch, aborting");
+                        }
                     }
                 }
-            }
-            else
+                else
+                {
+                    msg(FATAL, "Could not verify the file's hash");
+                }
+            } 
+            else 
             {
-                msg(FATAL, "Could not verify the file's hash");
+                msg(WARNING, "The Checksum is being skipped");
             }
-        } 
-        else 
-        {
-            msg(WARNING, "The Checksum is being skipped");
+
+            dbg(1, "Download finished");
+
+            loadFile(location, source_location);            
         }
+        else
+        {
+            dbg(1, "Loading form %s", getenv("SOVIET_SOURCE_DIR"));
+            loadFile(source_location, location);
+        }
+        
+        free(location);
+        free(source_location);
     }
 
     // Download package sources
