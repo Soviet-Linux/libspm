@@ -220,7 +220,7 @@ Returns:
 */
 int clean();
 // Function to synchronize the local repository with a remote repository
-void sync();
+int repo_sync();
 
 // init the system
 void init();
