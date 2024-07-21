@@ -47,6 +47,8 @@ int get_repos(char** list)
                 printf("Error : too many elements in list , reallocating\n");
                 list = realloc(list,(count+512) * sizeof(char*));
             }
+            if (dir->d_type != DT_DIR || dir->d_name[0] == '.') continue;
+
             list[count] = calloc(strlen(dir->d_name) + 1, sizeof(char));
             strcpy(list[count], dir->d_name);
             count++;
@@ -81,6 +83,11 @@ int repo_sync() {
     const char* repo_dir = getenv("SOVIET_REPOS_DIR");
     const char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
     const char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
+
+    // bit of debugging
+    dbg(3,"SOVIET_REPOS_DIR: %s",repo_dir);
+    dbg(3,"SOVIET_DEFAULT_REPO_URL: %s",repo_url);
+    dbg(3,"SOVIET_DEFAULT_REPO: %s",submodule_name);
 
     char cmd[1024];
 
