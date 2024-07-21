@@ -32,7 +32,7 @@ ConfigEntry configEntries[] = {
     { "SOVIET_DEFAULT_REPO", "OUR" },
     { "SOVIET_DEFAULT_REPO_URL", "https://github.com/Soviet-Linux/OUR.git" },
     { "SOVIET_FORMATS", "ecmp" },
-    { "SOVIET_SOURCE_DIR", "/usr/src" },
+    { "SOVIET_SOURCE_DIR", "/usr/src/cccp" },
     // Add more key-value pairs with default values as needed
 };
 

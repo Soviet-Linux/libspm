@@ -84,5 +84,6 @@ void init() {
     }
     if (stat(getenv("SOVIET_SOURCE_DIR"), &st) == -1) {
         mkdir(getenv("SOVIET_SOURCE_DIR"), 0777);
+        chmod(getenv("SOVIET_SOURCE_DIR"), 0777);
     }
 }

@@ -64,8 +64,11 @@ int make(char* package_dir, struct package* pkg) {
 
         dbg(1, "Downloading %s", file_name);
 
-        if (stat(source_location, &st_source_loc) == -1) {
-            mkdir(source_location, 0777);
+        if (stat(source_location, &st_source_loc) == -1) 
+        {
+            mkdir(source_location, 0755);
+            chown(source_location, getuid(), getgid());
+            chmod(source_location, 0755);
         }
 
 
