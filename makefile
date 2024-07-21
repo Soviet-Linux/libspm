@@ -70,12 +70,14 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 
 test:
 	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin
+	@echo "Test binary created"
 
-check-ecmp:
-	bin/spm-test ecmp
-	@echo "ECMP test passed"
+check-all:
+	bin/spm-test all
+	if [ $$? -gt 0 ]; then echo "Error Tests Failed"; else echo "All good"; fi
 
-check: test check-ecmp
+
+check: test check-all
 	@echo "All Tests Passed"
 
 
