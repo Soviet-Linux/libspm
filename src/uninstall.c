@@ -31,11 +31,15 @@ int uninstall(char* name)
     int REPO_COUNT = get_repos(REPOS);
     char* dataSpmPath = calloc(MAX_PATH, sizeof(char));
 
+    // add local repo
+    REPOS[REPO_COUNT] = "local";
+    REPO_COUNT++;
+
     for (int j = 0; j < REPO_COUNT; j++)
     {
         // Generate the path to the package's SPM file
-        char* tmpSpmPath[MAX_PATH];
-        sprintf(tmpSpmPath, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"),REPOS[j], name, getenv("SOVIET_DEFAULT_FORMAT"));
+        char tmpSpmPath[MAX_PATH];
+        sprintf(tmpSpmPath, "%s/%s/%s.%s", (char*)getenv("SOVIET_SPM_DIR"),REPOS[j], name, getenv("SOVIET_DEFAULT_FORMAT"));
 
         // Verify if the package is installed
         dbg(3, "Verifying if the package is installed at %s", tmpSpmPath);
