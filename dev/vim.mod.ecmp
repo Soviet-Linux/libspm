@@ -17,3 +17,8 @@ make DESTDIR=$BUILD_ROOT install
 echo "the package is installed"
 echo "done..."
 
+[description]
+This package is really important.
+It is essential to the system.
+It is a dependency of many other packages.
+

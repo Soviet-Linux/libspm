@@ -39,7 +39,12 @@ int test_split();
 int test_config();
 int test_make(char* spm_path);
 
+int test_install(char* spm_path);
+int test_uninstall(char* pname);
+
 char* assemble(char** list,int count);
+
+char CURRENT_DIR[2048];
 
 int main(int argc, char const *argv[])
 {
@@ -54,9 +59,14 @@ int main(int argc, char const *argv[])
     QUIET = false;
     OVERWRITE = true;
     DEBUG_UNIT = NULL;
+    // we want to chnage that later 
+    // TODO: Add hash to test package
+    INSECURE = true;
+
+    getcwd(CURRENT_DIR, 2048);
 
    if (argc < 2 || strcmp(argv[1], "help") == 0) {
-        printf("Usage: %s [data|ecmp|all|make|install|uninstall|move|help|split|config|get]\n", argv[0]);
+        printf("Usage: %s [ecmp|all|make|install|uninstall|move|help|split|config|get]\n", argv[0]);
         return 0;
     }
 
@@ -66,28 +76,59 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    if (strcmp(argv[1], "ecmp") == 0) {
-        return test_ecmp();
-    } else if (strcmp(argv[1], "all") == 0) {
+    if (strcmp(argv[1], "all") == 0) {
         int ret = 0;
         ret += test_ecmp();
+        ret += test_move();
+        ret += test_get();
+        ret += test_split();
+        ret += test_config();
+        ret += test_make("dev/vim.ecmp");
+        ret += test_install("dev/vim.ecmp");
+        ret += test_uninstall("vim");
+        int leaks = check_leaks();
+        printf("Leaks: %d\n",leaks);
+        ret += leaks; 
         return ret;
-    } else if (strcmp(argv[1], "make") == 0) {
+    } else if (strcmp(argv[1], "ecmp") == 0) {
+        return test_ecmp();
+    }  else if (strcmp(argv[1], "make") == 0) {
         int EXIT = 0;
-        EXIT += test_make(argv[2]);
+        char* spm_path = NULL;
+        if (argc < 3) {
+            spm_path = strdup("dev/vim.ecmp");
+        } else {
+            spm_path = strdup(argv[2]);
+        }
+        EXIT += test_make(spm_path);
+
+        free(spm_path);
+
         printf("Leaks: %d\n", check_leaks());
         return EXIT;
     }
     else if (strcmp(argv[1],"install") == 0)
     {
-        dbg(1, "installing");
-        init();
-        install_package_source(argv[2], 0);
-        printf("Leaks: %d\n", check_leaks());
-        return 0;
+        char* spm_path = NULL;
+        if (argc < 3)
+        {
+            spm_path = strdup("dev/vim.ecmp");
+        } else {
+            spm_path = strdup(argv[2]);
+        }
+        test_install(spm_path);
+
     } else if (strcmp(argv[1], "uninstall") == 0) {
         init();
-        uninstall(argv[2]);
+        char* pname = NULL;
+        if (argc > 3)
+        { 
+            pname = strdup(argv[2]);
+        }
+        else {
+            pname = strdup("vim");
+        }
+        test_uninstall(pname);
         return 0;
     } else if (strcmp(argv[1], "move") == 0) {
         return test_move();
@@ -103,6 +144,23 @@ int main(int argc, char const *argv[])
     }
 
 
+}
+
+int test_install(char* spm_path)
+{
+    dbg(1, "installing");
+    init();
+    install_package_source(spm_path, 0);
+    printf("Leaks: %d\n", check_leaks());
+    return 0;
+}
+
+int test_uninstall(char* pname)
+{
+    init();
+    uninstall(pname);
+    printf("Leaks: %d\n", check_leaks());
+    return 0;
 }
 
 int test_move()
@@ -156,15 +214,37 @@ int test_move()
 
 
     move_binaries(end_locations,8);
+    // Check if the move was successful
+    int EXIT = 0;
+    for (int i = 0; i < l_f_count; i++)
+    {
+        char* old_path = malloc(256);
+        sprintf(old_path,"%s/%s","/tmp/spm-testing/old",l_files[i]);
+        char* new_path = malloc(256);
+        sprintf(new_path,"%s/%s","/tmp/spm-testing",l_files[i]);
+
+        if(access(old_path, F_OK) != -1 || access(new_path, F_OK) == -1) {
+            printf("Failed to move %s\n",l_files[i]);
+            EXIT += 1;
+            break;
+        }
+
+        free(old_path);
+        free(new_path);
+    }
     free(*end_locations);
     free(end_locations);
+
 
     printf("Testing move : done\n");
 
     printf("Leaks: %d\n",check_leaks());
 
+    unsetenv("SOVIET_ROOT_DIR");
+    unsetenv("SOVIET_BUILD_DIR");
+
     quit(0);
-    return 0;
+    return EXIT;
 }
 
 int test_make(char* spm_path) {
@@ -192,11 +272,15 @@ int test_make(char* spm_path) {
     }
     dbg(1,"Got %d locations for %s",p.locationsCount,p.name);
 
+
     return 0;
 }
 
 int test_split()
-{
+{   
+    chdir(CURRENT_DIR);
+    system("python3 dev/gen_split.py dev/split.txt 512");
+
     char* split_str;
     rdfile("dev/split.txt",&split_str);
 
@@ -258,23 +342,54 @@ int test_get()
     init();
     int EXIT = 0;
 
-    
+    // sync with remote
+    repo_sync();
+
+    struct package base_pkg = {0};
+    char base_path[2048];
+    sprintf(base_path,"%s/dev/test.base.ecmp",CURRENT_DIR);
+    open_ecmp(base_path,&base_pkg);
+
 
     struct package t_pkg;
     t_pkg.name = "test";
 
+    dbg(2,"Repo: %s",getenv("SOVIET_DEFAULT_REPO"));
 
-    char* fmt = get(&t_pkg,getenv("SOVIET_DEFAULT_REPO"),"dev/test");
+    char out_test[2048+16 ] = {0};
+    strcat(out_test, CURRENT_DIR);
+    strcat(out_test, "/dev/test.ecmp");
+    dbg(3,"Copying to %s",out_test);
+    remove("dev/test.ecmp");
+    char* fmt = get(&t_pkg,getenv("SOVIET_DEFAULT_REPO"),out_test);
     
+    open_ecmp(out_test,&t_pkg);
+
     // print fmt and all package info
     printf("fmt: %s\n",fmt);
     printf("name: %s\n",t_pkg.name);
     printf("version: %s\n",t_pkg.version);
-    printf("type: %s\n",t_pkg.type);
+    printf("url: %s\n",t_pkg.url);
+
+    dbg(3,"Comparing %s and %s",base_pkg.name,t_pkg.name);
+    EXIT += strcmp(base_pkg.name,t_pkg.name);
+    dbg(3,"Comparing %s and %s",base_pkg.version,t_pkg.version);
+    EXIT += strcmp(base_pkg.version,t_pkg.version);
+    dbg(3,"Comparing %s and %s",base_pkg.url,t_pkg.url);
+    EXIT += strcmp(base_pkg.url,t_pkg.url);
+    // add other cmp later
 
     free(fmt);
+    free(base_pkg.name);
+    free(base_pkg.version);
+    free(base_pkg.url);
+    free(t_pkg.name);
+    free(t_pkg.version);
+    free(t_pkg.url);
 
-    return 0;
+    printf("%d leaks\n",check_leaks());
+
+    return EXIT;
 
 }
 
@@ -336,7 +451,7 @@ int test_ecmp(int type)
 char* assemble(char** list,int count)
 {
     dbg(3,"Assembling %d strings",count);
-    char* string = calloc(32*count,sizeof(char));
+    char* string = calloc(2048*count,sizeof(char));
     int i;
     for (i = 0; i < count-1; i++)
     {
