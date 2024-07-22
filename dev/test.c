@@ -176,9 +176,10 @@ int test_move()
 
     #define l_d_count 5
     #define l_f_count 12
+    #define l_l_count 3
     char* l_dirs[l_d_count] = {"b","b/d","s","s/j","s/j/k"};
     char* l_files[l_f_count] = {"w","b/d/e","a","d","b/y","b/c","b/f","s/j/k/z","s/j/k/x","s/j/k/c","s/j/k/v","s/j/k/b"};
-
+    char* l_links[l_l_count][2] = {{"b/d/e","b/e"},{"s/j/k/z","s/z"},{"s/j/k/x","s/x"}};
 
     printf("Testing move\n");
     setenv("SOVIET_ROOT","/tmp/spm-testing",1);
@@ -212,6 +213,19 @@ int test_move()
         FILE* f = fopen(path,"w");
         fclose(f);
         free(path);
+    }
+    printf("Creating test links\n");
+    // make all links
+    for (int i = 0; i < l_l_count; i++)
+    {
+        printf("Creating %s -> %s\n",l_links[i][0],l_links[i][1]);
+        char* old_path = malloc(256);
+        sprintf(old_path,"%s/%s","/tmp/spm-testing/old",l_links[i][0]);
+        char* new_path = malloc(256);
+        sprintf(new_path,"%s/%s","/tmp/spm-testing/old",l_links[i][1]);
+        symlink(old_path,new_path);
+        free(old_path);
+        free(new_path);
     }
 
     // get all the files with get_locatins
@@ -248,6 +262,27 @@ int test_move()
         free(old_path);
         free(new_path);
     }
+    // check if the links were moved
+    for (int i = 0; i < l_l_count; i++)
+    {
+        char* old_path = malloc(256);
+        sprintf(old_path,"%s/%s","/tmp/spm-testing/old",l_links[i][0]);
+        char* new_path = malloc(256);
+        sprintf(new_path,"%s/%s","/tmp/spm-testing",l_links[i][1]);
+
+        if(access(old_path, F_OK) != -1 || access(new_path, F_OK) == -1) {
+            printf("Failed to move %s : \n",l_links[i][0]);
+            printf("Old path: %s\n",old_path);
+            printf("New path: %s\n",new_path);
+            EXIT += 1;
+            break;
+        }
+
+        free(old_path);
+        free(new_path);
+    }
+
+
     free(*end_locations);
     free(end_locations);
 
