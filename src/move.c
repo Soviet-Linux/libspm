@@ -31,6 +31,7 @@ void move_binaries(char** locations, long loc_size) {
         
         dbg(2, "Launching move for %s", locations[i]);
 
+
         char dest_loc[PATH_MAX];
         sprintf(dest_loc, "%s%s", getenv("SOVIET_ROOT"), locations[i]);
         char build_loc[PATH_MAX];
@@ -82,6 +83,13 @@ void move_binaries(char** locations, long loc_size) {
                 
                 chown(dest_loc, getuid(), getgid());
                 chmod(dest_loc, 0755);
+
+
+                // Remove the file from the build directory
+                if (remove(build_loc) != 0) {
+                    msg(ERROR, "Could not remove %s", build_loc);
+                }
+
 
             } else {
                 msg(FATAL, "Terminating the program");
