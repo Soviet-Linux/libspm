@@ -24,10 +24,6 @@ char* names[5] = {"pkg1","pkg2","pkg3","pkg4","pkg5"};
 char* versions[5] = {"1.1.0","2.0.8","6.8.7","7.0","5.20"};
 char* types[5] = {"bin","src","src","bin","src"};
 
-#define l_d_count 5
-#define l_f_count 12
-char* l_dirs[l_d_count] = {"b","b/d","s","s/j","s/j/k"};
-char* l_files[l_f_count] = {"w","b/d/e","a","d","b/y","b/c","b/f","s/j/k/z","s/j/k/x","s/j/k/c","s/j/k/v","s/j/k/b"};
 
 char** list_of_stuff  = NULL;
 int list_of_stuff_count = 0;
@@ -79,13 +75,21 @@ int main(int argc, char const *argv[])
     if (strcmp(argv[1], "all") == 0) {
         int ret = 0;
         ret += test_ecmp();
+        printf("Ret: %d\n",ret);
         ret += test_move();
+        printf("Ret: %d\n",ret);
         ret += test_get();
+        printf("Ret: %d\n",ret);
         ret += test_split();
+        printf("Ret: %d\n",ret);
         ret += test_config();
+        printf("Ret: %d\n",ret);
         ret += test_make("dev/vim.ecmp");
+        printf("Ret: %d\n",ret);
         ret += test_install("dev/vim.ecmp");
+        printf("Ret: %d\n",ret);
         ret += test_uninstall("vim");
+        printf("Ret: %d\n",ret);
         int leaks = check_leaks();
         printf("Leaks: %d\n",leaks);
         ret += leaks; 
@@ -167,6 +171,15 @@ int test_move()
 {
     
     init();
+
+    rmrf("/tmp/spm-testing");
+
+    #define l_d_count 5
+    #define l_f_count 12
+    char* l_dirs[l_d_count] = {"b","b/d","s","s/j","s/j/k"};
+    char* l_files[l_f_count] = {"w","b/d/e","a","d","b/y","b/c","b/f","s/j/k/z","s/j/k/x","s/j/k/c","s/j/k/v","s/j/k/b"};
+
+
     printf("Testing move\n");
     setenv("SOVIET_ROOT","/tmp/spm-testing",1);
     setenv("SOVIET_BUILD_DIR","/tmp/spm-testing/old",1);
@@ -206,6 +219,7 @@ int test_move()
     int end_count = get_locations(&end_locations,"/tmp/spm-testing/old");
 
     // print end locations
+
     printf("End locations:\n");
     for (int i = 0; i < end_count; i++)
     {
@@ -213,7 +227,7 @@ int test_move()
     }
 
 
-    move_binaries(end_locations,8);
+    move_binaries(end_locations,end_count);
     // Check if the move was successful
     int EXIT = 0;
     for (int i = 0; i < l_f_count; i++)
@@ -224,7 +238,9 @@ int test_move()
         sprintf(new_path,"%s/%s","/tmp/spm-testing",l_files[i]);
 
         if(access(old_path, F_OK) != -1 || access(new_path, F_OK) == -1) {
-            printf("Failed to move %s\n",l_files[i]);
+            printf("Failed to move %s : \n",l_files[i]);
+            printf("Old path: %s\n",old_path);
+            printf("New path: %s\n",new_path);
             EXIT += 1;
             break;
         }
