@@ -83,7 +83,7 @@ check: test check-all
 	@echo "All Tests Passed"
 
 libs:
-	for i in $(LOCAL_LIBS); do make -C $$(dirname $$i); done
+	for i in $(LOCAL_LIBS); do make -C $$(dirname $$i) all; done
 
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)
