@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
     dbg(1, "Setting debug stuff");
-    DEBUG = 4;
+    setenv("SOVIET_DEBUG","3",1);
     QUIET = false;
     OVERWRITE = true;
     DEBUG_UNIT = NULL;
