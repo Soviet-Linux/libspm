@@ -31,7 +31,9 @@ SDIR = src
 
 CFLAGS = -Wall -g -fPIC -O2 -Wextra -L./bin -Iinclude 
 
-LIBS = lib/* -lcurl -lsqlite3 -lm -lcrypto
+# set local lib to lib/*/*.a
+LOCAL_LIBS = $(wildcard lib/*/*.a)
+LIBS = ${LOCAL_LIBS} -lcurl -lsqlite3 -lm -lcrypto
 
 # change these to proper directories where each file should be
 SRCDIR   = src
@@ -51,7 +53,7 @@ FMT_DIR = formats
 MEMCHECK = 0
 
 
-all: $(BINDIR)/$(LIBOUT) formats
+all: libs $(BINDIR)/$(LIBOUT) formats
 	@echo "BUILD SUCESSFUL"
 
 $(BINDIR)/$(LIBOUT): $(OBJECTS)
@@ -69,16 +71,19 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 
 
 test:
-	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin
+	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
+	@echo "Test binary created"
 
-check-ecmp:
-	bin/spm-test ecmp
-	@echo "ECMP test passed"
+check-all:
+	bin/spm-test all
+	@if [ $$? -gt 0 ]; then echo "Error Tests Failed"; else echo "All good"; fi
 
-check: test check-ecmp
+
+check: test check-all
 	@echo "All Tests Passed"
 
-
+libs:
+	for i in $(LOCAL_LIBS); do make -C $$(dirname $$i) all; done
 
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)

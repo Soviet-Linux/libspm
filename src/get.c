@@ -47,6 +47,8 @@ int get_repos(char** list)
                 printf("Error : too many elements in list , reallocating\n");
                 list = realloc(list,(count+512) * sizeof(char*));
             }
+            if (dir->d_type != DT_DIR || dir->d_name[0] == '.') continue;
+
             list[count] = calloc(strlen(dir->d_name) + 1, sizeof(char));
             strcpy(list[count], dir->d_name);
             count++;
@@ -77,10 +79,15 @@ int get_repos(char** list)
 }
 
 // Function to synchronize the local repository with a remote repository
-void sync() {
+int repo_sync() {
     const char* repo_dir = getenv("SOVIET_REPOS_DIR");
     const char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
     const char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
+
+    // bit of debugging
+    dbg(3,"SOVIET_REPOS_DIR: %s",repo_dir);
+    dbg(3,"SOVIET_DEFAULT_REPO_URL: %s",repo_url);
+    dbg(3,"SOVIET_DEFAULT_REPO: %s",submodule_name);
 
     char cmd[1024];
 
@@ -90,7 +97,7 @@ void sync() {
         snprintf(cmd, sizeof(cmd), "mkdir -p %s", repo_dir);
         if (system(cmd) != 0) {
             printf("Failed to create directory %s\n", repo_dir);
-            return;
+            return 1;
         }
     }
 
@@ -99,7 +106,7 @@ void sync() {
         // Change directory to repo_dir
         if (chdir(repo_dir) != 0) {
             printf("Failed to change directory to %s\n", repo_dir);
-            return;
+            return 1;
         }
 
         // Check if it's a git repository
@@ -107,7 +114,7 @@ void sync() {
             // Initialize a new Git repository
             if (system("git init") != 0) {
                 printf("Failed to initialize git repository in %s\n", repo_dir);
-                return;
+                return 2;
             }
         }
 
@@ -118,16 +125,18 @@ void sync() {
             snprintf(cmd, sizeof(cmd), "git submodule add %s %s", repo_url, submodule_name);
             if (system(cmd) != 0) {
                 printf("Failed to add submodule %s\n", submodule_name);
-                return;
+                return 2;
             }
         }
 
         // Update submodules
         if (system("git submodule update --remote --init --recursive") != 0) {
             printf("Failed to update submodules in %s\n", repo_dir);
-            return;
+            return 3;
         }
     } else {
         printf("%s is not a directory or cannot be accessed.\n", repo_dir);
     }
+
+    return 0;
 }
