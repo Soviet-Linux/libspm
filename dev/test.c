@@ -48,9 +48,9 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    setenv("SOVIET_DEBUG","3",1);
-    DEBUG = 3;
-    QUIET = false;
+    setenv("SOVIET_DEBUG","0",1);
+    DEBUG = 0;
+    QUIET = true;
     OVERWRITE = true;
     DEBUG_UNIT = NULL;
     // we want to chnage that later 
@@ -121,6 +121,9 @@ int main(int argc, char const *argv[])
 }
 
 void test_pm() {
+
+    msg(INFO,"Testing 'install_package_source()' and 'uninstall()'..");
+
     // install tests
     char temp_dir_template[] = "/tmp/test_dir_XXXXXX";
     char* test_dir = mkdtemp(temp_dir_template);
@@ -145,6 +148,7 @@ void test_pm() {
 
 void test_move() {
 
+    msg(INFO,"Testing 'move_binaries()'..");
 
     char temp_dir_template[] = "/tmp/test_dir_XXXXXX";
     char* test_dir = mkdtemp(temp_dir_template);
@@ -158,38 +162,36 @@ void test_move() {
     char* l_files[l_f_count] = {"w","b/d/e","a","d","b/y","b/c","b/f","s/j/k/z","s/j/k/x","s/j/k/c","s/j/k/v","s/j/k/b"};
     char* l_links[l_l_count][2] = {{"b/d/e","b/e"},{"s/j/k/z","s/z"},{"s/j/k/x","s/x"}};
 
-    printf("Testing move\n");
     setenv("SOVIET_ROOT",test_dir,1);
     setenv("SOVIET_BUILD_DIR",build_dir,1);
     init();
 
-    printf("Creating test dirs\n");
+    dbg(2,"creating test dirs");
     //make all dirs
     for (int i = 0; i < l_d_count; i++)
     {
-        printf("Creating %s\n",l_dirs[i]);
+        dbg(3,"Creating %s\n",l_dirs[i]);
         char* dir = malloc(256);
         sprintf(dir,"%s/%s",build_dir,l_dirs[i]);
         mkdir(dir,0777);
         free(dir);
     }
-    printf("creating test files\n");
+    dbg(2,"creating test files");
     // make all files
     for (int i = 0; i < l_f_count; i++)
     {
-        printf("Creating %s\n",l_files[i]);
+        dbg(3,"Creating %s\n",l_files[i]);
         char* path = malloc(256);
         sprintf(path,"%s/%s",build_dir,l_files[i]);
-        printf("Path: %s\n",path);
         FILE* f = fopen(path,"w");
         fclose(f);
         free(path);
     }
-    printf("Creating test links\n");
+    dbg(2,"Creating test links\n");
     // make all links
     for (int i = 0; i < l_l_count; i++)
     {
-        printf("Creating %s -> %s\n",l_links[i][1],l_links[i][0]);
+        dbg(3,"Creating %s -> %s\n",l_links[i][1],l_links[i][0]);
         char* old_path = malloc(256);
         sprintf(old_path,"%s/%s",build_dir,l_links[i][0]);
         char* link_path = malloc(256);
@@ -204,9 +206,6 @@ void test_move() {
     int end_count = get_locations(&end_locations,build_dir);
 
     assert(end_count == l_f_count + l_l_count);
-
-
-
 
     move_binaries(end_locations,end_count);
     // Check if the move was successful
@@ -250,12 +249,12 @@ void test_move() {
 
 void test_make() {
 
+    msg(INFO,"Testing 'make()'..");
+
     init();
     struct package p = {0};
 
     assert(open_pkg(TEST_SPM_PATH, &p,NULL) == 0);
-
-    printf("Testing make\n");
 
     char* legacy_dir = calloc(2048,1);
     sprintf(legacy_dir,"%s/%s-%s",getenv("SOVIET_MAKE_DIR"),p.name,p.version);
@@ -274,20 +273,18 @@ void test_make() {
 }
 
 void test_split() {   
+
+    msg(INFO,"Testing 'split()'..");
+
     chdir(CURRENT_DIR);
     system("python3 dev/gen_split.py dev/split.txt 512");
 
     char* split_str;
     rdfile("dev/split.txt",&split_str);
 
-    printf("cutils test\n");
-
-    printf("Testing split\n");
     char **split_list = NULL;
     int count = splita(strdup(split_str),',',&split_list);
 
-    // print list
-    printf("split : printing list\n");
     char* str_split = assemble(split_list,count);
     free(*split_list);
     free(split_list);
@@ -302,12 +299,17 @@ void test_split() {
 }
 
 void test_config() {
+
+    msg(INFO,"Testing 'readConfig()'..");
+
     assert(readConfig(getenv("SOVIET_CONFIG_FILE")) == 0);
     return;
 }
 
 
 void test_get() {
+
+    msg(INFO,"Testing 'get()'..");
 
     char db_path[2048];
     sprintf(db_path,"%s/dev/get_test.db",CURRENT_DIR);
@@ -352,8 +354,10 @@ void test_get() {
 
 }
 
-void test_ecmp()
-{
+void test_ecmp() {
+
+    msg(INFO,"Testing 'open_ecmp()' and 'create_ecmp()'..");
+
     setenv("FORMATS","ecmp",1);
 
     struct package old_pkg = {0};
@@ -361,7 +365,7 @@ void test_ecmp()
     assert(open_ecmp(TEST_SPM_PATH,&old_pkg) == 0);
     
     // print the pkg
-    printf("old_pkg: %s => %s %s\n",old_pkg.name,old_pkg.version,old_pkg.type);
+    dbg(2,"old_pkg: %s => %s %s\n",old_pkg.name,old_pkg.version,old_pkg.type);
 
     msg(INFO,"Creating ecmp package file");
 
@@ -391,8 +395,7 @@ void test_ecmp()
     return;
 }
 
-char* assemble(char** list,int count)
-{
+char* assemble(char** list,int count) {
     dbg(3,"Assembling %d strings",count);
     char* string = calloc(2048*count,sizeof(char));
     int i;
