@@ -31,72 +31,46 @@ void move_binaries(char** locations, long loc_size) {
     dbg(2,"SOVIET_ROOT: %s", getenv("SOVIET_ROOT"));
     dbg(2,"SOVIET_BUILD_DIR: %s", getenv("SOVIET_BUILD_DIR"));
     // Iterate through locations and move the binaries to their correct locations
-    for (int i = 0; i < loc_size; i++) {
-        
-
+    for (int i = 0; i < loc_size; i++)
+    {
         sprintf(dest_loc, "%s%s", getenv("SOVIET_ROOT"), locations[i]);
-
         sprintf(build_loc, "%s%s", getenv("SOVIET_BUILD_DIR"), locations[i]);
 
         // Check if the destination location is empty
-        if (!(access(dest_loc, F_OK) == 0)) {
-            if (locations[i] == NULL) {
-                msg(FATAL, "Location is NULL");
-            }
-
-            // Move the files from the build directory to the destination location
-            switch (mvsp(build_loc, dest_loc, getenv("SOVIET_BUILD_DIR")))
+        if (!(access(dest_loc, F_OK) != 0)) 
+        {
+            if (OVERWRITE) 
             {
-                case -1:
-                    msg(FATAL, "Moving %s to %s failed, could not create dir", build_loc, dest_loc);
-                    break;
-                case -2:
-                    msg(FATAL, "Moving %s to %s failed, destination not a dir", build_loc, dest_loc);
-                    break;
-                case -3:
-                    msg(WARNING, "Moving %s to %s failed, file absent, continuing...", build_loc, dest_loc);
-                    break;
-                case -4:
-                    msg(FATAL, "Moving %s to %s failed, could not move", build_loc, dest_loc);
-                    break;
-                case 0:
-                    break;
+                remove(dest_loc);
             }
-            
-        } else {
-            msg(WARNING, "%s is already here, use --overwrite?", locations[i]);
-            if (OVERWRITE) {
-                // Rename the file in the build directory to the destination location
-                struct stat st;
-                stat(build_loc, &st);
-                int size = st.st_size;
+            else
+            {
+                msg(FATAL, "%s is already here, use --overwrite?", locations[i]);
+            }      
+        }
 
-                char* buffer = malloc(size);
+        if (locations[i] == NULL) 
+        {
+            msg(FATAL, "Location is NULL");
+        }
 
-                FILE *old_ptr;
-                FILE *new_ptr;
-
-                old_ptr = fopen(build_loc,"r"); 
-                fread(buffer, sizeof(char), size, old_ptr); 
-                fclose(old_ptr);
-
-                new_ptr = fopen(dest_loc,"w"); 
-                fwrite(buffer, sizeof(char), size, new_ptr); 
-                fclose(new_ptr);
-                
-                chown(dest_loc, getuid(), getgid());
-                chmod(dest_loc, 0755);
-
-
-                // Remove the file from the build directory
-                if (remove(build_loc) != 0) {
-                    msg(ERROR, "Could not remove %s", build_loc);
-                }
-
-
-            } else {
-                msg(FATAL, "Terminating the program");
-            }
+        // Move the files from the build directory to the destination location
+        switch (mvsp(build_loc, dest_loc, getenv("SOVIET_BUILD_DIR")))
+        {
+            case -1:
+                msg(FATAL, "Moving %s to %s failed, could not create dir", build_loc, dest_loc);
+                break;
+            case -2:
+                msg(FATAL, "Moving %s to %s failed, destination not a dir", build_loc, dest_loc);
+                break;
+            case -3:
+                msg(WARNING, "Moving %s to %s failed, file absent, continuing...", build_loc, dest_loc);
+                break;
+            case -4:
+                msg(FATAL, "Moving %s to %s failed, could not move", build_loc, dest_loc);
+                break;
+            case 0:
+                break;
         }
     }
     return;
