@@ -26,15 +26,16 @@ Notes:
 Returns: None
 */
 void move_binaries(char** locations, long loc_size) {
+    char dest_loc[PATH_MAX] = {0};
+    char build_loc[PATH_MAX] = {0};
+    dbg(2,"SOVIET_ROOT: %s", getenv("SOVIET_ROOT"));
+    dbg(2,"SOVIET_BUILD_DIR: %s", getenv("SOVIET_BUILD_DIR"));
     // Iterate through locations and move the binaries to their correct locations
     for (int i = 0; i < loc_size; i++) {
         
-        dbg(2, "Launching move for %s", locations[i]);
 
-
-        char dest_loc[PATH_MAX];
         sprintf(dest_loc, "%s%s", getenv("SOVIET_ROOT"), locations[i]);
-        char build_loc[PATH_MAX];
+
         sprintf(build_loc, "%s%s", getenv("SOVIET_BUILD_DIR"), locations[i]);
 
         // Check if the destination location is empty
@@ -55,8 +56,10 @@ void move_binaries(char** locations, long loc_size) {
                 case -3:
                     msg(WARNING, "Moving %s to %s failed, file absent, continuing...", build_loc, dest_loc);
                     break;
+                case -4:
+                    msg(FATAL, "Moving %s to %s failed, could not move", build_loc, dest_loc);
+                    break;
                 case 0:
-                    dbg(1, "Moved %s to %s", build_loc, dest_loc);
                     break;
             }
             

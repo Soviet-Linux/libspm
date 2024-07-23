@@ -42,6 +42,8 @@ char* assemble(char** list,int count);
 
 char CURRENT_DIR[2048];
 
+bool OVERWRITE;
+
 int main(int argc, char const *argv[])
 {
     dbg(1, "started spm-test");
@@ -52,6 +54,7 @@ int main(int argc, char const *argv[])
     }
     dbg(1, "Setting debug stuff");
     setenv("SOVIET_DEBUG","3",1);
+    DEBUG = 3;
     QUIET = false;
     OVERWRITE = true;
     DEBUG_UNIT = NULL;
@@ -73,6 +76,8 @@ int main(int argc, char const *argv[])
     }
 
     if (strcmp(argv[1], "all") == 0) {
+
+        init();
         int ret = 0;
         ret += test_ecmp();
         printf("Ret: %d\n",ret);
@@ -86,9 +91,24 @@ int main(int argc, char const *argv[])
         printf("Ret: %d\n",ret);
         ret += test_make("dev/vim.ecmp");
         printf("Ret: %d\n",ret);
+        
+        // install tests
+        char temp_dir_template[] = "/tmp/test_dir_XXXXXX";
+        char* test_dir = mkdtemp(temp_dir_template);
+        setenv("SOVIET_ROOT",test_dir,1);
+        char test_spm_path[2048];
+        sprintf(test_spm_path,"%s/spm/",test_dir);
+        setenv("SOVIET_SPM_DIR",test_spm_path,1);
+        init();
+
+
+
         ret += test_install("dev/vim.ecmp");
         printf("Ret: %d\n",ret);
         ret += test_uninstall("vim");
+        unsetenv("SOVIET_ROOT");
+        unsetenv("SOVIET_SPM_PATH");
+
         printf("Ret: %d\n",ret);
         int leaks = check_leaks();
         printf("Leaks: %d\n",leaks);
@@ -113,6 +133,7 @@ int main(int argc, char const *argv[])
     }
     else if (strcmp(argv[1],"install") == 0)
     {
+        init();
         char* spm_path = NULL;
         if (argc < 3)
         {
@@ -122,25 +143,33 @@ int main(int argc, char const *argv[])
         }
         test_install(spm_path);
 
-    } else if (strcmp(argv[1], "uninstall") == 0) {
+    }
+    else if (strcmp(argv[1], "uninstall") == 0) {
+
         init();
-        char* pname = NULL;
-        if (argc > 3)
-        { 
-            pname = strdup(argv[2]);
-        }
-        else {
-            pname = strdup("vim");
-        }
-        test_uninstall(pname);
+
+        // install tests
+        char temp_dir_template[] = "/tmp/test_dir_XXXXXX";
+        char* test_dir = mkdtemp(temp_dir_template);
+        setenv("SOVIET_ROOT",test_dir,1);
+        char test_spm_path[2048];
+        sprintf(test_spm_path,"%s/spm/",test_dir);
+        setenv("SOVIET_SPM_PATH",test_spm_path,1);
+        test_install("dev/vim.ecmp");
+        test_uninstall("vim");
+        unsetenv("SOVIET_ROOT");    
+        unsetenv("SOVIET_ROOT");
         return 0;
     } else if (strcmp(argv[1], "move") == 0) {
+        init();
         return test_move();
     } else if (strcmp(argv[1], "split") == 0) {
+        init();
         return test_split();
     } else if (strcmp(argv[1], "config") == 0) {
         return test_config();
     } else if (strcmp(argv[1], "get") == 0) {
+        init();
         return test_get();
     } else {
         printf("Invalid argument\n");
@@ -153,7 +182,6 @@ int main(int argc, char const *argv[])
 int test_install(char* spm_path)
 {
     dbg(1, "installing");
-    init();
     install_package_source(spm_path, 0);
     printf("Leaks: %d\n", check_leaks());
     return 0;
@@ -161,7 +189,6 @@ int test_install(char* spm_path)
 
 int test_uninstall(char* pname)
 {
-    init();
     uninstall(pname);
     printf("Leaks: %d\n", check_leaks());
     return 0;
@@ -170,9 +197,11 @@ int test_uninstall(char* pname)
 int test_move()
 {
     
-    init();
 
-    rmrf("/tmp/spm-testing");
+    char temp_dir_template[] = "/tmp/test_dir_XXXXXX";
+    char* test_dir = mkdtemp(temp_dir_template);
+    char build_dir[2048];
+    sprintf(build_dir,"%s/build",test_dir);
 
     #define l_d_count 5
     #define l_f_count 12
@@ -182,15 +211,11 @@ int test_move()
     char* l_links[l_l_count][2] = {{"b/d/e","b/e"},{"s/j/k/z","s/z"},{"s/j/k/x","s/x"}};
 
     printf("Testing move\n");
-    setenv("SOVIET_ROOT","/tmp/spm-testing",1);
-    setenv("SOVIET_BUILD_DIR","/tmp/spm-testing/old",1);
+    setenv("SOVIET_ROOT",test_dir,1);
+    setenv("SOVIET_BUILD_DIR",build_dir,1);
     printf("Creating directories\n");
-    rmrf("/tmp/spm-testing");
-    printf("Creating directories\n");
-    mkdir("/tmp/spm-testing",0777);
-    printf("Creating directories\n");
-    mkdir("/tmp/spm-testing/old",0777);
-    printf("Creating directories\n");
+    mkdir(test_dir,0777);
+    mkdir(build_dir,0777);
 
     printf("Creating test dirs\n");
     //make all dirs
@@ -198,7 +223,7 @@ int test_move()
     {
         printf("Creating %s\n",l_dirs[i]);
         char* dir = malloc(256);
-        sprintf(dir,"%s/%s","/tmp/spm-testing/old",l_dirs[i]);
+        sprintf(dir,"%s/%s",build_dir,l_dirs[i]);
         mkdir(dir,0777);
         free(dir);
     }
@@ -208,7 +233,7 @@ int test_move()
     {
         printf("Creating %s\n",l_files[i]);
         char* path = malloc(256);
-        sprintf(path,"%s/%s","/tmp/spm-testing/old",l_files[i]);
+        sprintf(path,"%s/%s",build_dir,l_files[i]);
         printf("Path: %s\n",path);
         FILE* f = fopen(path,"w");
         fclose(f);
@@ -218,19 +243,25 @@ int test_move()
     // make all links
     for (int i = 0; i < l_l_count; i++)
     {
-        printf("Creating %s -> %s\n",l_links[i][0],l_links[i][1]);
+        printf("Creating %s -> %s\n",l_links[i][1],l_links[i][0]);
         char* old_path = malloc(256);
-        sprintf(old_path,"%s/%s","/tmp/spm-testing/old",l_links[i][0]);
-        char* new_path = malloc(256);
-        sprintf(new_path,"%s/%s","/tmp/spm-testing/old",l_links[i][1]);
-        symlink(old_path,new_path);
+        sprintf(old_path,"%s/%s",build_dir,l_links[i][0]);
+        char* link_path = malloc(256);
+        sprintf(link_path,"%s/%s",build_dir,l_links[i][1]);
+        symlink(old_path,link_path);
         free(old_path);
-        free(new_path);
+        free(link_path);
     }
 
     // get all the files with get_locatins
     char** end_locations;
-    int end_count = get_locations(&end_locations,"/tmp/spm-testing/old");
+    int end_count = get_locations(&end_locations,build_dir);
+
+    if (end_count != l_f_count + l_l_count)
+    {
+        printf("Failed to get all locations\n");
+        return 1;
+    }
 
     // print end locations
 
@@ -247,9 +278,9 @@ int test_move()
     for (int i = 0; i < l_f_count; i++)
     {
         char* old_path = malloc(256);
-        sprintf(old_path,"%s/%s","/tmp/spm-testing/old",l_files[i]);
+        sprintf(old_path,"%s/%s",build_dir,l_files[i]);
         char* new_path = malloc(256);
-        sprintf(new_path,"%s/%s","/tmp/spm-testing",l_files[i]);
+        sprintf(new_path,"%s/%s",test_dir,l_files[i]);
 
         if(access(old_path, F_OK) != -1 || access(new_path, F_OK) == -1) {
             printf("Failed to move %s : \n",l_files[i]);
@@ -266,11 +297,13 @@ int test_move()
     for (int i = 0; i < l_l_count; i++)
     {
         char* old_path = malloc(256);
-        sprintf(old_path,"%s/%s","/tmp/spm-testing/old",l_links[i][0]);
+        sprintf(old_path,"%s/%s",build_dir,l_links[i][0]);
         char* new_path = malloc(256);
-        sprintf(new_path,"%s/%s","/tmp/spm-testing",l_links[i][1]);
+        sprintf(new_path,"%s/%s",test_dir,l_links[i][1]);
 
-        if(access(old_path, F_OK) != -1 || access(new_path, F_OK) == -1) {
+        // check using stat
+        struct stat st;
+        if (stat(new_path,&st) != 0 || stat(old_path,&st) == 0) {
             printf("Failed to move %s : \n",l_links[i][0]);
             printf("Old path: %s\n",old_path);
             printf("New path: %s\n",new_path);
@@ -300,7 +333,6 @@ int test_move()
 
 int test_make(char* spm_path) {
 
-    init();
 
     struct package p = {0};
 
@@ -390,7 +422,6 @@ int test_get()
     setenv("ALL_DB_PATH","dev/get_test.db",1);
 
 
-    init();
     int EXIT = 0;
 
     // sync with remote

@@ -76,7 +76,7 @@ test:
 
 check-all:
 	bin/spm-test all
-	if [ $$? -gt 0 ]; then echo "Error Tests Failed"; else echo "All good"; fi
+	@if [ $$? -gt 0 ]; then echo "Error Tests Failed"; else echo "All good"; fi
 
 
 check: test check-all
