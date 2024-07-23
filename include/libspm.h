@@ -32,6 +32,7 @@ struct package
     char* license;
     char* sha256;
     char* url;
+    char* environment;
 
     char** files;
     int filesCount;
@@ -47,6 +48,10 @@ struct package
 
     char ** inputs;
     int inputsCount;
+
+    char ** exports;
+    int exportsCount;
+
 
     // cmds
     struct cmd info;

@@ -58,7 +58,8 @@ int open(char* path,struct package* pkg)
         {parsenl,&pkg->optional,&pkg->optionalCount},
         {parsenl,&pkg->inputs,&pkg->inputsCount},
         {parsenl,&pkg->locations,&pkg->locationsCount},
-		{parseraw,&pkg->info.description,NULL}
+		{parseraw,&pkg->info.description,NULL},
+		{parsenl,&pkg->exports,&pkg->exportsCount}
     };
 
     void* pairs[][2] = {
@@ -76,6 +77,7 @@ int open(char* path,struct package* pkg)
         {"inputs",parsers[9]},
         {"locations",parsers[10]},
 		{"description",parsers[11]},
+		{"exports",parsers[12]},
         {NULL,NULL}
     };
 
@@ -86,6 +88,7 @@ int open(char* path,struct package* pkg)
 		{"url",&pkg->url},
 		{"license",&pkg->license},
 		{"sha256",&pkg->sha256},
+		{"environment",&pkg->environment},
 		{NULL,NULL}
 	};
 	hm = hm_init(pairs,sizeof(pairs)/sizeof(pairs[0]));
