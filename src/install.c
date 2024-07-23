@@ -10,6 +10,9 @@
 #include "libspm.h"
 #include "cutils.h"
 
+// include header for wait()
+#include <sys/wait.h>
+
 // Function to install a package from source (archive)
 /*
 Accepts:

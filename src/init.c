@@ -56,31 +56,31 @@ void init() {
     // Verify if required directories exist, and create them if not
     struct stat st = {0};
     if (stat(getenv("SOVIET_ROOT"), &st) == -1) {
-        mkdir(getenv("SOVIET_ROOT"), 0777);
+        pmkdir(getenv("SOVIET_ROOT"));
     }
     if (stat(getenv("SOVIET_MAIN_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_MAIN_DIR"), 0777);
+        pmkdir(getenv("SOVIET_MAIN_DIR"));
     }
     if (stat(getenv("SOVIET_REPOS_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_REPOS_DIR"), 0777);
+        pmkdir(getenv("SOVIET_REPOS_DIR"));
     }
     if (stat(getenv("SOVIET_WORK_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_WORK_DIR"), 0777);
+        pmkdir(getenv("SOVIET_WORK_DIR"));
     }
     if (stat(getenv("SOVIET_SPM_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_SPM_DIR"), 0777);
+        pmkdir(getenv("SOVIET_SPM_DIR"));
     }
     if (stat(getenv("SOVIET_LOG_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_LOG_DIR"), 0777);
+        pmkdir(getenv("SOVIET_LOG_DIR"));
     }
     if (stat(getenv("SOVIET_PLUGIN_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_PLUGIN_DIR"), 0777);
+        pmkdir(getenv("SOVIET_PLUGIN_DIR"));
     }
     if (stat(getenv("SOVIET_BUILD_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_BUILD_DIR"), 0777);
+        pmkdir(getenv("SOVIET_BUILD_DIR"));
     }
     if (stat(getenv("SOVIET_MAKE_DIR"), &st) == -1) {
-        mkdir(getenv("SOVIET_MAKE_DIR"), 0777);
+        pmkdir(getenv("SOVIET_MAKE_DIR"));
     }
     if (stat(getenv("SOVIET_SOURCE_DIR"), &st) == -1) {
         pmkdir(getenv("SOVIET_SOURCE_DIR"));
