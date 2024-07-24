@@ -48,9 +48,9 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    setenv("SOVIET_DEBUG","0",1);
-    DEBUG = 0;
-    QUIET = true;
+    setenv("SOVIET_DEBUG","3",1);
+    DEBUG = 3;
+    QUIET = false;
     OVERWRITE = true;
     DEBUG_UNIT = NULL;
     // we want to chnage that later 
