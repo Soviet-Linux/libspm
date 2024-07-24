@@ -32,6 +32,8 @@ ConfigEntry configEntries[] = {
     { "SOVIET_DEFAULT_REPO", "OUR" },
     { "SOVIET_DEFAULT_REPO_URL", "https://github.com/Soviet-Linux/OUR.git" },
     { "SOVIET_FORMATS", "ecmp" },
+    { "SOVIET_SOURCE_DIR", "/usr/src/cccp" },
+    { "SOVIET_ENV_DIR", "/etc/cccp" },
     // Add more key-value pairs with default values as needed
 };
 
@@ -76,18 +78,22 @@ int readConfig(const char* configFilePath)
     while (fgets(line, sizeof(line), file)) {
         line[strlen(line) - 1] = 0;
 
-        char* key = strtok(line, "=");
-        char* value = strchr(line, '\0') + 1;
-        if (key == NULL || value == NULL) {
-            msg(ERROR, "Invalid config file");
-            fclose(file);
-            return 1;
+        if((line[0] != '#' || (line[0] != '/' && line[1] != '/')) && strstr(line, "=") != 0)
+        {
+            char* key = strtok(line, "=");
+            char* value = strchr(line, '\0') + 1;
+
+            if (key == NULL || value == NULL) {
+                msg(ERROR, "Invalid config file");
+                fclose(file);
+                return 1;
+            }
+
+            dbg(2, "Key: %s Value: %s", key, value);
+
+            // Set environment variables based on the key-value pairs in the config file
+            setenv(key, value, 0);
         }
-
-        dbg(2, "Key: %s Value: %s", key, value);
-
-        // Set environment variables based on the key-value pairs in the config file
-        setenv(key, value, 0);
     }
 
     fclose(file);

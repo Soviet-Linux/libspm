@@ -5,7 +5,7 @@
 
 
 
-#define LIBSPM_VERSION 0.503
+#define LIBSPM_VERSION 1.000
 
 #define SOURCE "src"
 #define BINARY "bin"
@@ -32,6 +32,10 @@ struct package
     char* license;
     char* sha256;
     char* url;
+    char* environment;
+
+    char** files;
+    int filesCount;
 
     char** dependencies;
     int dependenciesCount;
@@ -44,6 +48,10 @@ struct package
 
     char ** inputs;
     int inputsCount;
+
+    char ** exports;
+    int exportsCount;
+
 
     // cmds
     struct cmd info;
@@ -60,6 +68,8 @@ void create_links(char build_loc[4096], char dest_loc[4096]);
 int check_optional_dependencies(char ** dependencies,int dependenciesCount);
 int get_repos(char** list);
 char** getAllFiles(const char* root, const char *path, int *num_files);
+int download(char* url, FILE* fp);
+
 //end test
 
 // package info
