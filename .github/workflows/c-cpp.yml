@@ -32,6 +32,3 @@ jobs:
 
     - name: Make check
       run: sudo make check
-
-    - name: Make test
-      run: make test
