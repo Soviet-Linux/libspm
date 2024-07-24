@@ -46,6 +46,9 @@ int make(char* package_dir, struct package* pkg) {
     // Parse the files
     for (int i = 0; i < pkg->filesCount; i++)
     {
+        int download_attempts = 3;
+        int download_success = 0;
+
         struct stat st_source = {0};
         struct stat st_source_loc = {0};
 
@@ -81,44 +84,73 @@ int make(char* package_dir, struct package* pkg) {
             // Check if the checksum shall be bypassed
             if (!INSECURE)
             {
-                // Check the hash, abort if mismatch
-                unsigned char hash[SHA256_DIGEST_LENGTH];
-                char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
-
-                struct stat st;
-                stat(location, &st);
-                int size = st.st_size;
-
-                char* buffer = malloc(size);
-                FILE *ptr;
-                ptr = fopen(location,"r"); 
-                fread(buffer, sizeof(char), size, ptr); 
-
-                if (!(buffer == NULL))
+                do
                 {
-                    SHA256(buffer, size, hash);
+                    // Check the hash, abort if mismatch
+                    unsigned char hash[SHA256_DIGEST_LENGTH];
+                    char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
 
-                    if (!((hash == NULL) || (hash[0] == '\0')))
+                    struct stat st;
+                    stat(location, &st);
+                    int size = st.st_size;
+
+                    char* buffer = malloc(size);
+                    FILE *ptr;
+                    ptr = fopen(location,"r"); 
+                    fread(buffer, sizeof(char), size, ptr); 
+                    fclose(ptr);
+
+                    if (!(buffer == NULL))
                     {
-                        dbg(1, "Hash is %s", file_sha256);
-                        for(int k = 0; k < SHA256_DIGEST_LENGTH; k++)
-                        {
-                            char* temp = calloc(8, 1);
-                            sprintf(temp, "%02x", hash[k]);
-                            strcat(hash_str, temp);
-                        }
+                        SHA256(buffer, size, hash);
+                        free(buffer);
 
-                        dbg(1, "Got %s", hash_str);
-                        if(strcmp(hash_str, file_sha256) != 0)
+                        if (!((hash == NULL) || (hash[0] == '\0')))
                         {
-                            msg(FATAL, "Hash mismatch, aborting");
+                            dbg(1, "Hash is %s", file_sha256);
+                            for(int k = 0; k < SHA256_DIGEST_LENGTH; k++)
+                            {
+                                char* temp = calloc(8, 1);
+                                sprintf(temp, "%02x", hash[k]);
+                                strcat(hash_str, temp);
+                                free(temp);
+                            }
+
+                            dbg(1, "Got %s", hash_str);
+                            if(strcmp(hash_str, file_sha256) != 0)
+                            {
+                                free(hash_str);
+
+                                if(download_attempts == 0)
+                                {
+                                    msg(FATAL, "Hash mismatch, aborting");
+                                }
+                                else
+                                {
+                                    msg(WARNING, "Hash mismatch, retrying...");
+                                    --download_attempts;
+                                }
+                            }
+                            else
+                            {
+                                download_success = 1;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(download_attempts == 0)
+                        {
+                            msg(FATAL, "Could not download file, aborting");
+                        }
+                        else
+                        {
+                            msg(WARNING, "Could not download file, retrying...");
+                            --download_attempts;
                         }
                     }
                 }
-                else
-                {
-                    msg(FATAL, "Could not verify the file's hash");
-                }
+                while (download_success != 1);
             } 
             else 
             {
