@@ -9,7 +9,7 @@
 #include "cutils.h"
 #include "globals.h"
 
-
+#define MAX_DOWNLOAD_ATTEMPTS 3
 
 // Function to execute a special command for post-installation
 /*
@@ -79,7 +79,7 @@ Returns:
 - const char*: A dynamically allocated string containing the SHA256 hash in hexadecimal format.
          It's the responsibility of the caller to free this memory.
 */
-const char* calculate_hash(const char* filename) {
+char* calculate_hash(const char* filename) {
     FILE *ptr;
     unsigned char hash[SHA256_DIGEST_LENGTH];
     char* hash_str = NULL;
@@ -131,9 +131,9 @@ Accepts:
 Returns:
 - int: An integer indicating the result of the build and installation process.
   - 0: Build and installation succeeded.
-  - 1: An error occurred during execution of prepare, make, test, or install commands.
-  - -2: Failed to install the package.
-  - -3: No install command found.
+  - (-1) : download failed
+  - (-2) : hash calculation failed
+  - (-3) : prepare or make command failed
 */
 int make(char* package_dir, struct package* pkg) {
     char* build_dir = getenv("SOVIET_BUILD_DIR");
@@ -200,7 +200,7 @@ int make(char* package_dir, struct package* pkg) {
     int download_attempt = 0;
     char* hash_str = NULL;
 
-    while (download_attempt < 3) {
+    while (download_attempt < MAX_DOWNLOAD_ATTEMPTS) {
         if (download_package_sources(make_dir, pkg->info.download, cmd_params, 1) == 0) {
             // Calculate the hash of the downloaded file
             char* exec_cmd_1 = calloc(MAX_PATH, sizeof(char));
@@ -234,14 +234,14 @@ int make(char* package_dir, struct package* pkg) {
         }
     }
 
-    if (download_attempt >= 3) {
-        msg(FATAL, "Failed to download sources after 3 attempts.");
+    if (download_attempt >= MAX_DOWNLOAD_ATTEMPTS) {
+        msg(FATAL, "Failed to download sources after %d attempts.",MAX_DOWNLOAD_ATTEMPTS);
         return -1;
     }
 
     if (hash_str == NULL) {
         msg(FATAL, "Failed to calculate hash of downloaded file.");
-        return -1;
+        return -2;
     }
 
     // Run 'prepare' command
@@ -253,7 +253,7 @@ int make(char* package_dir, struct package* pkg) {
         dbg(2, "Executing prepare command: %s", prepare_cmd);
         if (system(prepare_cmd) != 0) {
             free(hash_str);
-            return 1;
+            return -3;
         }
         dbg(1, "Prepare command executed!");
     }
@@ -266,7 +266,7 @@ int make(char* package_dir, struct package* pkg) {
         dbg(2, "Executing make command: %s", make_cmd);
         if (system(make_cmd) != 0) {
             free(hash_str);
-            return 1;
+            return -3;
         }
         dbg(1, "Make command executed!");
     }
