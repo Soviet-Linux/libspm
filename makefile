@@ -41,7 +41,7 @@ OBJDIR   = obj
 BINDIR   = bin
 INCDIR   = include
 
-DEVDIR = dev
+DEVDIR = test
 
 
 SOURCES  := $(wildcard $(SRCDIR)/*.c)
@@ -71,16 +71,17 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 
 
 test:
-	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
+	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/spm.c ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
+	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/package.c ${DEVDIR}/test.c $(LIBS) -o bin/package-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
 	@echo "Test binary created"
 
 check-all:
 	bin/spm-test all
 	@if [ $$? -gt 0 ]; then echo "Error Tests Failed"; else echo "All good"; fi
 
-
 check: test check-all
 	@echo "All Tests Passed"
+
 
 libs:
 	for i in $(LOCAL_LIBS); do make -C $$(dirname $$i) all; done

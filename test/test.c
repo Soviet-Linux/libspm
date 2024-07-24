@@ -1,126 +1,14 @@
-#include "stdio.h"
-#include "assert.h"
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <dlfcn.h>
+#include "test.h"
 
-#include "../include/globals.h"
-#include "../include/libspm.h"
-#include "../include/cutils.h"
 #include "../include/libspm.h"
 
-
-#define STATIC
-
+char* assemble(char** list,int count);
 
 extern int open_ecmp(char* path,struct package* pkg);
 extern int create_ecmp(char* path,struct package* pkg);
 
 
-char** list_of_stuff  = NULL;
-int list_of_stuff_count = 0;
-
-void test_ecmp();
-void test_move();
-void test_get();
-void test_split();
-void test_config();
-void test_make();
-
-void test_pm();
-
-char* assemble(char** list,int count);
-
-char CURRENT_DIR[2048];
-char TEST_SPM_PATH[2048];
-
-bool OVERWRITE;
-
-int main(int argc, char const *argv[])
-{
-    msg(INFO,"Started LibSPM test suite...");
-    if (argc  < 2)
-    {
-        printf("No arguments provided\n");
-        return 1;
-    }
-
-    setenv("SOVIET_DEBUG","3",1);
-    DEBUG = 3;
-    QUIET = false;
-    OVERWRITE = true;
-    DEBUG_UNIT = NULL;
-    // we want to chnage that later 
-    // TODO: Add hash to test package
-    INSECURE = true;
-
-    getcwd(CURRENT_DIR, 2048);
-    sprintf(TEST_SPM_PATH,"%s/dev/vim.ecmp",CURRENT_DIR);
-
-
-
-   if (argc < 2 || strcmp(argv[1], "help") == 0) {
-        printf("Usage: %s [ecmp|all|make|install|uninstall|move|help|split|config|get]\n", argv[0]);
-        return 0;
-    }
-
-    // Check for root privileges for all other commands
-    if (geteuid() != 0) {
-        printf("You must have root privileges to run this command.\n");
-        return 1;
-    }
-
-    if (strcmp(argv[1], "all") == 0) {
-        init();
-        test_ecmp();
-        test_move();
-        test_get();
-        test_split();
-        test_config();
-        test_make();
-
-        test_pm();
-        int leaks = check_leaks();
-        if (leaks > 0) {
-            msg(ERROR, "Leaks: %d",leaks);
-        }
-
-    } else if (strcmp(argv[1], "ecmp") == 0) {
-        test_ecmp();
-    }  else if (strcmp(argv[1], "make") == 0) {
-        test_make();
-        printf("Leaks: %d\n", check_leaks());
-    } else if (strcmp(argv[1],"install") == 0 || 
-               strcmp(argv[1],"pm") == 0) {
-        test_pm();
-        printf("Leaks: %d\n", check_leaks());
-        return 0;
-    } else if (strcmp(argv[1], "move") == 0) {
-        test_move();
-    } else if (strcmp(argv[1], "split") == 0) {
-        test_split();
-    } else if (strcmp(argv[1], "config") == 0) {
-        test_config();
-    } else if (strcmp(argv[1], "get") == 0) {
-        test_get();
-    } else {
-        printf("Invalid argument\n");
-        return 1;
-    }
-
-    int leaks = check_leaks();
-    if (leaks > 0) {
-        msg(WARNING,"Leaks: %d",leaks);
-    }
-
-    msg(INFO,"Done testing LibSPM.");
-    return 0;
-}
-
-void test_pm() {
+void test_pm(char* spm_path) {
 
     msg(INFO,"Testing 'install_package_source()' and 'uninstall()'..");
 
@@ -134,7 +22,7 @@ void test_pm() {
 
     init() ;
 
-    assert(install_package_source(TEST_SPM_PATH,0) == 0);
+    assert(install_package_source(spm_path,0) == 0);
     assert(uninstall("vim") == 0);
 
     unsetenv("SOVIET_ROOT");    
@@ -247,14 +135,14 @@ void test_move() {
 
 }
 
-void test_make() {
+void test_make(char* spm_path) {
 
     msg(INFO,"Testing 'make()'..");
 
     init();
     struct package p = {0};
 
-    assert(open_pkg(TEST_SPM_PATH, &p,NULL) == 0);
+    assert(open_pkg(spm_path, &p,NULL) == 0);
 
     char* legacy_dir = calloc(2048,1);
     sprintf(legacy_dir,"%s/%s-%s",getenv("SOVIET_MAKE_DIR"),p.name,p.version);
@@ -276,11 +164,11 @@ void test_split() {
 
     msg(INFO,"Testing 'split()'..");
 
-    chdir(CURRENT_DIR);
-    system("python3 dev/gen_split.py dev/split.txt 512");
+    chdir(WORKING_DIR);
+    system("python3 gen_split.py split.txt 512");
 
     char* split_str;
-    rdfile("dev/split.txt",&split_str);
+    rdfile("split.txt",&split_str);
 
     char **split_list = NULL;
     int count = splita(strdup(split_str),',',&split_list);
@@ -312,14 +200,14 @@ void test_get() {
     msg(INFO,"Testing 'get()'..");
 
     char db_path[2048];
-    sprintf(db_path,"%s/dev/get_test.db",CURRENT_DIR);
+    sprintf(db_path,"%s/get_test.db",WORKING_DIR);
 
     setenv("ALL_DB_PATH",db_path,1);
     repo_sync();
 
     struct package base_pkg = {0};
     char base_path[2048];
-    sprintf(base_path,"%s/dev/test.base.ecmp",CURRENT_DIR);
+    sprintf(base_path,"%s/test.base.ecmp",WORKING_DIR);
     assert(open_ecmp(base_path,&base_pkg) == 0);
 
 
@@ -329,7 +217,7 @@ void test_get() {
     dbg(2,"Repo: %s",getenv("SOVIET_DEFAULT_REPO"));
 
     char out_test[2048+16 ] = {0};
-    sprintf(out_test,"%s/dev/test.ecmp",CURRENT_DIR);
+    sprintf(out_test,"%s/test.ecmp",WORKING_DIR);
     dbg(3,"Copying to %s",out_test);
     remove(out_test);
     char* fmt = get(&t_pkg,getenv("SOVIET_DEFAULT_REPO"),out_test);
@@ -354,7 +242,7 @@ void test_get() {
 
 }
 
-void test_ecmp() {
+void test_ecmp(char* spm_path) {
 
     msg(INFO,"Testing 'open_ecmp()' and 'create_ecmp()'..");
 
@@ -362,7 +250,7 @@ void test_ecmp() {
 
     struct package old_pkg = {0};
 
-    assert(open_ecmp(TEST_SPM_PATH,&old_pkg) == 0);
+    assert(open_ecmp(spm_path,&old_pkg) == 0);
     
     // print the pkg
     dbg(2,"old_pkg: %s => %s %s\n",old_pkg.name,old_pkg.version,old_pkg.type);
@@ -371,7 +259,7 @@ void test_ecmp() {
 
 
     char mod_path[2048];
-    sprintf(mod_path,"%s.mod",TEST_SPM_PATH);
+    sprintf(mod_path,"%s.mod",spm_path);
 
     assert(create_ecmp(mod_path, &old_pkg) == 0);
 
@@ -391,6 +279,8 @@ void test_ecmp() {
     // free packages
     free_pkg(&old_pkg);
     free_pkg(&new_pkg);
+
+    remove(mod_path);
 
     return;
 }
