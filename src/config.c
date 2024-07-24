@@ -92,7 +92,7 @@ int readConfig(const char* configFilePath)
             dbg(2, "Key: %s Value: %s", key, value);
 
             // Set environment variables based on the key-value pairs in the config file
-            setenv(key, value, 1);
+            setenv(key, value, 0);
         }
     }
 
@@ -101,7 +101,7 @@ int readConfig(const char* configFilePath)
     // Set environment variables for missing keys with their default values
     for (size_t i = 0; i < numConfigEntries; i++) {
         if (getenv(configEntries[i].key) == NULL) {
-            setenv(configEntries[i].key, configEntries[i].default_value, 1);
+            setenv(configEntries[i].key, configEntries[i].default_value, 0);
         }
     }
 
