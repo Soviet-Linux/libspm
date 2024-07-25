@@ -67,8 +67,9 @@ int upgrade();
 void create_links(char build_loc[4096], char dest_loc[4096]);
 int check_optional_dependencies(char ** dependencies,int dependenciesCount);
 int get_repos(char** list);
-char** getAllFiles(const char* root, const char *path, int *num_files);
+char** get_all_files(const char* root, const char *path, int *num_files);
 int download(char* url, FILE* fp);
+
 
 //end test
 
