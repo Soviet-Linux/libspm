@@ -23,7 +23,9 @@ void test_pm(char* spm_path) {
     init() ;
 
     assert(install_package_source(spm_path,0) == 0);
+    assert(check("vim") == 0);
     assert(uninstall("vim") == 0);
+    assert(check("vim") == 1);
 
     unsetenv("SOVIET_ROOT");    
     unsetenv("SOVIET_ROOT");

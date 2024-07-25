@@ -105,14 +105,12 @@ int update()
     free(files_array);
 
 
-    if(new_version_found != 0)
-    {
-        msg(WARNING, "new version found for one or more packages, use --upgrade to upgrade");
+    if(new_version_found != 0) {
+        msg(WARNING, "New version found for one or more packages, use --upgrade to upgrade");
     }
-        else
-        {
-            msg(WARNING, "all packages are up to date");
-        }
+    else {
+        msg(WARNING, "all packages are up to date");
+    }
     
     return 0;
 }
