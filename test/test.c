@@ -144,7 +144,16 @@ void test_make(char* spm_path) {
 
     assert(open_pkg(spm_path, &p,NULL) == 0);
 
-    setenv("URL", p.url, 1);
+    setenv("NAME", p.name, 1);
+    setenv("VERSION", p.version, 1);
+    if (p.url != NULL) {
+        char cmd[1024];
+        sprintf(cmd,"echo %s",p.url);
+        p.url = exec(cmd);
+        dbg(1, "URL: %s", p.url);
+        setenv("URL", p.url, 1);
+    }
+
     char* legacy_dir = calloc(2048,1);
     sprintf(legacy_dir,"%s/%s-%s",getenv("SOVIET_MAKE_DIR"),p.name,p.version);
 
