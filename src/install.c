@@ -139,7 +139,17 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     setenv("VERSION", pkg.version, 1);
 
     if (pkg.url != NULL)
-    {
+    {       
+        /* IMPORTANT*/
+        // This seemingly pointless piece of code is actually very important
+        // Basically it evaluate the nested variables in the URL
+        // without it everything crashes
+        // I dont like calling exec() so its a temporary solution
+        // I dont know how to fix it without manually parsing eveything, a pain
+        char cmd[1024];
+        sprintf(cmd,"echo %s",pkg.url);
+        pkg.url = exec(cmd);
+        dbg(1, "URL: %s", pkg.url);
         setenv("URL", pkg.url, 1);
     }
 
@@ -361,6 +371,8 @@ int install_package_binary(const char* archivePath, int as_dep, const char* repo
 
     dbg(1, "Package %s installed", pkg.name);
 
+    free_pkg(&pkg);
+
     // Clean up
     clean();
 
@@ -469,7 +481,9 @@ int free_pkg(struct package* pkg) {
         free(pkg->optional);
     }
     if (pkg->files) {
-        if (*pkg->files) free(*pkg->files);
+        for (int i = 0; i < pkg->filesCount; i++) {
+            if (pkg->files[i] != NULL) free(pkg->files[i]);
+        }
         free(pkg->files);
     }
     return 0;
