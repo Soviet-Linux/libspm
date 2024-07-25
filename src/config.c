@@ -34,6 +34,7 @@ ConfigEntry configEntries[] = {
     { "SOVIET_FORMATS", "ecmp" },
     { "SOVIET_SOURCE_DIR", "/usr/src/cccp" },
     { "SOVIET_ENV_DIR", "/etc/cccp" },
+    { "SOVIET_CLEANUP", "/usr/share/info/dir:/usr/share/doc/" },
     // Add more key-value pairs with default values as needed
 };
 
