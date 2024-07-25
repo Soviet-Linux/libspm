@@ -1,5 +1,6 @@
 #include "test.h"
-#include <threads.h>
+#include "../include/libspm.h"
+#include "../include/cutils.h"
 
 char WORKING_DIR[2048];
 

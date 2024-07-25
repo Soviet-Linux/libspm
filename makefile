@@ -85,6 +85,7 @@ check: test check-all
 
 libs:
 	for i in $(LOCAL_LIBS); do make -C $$(dirname $$i) all; done
+	for i in $(LOCAL_LIBS); do cp $$(dirname $$i)/*.h include ; done
 
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)
@@ -96,7 +97,7 @@ formats:
 	for i in $(FMT_DIR)/*; do \
 		echo "Building $$i"; \
 		if [ -d $$i ]; then \
-			$(CC) $(CFLAGS) -shared -fPIC $$i/*.c -o $(BINDIR)/plugins/$$(basename $$i).so; \
+			$(CC) $(CFLAGS) -shared -fPIC $$i/*.c $(LOCAL_LIBS) -o $(BINDIR)/plugins/$$(basename $$i).so; \
 		fi; \
 	done
 
