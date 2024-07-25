@@ -15,7 +15,7 @@
 #define READ_ERROR -2
 
 // Function to recursively retrieve all files in a directory and its subdirectories
-char **getAllFiles(const char* root, const char *path, int *num_files) {
+char **get_all_files(const char* root, const char *path, int *num_files) {
     DIR *dir;
     struct dirent *entry;
     struct stat stat_buf;
@@ -45,10 +45,10 @@ char **getAllFiles(const char* root, const char *path, int *num_files) {
 
         // Get information about the current entry
         if (stat(full_path, &stat_buf) == 0) {
-            // If it's a directory, recursively call getAllFiles
+            // If it's a directory, recursively call get_all_files
             if (S_ISDIR(stat_buf.st_mode)) {
                 int sub_files_count;
-                char **sub_files = getAllFiles(root, full_path, &sub_files_count);
+                char **sub_files = get_all_files(root, full_path, &sub_files_count);
                 if (sub_files != NULL) {
                     // Resize files_array and copy contents of sub_files into it
                     files_array = realloc(files_array, (file_count + sub_files_count) * sizeof(char *));
@@ -82,7 +82,7 @@ char **getAllFiles(const char* root, const char *path, int *num_files) {
 int count_installed() {
     const char *path = getenv("SOVIET_SPM_DIR");
     int num_files;
-    char **files_array = getAllFiles(path, path, &num_files);
+    char **files_array = get_all_files(path, path, &num_files);
     if (files_array != NULL) {
         // Return the number of files
         return num_files;
@@ -97,7 +97,7 @@ int count_installed() {
 int list_installed() {
     const char *path = getenv("SOVIET_SPM_DIR");
     int num_files;
-    char **files_array = getAllFiles(path, path, &num_files);
+    char **files_array = get_all_files(path, path, &num_files);
     if (files_array != NULL) {
         // Print each file path
         for (int i = 0; i < num_files; i++) {
@@ -126,7 +126,7 @@ char ** search(char *term, int *num_results) {
     int found = 0;
     const char *path = getenv("SOVIET_REPOS_DIR");
     int num_files;
-    char **files_array = getAllFiles(path, path, &num_files);
+    char **files_array = get_all_files(path, path, &num_files);
     char **searched_array = NULL;
 
     if (files_array != NULL) {
@@ -163,7 +163,7 @@ char ** search(char *term, int *num_results) {
                 searched_array = realloc(searched_array, (found + 1) * sizeof(char *));
                 // Stupid
                 char* tmp = calloc(strlen(package_name) + strlen(repo) * 2, 1);
-                sprintf(tmp, "%s>%s\0", package_name, repo);
+                sprintf(tmp, "%s>%s", package_name, repo);
 
                 searched_array[found] = strdup(tmp);
                 free(tmp);
@@ -193,3 +193,4 @@ char ** search(char *term, int *num_results) {
     }
     return 0;
 }
+

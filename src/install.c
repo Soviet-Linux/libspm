@@ -371,6 +371,8 @@ int install_package_binary(const char* archivePath, int as_dep, const char* repo
 
     dbg(1, "Package %s installed", pkg.name);
 
+    free_pkg(&pkg);
+
     // Clean up
     clean();
 
@@ -479,7 +481,9 @@ int free_pkg(struct package* pkg) {
         free(pkg->optional);
     }
     if (pkg->files) {
-        if (*pkg->files) free(*pkg->files);
+        for (int i = 0; i < pkg->filesCount; i++) {
+            if (pkg->files[i] != NULL) free(pkg->files[i]);
+        }
         free(pkg->files);
     }
     return 0;

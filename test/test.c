@@ -164,6 +164,8 @@ void test_make(char* spm_path) {
     dbg(1,"Getting locations for %s",p.name);
     p.locationsCount = get_locations(&p.locations,getenv("SOVIET_BUILD_DIR"));
     assert(p.locationsCount > 0);
+    
+    free_pkg(&p);
 
     dbg(1,"Got %d locations for %s",p.locationsCount,p.name);
 
