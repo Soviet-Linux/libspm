@@ -47,6 +47,9 @@ int make(char* package_dir, struct package* pkg) {
     // Parse the files
     for (int i = 0; i < pkg->filesCount; i++)
     {
+        int download_attempts = 3;
+        int download_success = 0;
+
         struct stat st_source = {0};
         struct stat st_source_loc = {0};
 
@@ -80,6 +83,7 @@ int make(char* package_dir, struct package* pkg) {
             fclose(fp);
 
             // Check if the checksum shall be bypassed
+          
             if (INSECURE) {
                 msg(WARNING, "The Checksum is being skipped");
                 goto skip_checksum;
