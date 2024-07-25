@@ -37,13 +37,6 @@ int make(char* package_dir, struct package* pkg) {
     // Set environment variables for building
     setenv("BUILD_ROOT", build_dir, 1);
 
-
-    // TODO: this
-    // Thinking about putting the package caching here
-    // Maybe it will check if the installed version matches $VERSION
-    // If so, it will just copy the dir from /usr/src/$NAME-$VERSION
-    // Instead of executing the following:
-    //
     // Parse the files
     for (int i = 0; i < pkg->filesCount; i++)
     {
@@ -78,57 +71,92 @@ int make(char* package_dir, struct package* pkg) {
 
         if (stat(source_file_location, &st_source) == -1)
         {
-            FILE* fp = fopen(location, "wb");
-            download(file_url, fp);
-            fclose(fp);
+            do
+            {
+                FILE* fp = fopen(location, "wb");
+                download(file_url, fp);
+                fclose(fp);
 
-            // Check if the checksum shall be bypassed
-          
-            if (INSECURE) {
-                msg(WARNING, "The Checksum is being skipped");
-                goto skip_checksum;
-            }
-
-            // Check the hash, abort if mismatch
-            unsigned char hash[SHA256_DIGEST_LENGTH];
-            char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
-
-            struct stat st;
-            stat(location, &st);
-            int size = st.st_size;
-
-            char* buffer = malloc(size);
-            FILE *ptr;
-            ptr = fopen(location,"r"); 
-            fread(buffer, sizeof(char), size, ptr); 
-
-            if (buffer == NULL) {
-                    msg(FATAL, "Could not verify the file's hash");
-                    return -1;
-            }
-
-            SHA256((unsigned char*) buffer, size, hash);
-
-            if (hash[0] == 0) {
-                msg(FATAL, "Could not verify the file's hash");
-                return -1;
-            }
+                // Check if the checksum shall be bypassed
             
-            dbg(1, "Hash is %s", file_sha256);
-            for(int k = 0; k < SHA256_DIGEST_LENGTH; k++) {
-                char* temp = calloc(8, 1);
-                sprintf(temp, "%02x", hash[k]);
-                strcat(hash_str, temp);
-            }
+                if (INSECURE) {
+                    msg(WARNING, "The Checksum is being skipped");
+                    goto skip_checksum;
+                }
 
-            dbg(1, "Got %s", hash_str);
-            if(strcmp(hash_str, file_sha256) != 0) {
-                msg(FATAL, "Hash mismatch, aborting");
-            }
-            free(hash_str);
-            free(buffer);
+                // Check the hash, abort if mismatch
+                unsigned char hash[SHA256_DIGEST_LENGTH];
+                char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
 
-            skip_checksum:
+                struct stat st;
+                stat(location, &st);
+                int size = st.st_size;
+
+                char* buffer = malloc(size);
+                FILE *ptr;
+                ptr = fopen(location,"r"); 
+                fread(buffer, sizeof(char), size, ptr); 
+
+                if (buffer == NULL) {
+                    if (download_attempts == 0)
+                    {
+                        msg(FATAL, "Could not download file");
+                        return -1;
+                    }
+                    else
+                    {
+                        msg(WARNING, "Could not download file, retrying");
+                        --download_attempts;
+                        goto skip_checksum;
+                    }
+                }
+
+                SHA256((unsigned char*) buffer, size, hash);
+
+                if (hash[0] == 0) {
+                    if (download_attempts == 0)
+                    {
+                        msg(FATAL, "Could not verify the file's hash");
+                        return -1;
+                    }
+                    else
+                    {
+                        msg(WARNING, "Could not verify the file's hash, retrying...");
+                        --download_attempts;
+                        goto skip_checksum;
+                    }
+                }
+                
+                dbg(1, "Hash is %s", file_sha256);
+                for(int k = 0; k < SHA256_DIGEST_LENGTH; k++) {
+                    char* temp = calloc(8, 1);
+                    sprintf(temp, "%02x", hash[k]);
+                    strcat(hash_str, temp);
+                }
+
+                dbg(1, "Got %s", hash_str);
+                if(strcmp(hash_str, file_sha256) != 0) {
+                    if (download_attempts == 0)
+                    {
+                        msg(FATAL, "Hash mismatch, aborting");
+                        return -1;
+                    }
+                    else
+                    {
+                        msg(WARNING, "Hash mismatch, retrying...");
+                        --download_attempts;
+                        goto skip_checksum;
+                    }
+                }
+                free(hash_str);
+                free(buffer);
+
+                download_success = 1;
+
+                skip_checksum:
+            }
+            while(download_success != 1);
+
 
             dbg(1, "Download finished");
 
