@@ -2,13 +2,10 @@
 #include "stdlib.h"
 #include "string.h"
 #include "unistd.h"
-#include "malloc.h"
+
 
 #include "../../include/libspm.h"
 #include "../../include/cutils.h"
-
-#include "../../include/hashtable.h"
-#include <stdio.h>
 
 #define uint unsigned int
 
