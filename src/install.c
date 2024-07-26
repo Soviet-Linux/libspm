@@ -41,11 +41,6 @@ Returns:
   - -1: Installation failed.
 */
 int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
-
-    // Read the config in case anything got overwritten in the ecmp file
-
-    readConfig(getenv("SOVIET_CONFIG_FILE"));
-
     // Check if spm_path is NULL
 
     if (spm_path == NULL) {
@@ -89,7 +84,7 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         char* env_path = calloc(MAX_PATH, 1);
         sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg.environment);
 
-        readConfig(env_path);
+        readConfig(env_path, 1);
     }
 
     // Set global environment variables
@@ -300,10 +295,6 @@ Returns:
   - -1: Installation failed.
 */
 int install_package_binary(const char* archivePath, int as_dep, const char* repo) {
-
-    // Read the config in case anything got overwritten in the ecmp file
-
-    readConfig(getenv("SOVIET_CONFIG_FILE"));
 
     struct package pkg;
 

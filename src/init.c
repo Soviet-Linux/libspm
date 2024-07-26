@@ -19,7 +19,7 @@ void init() {
     setenv("SOVIET_CONFIG_FILE", "/etc/cccp.conf", 0);
     setenv("SOVIET_REPOS_LIST", "/etc/sources.list", 0);
     dbg(3, "Cleaning...");
-    readConfig(getenv("SOVIET_CONFIG_FILE"));
+    readConfig(getenv("SOVIET_CONFIG_FILE"), 0);
 
     dbg(3, "Setting variables");
 

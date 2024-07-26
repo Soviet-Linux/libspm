@@ -250,7 +250,7 @@ Returns:
 */
 void quit(int status);
 
-int readConfig(const char* configFilePath);
+int readConfig(const char* configFilePath, int overwrite);
 
 // Function to check the existence of package locations
 /*

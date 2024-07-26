@@ -67,7 +67,7 @@ void test_move() {
     dbg(2,"creating test files");
     // make all files
     for (int i = 0; i < l_f_count; i++)
-    {
+    {        
         dbg(3,"Creating %s\n",l_files[i]);
         char* path = malloc(256);
         sprintf(path,"%s/%s",build_dir,l_files[i]);
@@ -200,7 +200,7 @@ void test_config() {
 
     msg(INFO,"Testing 'readConfig()'..");
 
-    assert(readConfig(getenv("SOVIET_CONFIG_FILE")) == 0);
+    assert(readConfig(getenv("SOVIET_CONFIG_FILE"), 0) == 0);
     return;
 }
 
