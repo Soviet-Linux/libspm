@@ -1,4 +1,3 @@
-#include "math.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,11 +27,11 @@ char* load_from_repo(const char* in, const char* in_repo, const char* file_path)
     // Try to find package in repos
     dbg(3, "loading %s from %s", in, in_repo);
 
-    const char* path = calloc(MAX_PATH, 1);
+    char* path = calloc(MAX_PATH, 1);
     sprintf(path, "%s/%s", getenv("SOVIET_REPOS_DIR"), in_repo);
 
     int count;
-    char **found = getAllFiles(path, path, &count);
+    char **found = get_all_files(path, path, &count);
     char* pkg = calloc(MAX_PATH + strlen(getenv("SOVIET_DEFAULT_FORMAT")) + 1, sizeof(char));
     if(!strstr(in, ".ecmp"))
     {

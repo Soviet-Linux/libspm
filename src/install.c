@@ -80,10 +80,92 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     QUEUE_COUNT++;
     dbg(1, "Added %s to the queue", pkg.name);
 
+
+    // Get global environment variables
+
+    if (pkg.environment != NULL) 
+    {
+        dbg(1, "Getting environment variables...");
+        char* env_path = calloc(MAX_PATH, 1);
+        sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg.environment);
+
+        readConfig(env_path);
+    }
+
+    // Set global environment variables
+
+    if (pkg.exports != NULL && pkg.exportsCount > 0 && strlen(pkg.exports[0]) > 0) 
+    {
+        dbg(1, "Setting environment variables...");
+        char* env_path = calloc(MAX_PATH, 1);
+        sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg.name);
+
+        FILE *env_file;
+        env_file = fopen(env_path, "w"); 
+
+        for (int i = 0; i < pkg.exportsCount; i++)
+        {
+            fprintf(env_file, "%s \n", pkg.exports[i]);
+
+            if((pkg.exports[i][0] != '#' || (pkg.exports[i][0] != '/' && pkg.exports[i][1] != '/')) && strstr(pkg.exports[i], "=") != 0)
+            {
+                char* key = strtok(pkg.exports[i], "=");
+                char* value = strchr(pkg.exports[i], '\0') + 1;
+
+                if (key == NULL || value == NULL) 
+                {
+                    msg(ERROR, "Invalid config file");
+                }
+
+                dbg(2, "Key: %s Value: %s", key, value);
+
+                // Set environment variables based on the key-value pairs in the config file
+                setenv(key, value, 1);
+            }
+        }
+
+        fclose(env_file);
+    }
+
     // Check package dependencies
     if (pkg.dependencies != NULL && pkg.dependenciesCount > 0 && strlen(pkg.dependencies[0]) > 0) {
         dbg(1, "Checking dependencies...");
         check_dependencies(pkg.dependencies, pkg.dependenciesCount);
+    }
+
+    // Set the package info section as environment vadiables for make script
+
+    setenv("NAME", pkg.name, 1);
+    setenv("VERSION", pkg.version, 1);
+
+    if (pkg.url != NULL)
+    {       
+        /* IMPORTANT*/
+        // This seemingly pointless piece of code is actually very important
+        // Basically it evaluate the nested variables in the URL
+        // without it everything crashes
+        // I dont like calling exec() so its a temporary solution
+        // I dont know how to fix it without manually parsing eveything, a pain
+        char cmd[1024];
+        sprintf(cmd,"echo %s",pkg.url);
+        pkg.url = exec(cmd);
+        dbg(1, "URL: %s", pkg.url);
+        setenv("URL", pkg.url, 1);
+    }
+
+    if (pkg.type != NULL)
+    {
+        setenv("TYPE", pkg.type, 1);
+    }
+
+    if (pkg.license != NULL)
+    {
+        setenv("LICENSE", pkg.license, 1);
+    }
+
+    if (pkg.sha256 != NULL)
+    {
+        setenv("SHA256", pkg.sha256, 1);
     }
 
     // Check if a package is a collection
@@ -96,7 +178,7 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         // ...
         chmod(getenv("SOVIET_MAKE_DIR"), 0777);
         chmod(getenv("SOVIET_BUILD_DIR"), 0777);
-        
+
         pid_t p = fork(); 
         int status = 0;
         if ( p == 0)
@@ -118,11 +200,16 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
             dbg(1, "Making %s", pkg.name);
             if (make(legacy_dir, &pkg) != 0) {
                 msg(ERROR, "Failed to make %s", pkg.name);
-                return -1;
+                exit(1);
             }
             exit(0);
         } 
-        while(wait(NULL) > 0);
+        while(wait(&status) > 0);
+
+        if(WEXITSTATUS(status) != 0)
+        {
+            msg(FATAL, "make exited with error code %d", pkg.name, status);
+        }
 
         dbg(1, "Making %s done", pkg.name);
 
@@ -284,6 +371,8 @@ int install_package_binary(const char* archivePath, int as_dep, const char* repo
 
     dbg(1, "Package %s installed", pkg.name);
 
+    free_pkg(&pkg);
+
     // Clean up
     clean();
 
@@ -383,7 +472,6 @@ int free_pkg(struct package* pkg) {
         if (*pkg->locations) free(*pkg->locations);
         free(pkg->locations);
     }
-
     if (pkg->dependencies) {
         if (*pkg->dependencies) free(*pkg->dependencies);
         free(pkg->dependencies);
@@ -392,9 +480,11 @@ int free_pkg(struct package* pkg) {
         if (*pkg->optional) free(*pkg->optional);
         free(pkg->optional);
     }
-    if (pkg->optional) {
-        if (*pkg->optional) free(*pkg->optional);
-        free(pkg->optional);
+    if (pkg->files) {
+        for (int i = 0; i < pkg->filesCount; i++) {
+            if (pkg->files[i] != NULL) free(pkg->files[i]);
+        }
+        free(pkg->files);
     }
     return 0;
 }

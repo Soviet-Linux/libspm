@@ -45,7 +45,6 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
             struct package* pkg = calloc(1, sizeof(struct package));
             pkg->name = dependencies[i];
 
-            char* format;
             char* pkg_name = calloc(strlen(pkg->name) + 1, sizeof(char));
             if(!strstr(pkg->name, ".ecmp"))
             {
@@ -59,6 +58,8 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
             int num_results;
             char** results = search(pkg_name, &num_results);
                 
+            char* format;
+
             if(results != NULL)
             {
                 for ( int i = 0; i < num_results; i++)
@@ -89,7 +90,7 @@ int check_dependencies(char **dependencies, int dependenciesCount) {
 
             f_install_package_source(pkg->name, 0, format);
 
-            remove(pkg->name);
+            remove(pkg_name);
 
         } else {
             dbg(3, "Dependency %s is installed", dependencies[i]);
@@ -219,7 +220,7 @@ int check_optional_dependencies(char **dependencies, int dependenciesCount) {
 
                 f_install_package_source(pkg->name, 0, format);
 
-                remove(pkg->name);
+                remove(pkg_name);
             }
             else
             {
