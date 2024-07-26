@@ -74,10 +74,11 @@ int readConfig(const char* configFilePath)
         }
     }
 
-    char line[1024];
+    char* line = calloc(1024, 1);
 
-    while (fgets(line, sizeof(line), file)) {
+    while (fgets(line, 1024, file)) {
         line[strlen(line) - 1] = 0;
+        parse_env(&line);
 
         if((line[0] != '#' || (line[0] != '/' && line[1] != '/')) && strstr(line, "=") != 0)
         {
@@ -93,10 +94,11 @@ int readConfig(const char* configFilePath)
             dbg(2, "Key: %s Value: %s", key, value);
 
             // Set environment variables based on the key-value pairs in the config file
-            setenv(key, value, 0);
+            setenv(key, value, 1);
         }
     }
 
+    free(line);
     fclose(file);
 
     // Set environment variables for missing keys with their default values

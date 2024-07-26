@@ -140,15 +140,7 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
 
     if (pkg.url != NULL)
     {       
-        /* IMPORTANT*/
-        // This seemingly pointless piece of code is actually very important
-        // Basically it evaluate the nested variables in the URL
-        // without it everything crashes
-        // I dont like calling exec() so its a temporary solution
-        // I dont know how to fix it without manually parsing eveything, a pain
-        char cmd[1024];
-        sprintf(cmd,"echo %s",pkg.url);
-        pkg.url = exec(cmd);
+        parse_env(&(pkg.url));
         dbg(1, "URL: %s", pkg.url);
         setenv("URL", pkg.url, 1);
     }

@@ -147,9 +147,7 @@ void test_make(char* spm_path) {
     setenv("NAME", p.name, 1);
     setenv("VERSION", p.version, 1);
     if (p.url != NULL) {
-        char cmd[1024];
-        sprintf(cmd,"echo %s",p.url);
-        p.url = exec(cmd);
+        parse_env(&(p.url));
         dbg(1, "URL: %s", p.url);
         setenv("URL", p.url, 1);
     }
