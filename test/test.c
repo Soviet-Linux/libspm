@@ -144,6 +144,16 @@ void test_make(char* spm_path) {
 
     assert(open_pkg(spm_path, &p,NULL) == 0);
 
+    setenv("NAME", p.name, 1);
+    setenv("VERSION", p.version, 1);
+    if (p.url != NULL) {
+        char cmd[1024];
+        sprintf(cmd,"echo %s",p.url);
+        p.url = exec(cmd);
+        dbg(1, "URL: %s", p.url);
+        setenv("URL", p.url, 1);
+    }
+
     char* legacy_dir = calloc(2048,1);
     sprintf(legacy_dir,"%s/%s-%s",getenv("SOVIET_MAKE_DIR"),p.name,p.version);
 
@@ -154,6 +164,8 @@ void test_make(char* spm_path) {
     dbg(1,"Getting locations for %s",p.name);
     p.locationsCount = get_locations(&p.locations,getenv("SOVIET_BUILD_DIR"));
     assert(p.locationsCount > 0);
+    
+    free_pkg(&p);
 
     dbg(1,"Got %d locations for %s",p.locationsCount,p.name);
 

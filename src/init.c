@@ -82,4 +82,12 @@ void init() {
     if (stat(getenv("SOVIET_MAKE_DIR"), &st) == -1) {
         pmkdir(getenv("SOVIET_MAKE_DIR"));
     }
+    if (stat(getenv("SOVIET_SOURCE_DIR"), &st) == -1) {
+        pmkdir(getenv("SOVIET_SOURCE_DIR"));
+        chmod(getenv("SOVIET_SOURCE_DIR"), 0777);
+    } 
+    if (stat(getenv("SOVIET_ENV_DIR"), &st) == -1) {
+        pmkdir(getenv("SOVIET_ENV_DIR"));
+        chmod(getenv("SOVIET_ENV_DIR"), 0777);
+    }
 }
