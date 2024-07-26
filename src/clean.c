@@ -22,7 +22,7 @@ int clean()
     int result = 0;
 
     char** cleanup_loc;
-    msg(WARNING, "%s", cleanups);
+    msg(WARNING, "This will delete: %s", cleanups);
     int count = splita(cleanups, ':', &cleanup_loc);
 
     for(int i = 0; i < count; i++)
