@@ -59,7 +59,9 @@ int make(char* package_dir, struct package* pkg) {
 
         // This seems stupid, but should work
         char* file_name = strtok(pkg->files[i], " ");
+        parse_env(&file_name);
         char* file_url = strtok(NULL, " ");
+        parse_env(&file_url);
         char* file_sha256 = strtok(NULL, " ");
 
         sprintf(location, "%s/%s", getenv("SOVIET_MAKE_DIR"), file_name);

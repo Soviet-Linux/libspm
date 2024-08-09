@@ -41,11 +41,6 @@ Returns:
   - -1: Installation failed.
 */
 int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
-
-    // Read the config in case anything got overwritten in the ecmp file
-
-    readConfig(getenv("SOVIET_CONFIG_FILE"));
-
     // Check if spm_path is NULL
 
     if (spm_path == NULL) {
@@ -89,7 +84,7 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         char* env_path = calloc(MAX_PATH, 1);
         sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg.environment);
 
-        readConfig(env_path);
+        readConfig(env_path, 1);
     }
 
     // Set global environment variables
@@ -140,15 +135,7 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
 
     if (pkg.url != NULL)
     {       
-        /* IMPORTANT*/
-        // This seemingly pointless piece of code is actually very important
-        // Basically it evaluate the nested variables in the URL
-        // without it everything crashes
-        // I dont like calling exec() so its a temporary solution
-        // I dont know how to fix it without manually parsing eveything, a pain
-        char cmd[1024];
-        sprintf(cmd,"echo %s",pkg.url);
-        pkg.url = exec(cmd);
+        parse_env(&(pkg.url));
         dbg(1, "URL: %s", pkg.url);
         setenv("URL", pkg.url, 1);
     }
@@ -308,10 +295,6 @@ Returns:
   - -1: Installation failed.
 */
 int install_package_binary(const char* archivePath, int as_dep, const char* repo) {
-
-    // Read the config in case anything got overwritten in the ecmp file
-
-    readConfig(getenv("SOVIET_CONFIG_FILE"));
 
     struct package pkg;
 
