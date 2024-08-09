@@ -29,7 +29,8 @@ SDIR = src
 
 
 
-CFLAGS = -Wall -g -fPIC -O2 -Wextra -L./bin -Iinclude 
+CFLAGS = -Wall -fPIC -O2 -Wextra -L./bin -Iinclude 
+DBGFLAGS = -g -fsanitize=address
 
 # set local lib to lib/*/*.a
 LOCAL_LIBS = $(wildcard lib/*/*.a)
@@ -83,11 +84,17 @@ check: test check-all
 	@echo "All Tests Passed"
 
 
+# This will conflict with other artifacts so you should run make clean before `make debug` and after you're done
+debug: CFLAGS += $(DBGFLAGS)
+debug: MEMCHECK = 1
+debug: libs $(BINDIR)/$(LIBOUT) formats
+	@echo "Build done (debug)"
+
 libs:
 	for i in $(LOCAL_LIBS); do make -C $$(dirname $$i) all; done
 
 direct:
-	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(LIBOUT)
+	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(BINDIR)/$(LIBOUT)
 
 formats:
 	@echo "Building formats..."
