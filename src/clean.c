@@ -17,12 +17,12 @@ int clean()
     // Get the paths to the build and make directories from environment variables
     char* build_dir = getenv("SOVIET_BUILD_DIR");
     char* make_dir = getenv("SOVIET_MAKE_DIR");
-    char* cleanups = getenv("SOVIET_CLEANUP");
+    char* cleanups = strdup(getenv("SOVIET_CLEANUP"));
 
     int result = 0;
 
     char** cleanup_loc;
-    msg(WARNING, "%s", cleanups);
+    msg(WARNING, "This will delete: %s", cleanups);
     int count = splita(cleanups, ':', &cleanup_loc);
 
     for(int i = 0; i < count; i++)

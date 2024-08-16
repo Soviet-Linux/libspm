@@ -67,7 +67,7 @@ void test_move() {
     dbg(2,"creating test files");
     // make all files
     for (int i = 0; i < l_f_count; i++)
-    {
+    {        
         dbg(3,"Creating %s\n",l_files[i]);
         char* path = malloc(256);
         sprintf(path,"%s/%s",build_dir,l_files[i]);
@@ -147,9 +147,7 @@ void test_make(char* spm_path) {
     setenv("NAME", p.name, 1);
     setenv("VERSION", p.version, 1);
     if (p.url != NULL) {
-        char cmd[1024];
-        sprintf(cmd,"echo %s",p.url);
-        p.url = exec(cmd);
+        parse_env(&(p.url));
         dbg(1, "URL: %s", p.url);
         setenv("URL", p.url, 1);
     }
@@ -201,7 +199,7 @@ void test_config() {
 
     msg(INFO,"Testing 'readConfig()'..");
 
-    assert(readConfig(getenv("SOVIET_CONFIG_FILE")) == 0);
+    assert(readConfig(getenv("SOVIET_CONFIG_FILE"), 0) == 0);
     return;
 }
 
