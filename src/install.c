@@ -174,11 +174,11 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
             if (getuid() == 0) 
             {
                 /* process is running as root, drop privileges */
-                if (setgid(1000) != 0)
+                if (setgid(65534) != 0)
                 {
                     msg(ERROR, "setgid: Unable to drop group privileges");
                 }
-                if (setuid(1000) != 0)
+                if (setuid(65534) != 0)
                 {
                     msg(ERROR, "setuid: Unable to drop user privileges");
                 }
