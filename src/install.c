@@ -174,7 +174,9 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
 
             // This seems stupid, but should work
             char* file_name = strtok(pkg.files[i], " ");
+            parse_env(&file_name);
             char* file_url = strtok(NULL, " ");
+            parse_env(&file_url);
             char* file_sha256 = strtok(NULL, " ");
 
             sprintf(location, "%s/%s", getenv("SOVIET_MAKE_DIR"), file_name);
