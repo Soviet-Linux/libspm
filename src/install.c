@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <openssl/sha.h>
 
 // Include necessary headers
 #include "libspm.h"
@@ -171,9 +172,109 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     // Check if a package is a collection
     if(strcmp(pkg.type, "con") != 0)
     {
+        // Parse the files
+        for (int i = 0; i < pkg.filesCount; i++)
+        {
+            int download_attempts = 3;
+            int download_success = 0;
+
+            struct stat st_source = {0};
+            struct stat st_source_loc = {0};
+
+            char* location = calloc(MAX_PATH, 1);
+            char* source_location = calloc(MAX_PATH, 1);
+            char* source_file_location = calloc(MAX_PATH, 1);
+
+            // This seems stupid, but should work
+            char* file_name = strtok(pkg.files[i], " ");
+            char* file_url = strtok(NULL, " ");
+            char* file_sha256 = strtok(NULL, " ");
+
+            sprintf(location, "%s/%s", getenv("SOVIET_MAKE_DIR"), file_name);
+            sprintf(source_location, "%s/%s-%s", getenv("SOVIET_SOURCE_DIR"), getenv("NAME"), getenv("VERSION"));
+            sprintf(source_file_location, "%s/%s-%s/%s", getenv("SOVIET_SOURCE_DIR"), getenv("NAME"), getenv("VERSION"), file_name);
+
+            dbg(1, "Downloading %s", file_name);
+
+            if (stat(source_location, &st_source_loc) == -1) 
+            {
+                mkdir(source_location, 0755);
+                chown(source_location, getuid(), getgid());
+                chmod(source_location, 0755);
+            }
+
+
+            if (stat(source_file_location, &st_source) == -1)
+            {
+                FILE* fp = fopen(location, "wb");
+                download(file_url, fp);
+                fclose(fp);
+
+                // Check if the checksum shall be bypassed
+            
+                if (INSECURE) {
+                    msg(WARNING, "The Checksum is being skipped");
+                    goto skip_checksum;
+                }
+
+                // Check the hash, abort if mismatch
+                unsigned char hash[SHA256_DIGEST_LENGTH];
+                char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
+
+                struct stat st;
+                stat(location, &st);
+                int size = st.st_size;
+
+                char* buffer = malloc(size);
+                FILE *ptr;
+                ptr = fopen(location,"r"); 
+                fread(buffer, sizeof(char), size, ptr); 
+
+                if (buffer == NULL) {
+                        msg(FATAL, "Could not verify the file's hash");
+                        return -1;
+                }
+
+                SHA256((unsigned char*) buffer, size, hash);
+
+                if (hash[0] == 0) {
+                    msg(FATAL, "Could not verify the file's hash");
+                    return -1;
+                }
+                
+                dbg(1, "Hash is %s", file_sha256);
+                for(int k = 0; k < SHA256_DIGEST_LENGTH; k++) {
+                    char* temp = calloc(8, 1);
+                    sprintf(temp, "%02x", hash[k]);
+                    strcat(hash_str, temp);
+                }
+
+                dbg(1, "Got %s", hash_str);
+                if(strcmp(hash_str, file_sha256) != 0) {
+                    msg(FATAL, "Hash mismatch, aborting");
+                }
+                free(hash_str);
+                free(buffer);
+
+                skip_checksum:
+
+                dbg(1, "Download finished");
+
+                loadFile(location, source_file_location);            
+            }
+            else {
+                dbg(1, "Loading form %s", source_location);
+                loadFile(source_file_location, location);
+            }
+
+            free(location);
+            free(source_location);
+            free(source_file_location);
+        }
+
         // Legacy directory path for compatibility
         char legacy_dir[MAX_PATH];
-        sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg.name, pkg.version);
+        sprintf(legacy_dir, "/make/%s-%s", pkg.name, pkg.version);
 
         // ...
         chmod(getenv("SOVIET_MAKE_DIR"), 0777);
@@ -183,19 +284,13 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         int status = 0;
         if ( p == 0)
         {
-
-            if (getuid() == 0) 
+            chdir(getenv("SOVIET_WORK_DIR"));
+            if (chroot(getenv("SOVIET_WORK_DIR")) != 0) 
             {
-                /* process is running as root, drop privileges */
-                if (setgid(1000) != 0)
-                {
-                    msg(ERROR, "setgid: Unable to drop group privileges");
-                }
-                if (setuid(1000) != 0)
-                {
-                    msg(ERROR, "setuid: Unable to drop user privileges");
-                }
+                msg(ERROR, "Failed to chroot into %s", getenv("SOVIET_WORK_DIR"));
+                exit(1);
             }
+
             // Build the package
             dbg(1, "Making %s", pkg.name);
             if (make(legacy_dir, &pkg) != 0) {
