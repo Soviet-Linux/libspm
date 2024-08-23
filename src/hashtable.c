@@ -12,6 +12,7 @@ hashtable* hm_create(int capacity)
     hashtable *hm = calloc(1,sizeof(hashtable));
     hm->items = calloc(capacity, sizeof(item));
     if (hm->items == NULL) {
+        free(hm);
         fprintf(stderr, "Out of memory");
         exit(1);
     }

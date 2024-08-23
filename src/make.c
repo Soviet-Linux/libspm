@@ -43,7 +43,6 @@ int make(char* package_dir, struct package* pkg) {
     // If so, it will just copy the dir from /usr/src/$NAME-$VERSION
     // Instead of executing the following:
     //
-
     // Download package sources
     if (pkg->info.download != NULL && strlen(pkg->info.download) > 0) {
         char sources_cmd[64 + strlen(make_dir) + strlen(pkg->info.download)];
