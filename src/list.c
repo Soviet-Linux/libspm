@@ -47,15 +47,28 @@ char **get_all_files(const char* root, const char *path, int *num_files) {
         if (stat(full_path, &stat_buf) == 0) {
             // If it's a directory, recursively call get_all_files
             if (S_ISDIR(stat_buf.st_mode)) {
-                int sub_files_count;
-                char **sub_files = get_all_files(root, full_path, &sub_files_count);
-                if (sub_files != NULL) {
-                    // Resize files_array and copy contents of sub_files into it
-                    files_array = realloc(files_array, (file_count + sub_files_count) * sizeof(char *));
-                    for (int i = 0; i < sub_files_count; i++) {
-                        files_array[file_count++] = sub_files[i];
+                struct stat dir_stat_buf;
+                if (lstat(full_path, &dir_stat_buf) == 0) {
+                    // Check if a directory is a symlink (this can probably be optimized out)
+                    if (!S_ISLNK(dir_stat_buf.st_mode)) {
+                        // If it isn't - treat it as a directory
+                        int sub_files_count;
+                        char **sub_files = get_all_files(root, full_path, &sub_files_count);
+                        if (sub_files != NULL) {
+                            // Resize files_array and copy contents of sub_files into it
+                            files_array = realloc(files_array, (file_count + sub_files_count) * sizeof(char *));
+                            for (int i = 0; i < sub_files_count; i++) {
+                                files_array[file_count++] = sub_files[i];
+                            }
+                            free(sub_files);
+                        }
                     }
-                    free(sub_files);
+                    else {
+                        // If it is - treat it as a file
+                        files_array = realloc(files_array, (file_count + 1) * sizeof(char *));
+                        files_array[file_count] = strdup(full_path + strlen(root) + 1);
+                        file_count++;
+                    }
                 }
             } else if (S_ISREG(stat_buf.st_mode)) {
                 // If it's a regular file, add it to files_array
