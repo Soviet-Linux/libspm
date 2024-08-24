@@ -34,10 +34,6 @@ int make(char* package_dir, struct package* pkg) {
         cmd_params = "";
     }
 
-    // Set environment variables for building
-    setenv("BUILD_ROOT", build_dir, 1);
-
-
     // TODO: this
     // Thinking about putting the package caching here
     // Maybe it will check if the installed version matches $VERSION
@@ -168,7 +164,8 @@ int make(char* package_dir, struct package* pkg) {
 
         dbg(2, "Executing prepare command: %s", prepare_cmd);
         if (system(prepare_cmd) != 0) {
-            return 1;
+            msg(FATAL, "Failed to prepare %s", pkg->name);
+            return -2;
         }
         dbg(1, "Prepare command executed!");
     }
@@ -196,22 +193,6 @@ int make(char* package_dir, struct package* pkg) {
         }
         dbg(1, "Test command executed!");
     }
-
-    // Run 'install' command
-    if (pkg->info.install == NULL && strlen(pkg->info.install) == 0) {
-        msg(ERROR, "No install command!");
-        return -3;
-    }
-
-    char install_cmd[64 + strlen(package_dir) + strlen(pkg->info.install) + strlen(cmd_params)];
-    sprintf(install_cmd, "( cd %s && %s ) %s", package_dir, pkg->info.install, cmd_params);
-
-    dbg(2, "Executing install command: %s", install_cmd);
-    if (system(install_cmd) != 0) {
-        msg(FATAL, "Failed to install %s", pkg->name);
-        return -2;
-    }
-    dbg(1, "Install command executed!");
 
     return 0;
 }
