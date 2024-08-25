@@ -138,7 +138,7 @@ void test_move() {
 void test_make(char* spm_path) {
 
     // Set environment variables for building
-    setenv("BUILD_ROOT", build_dir, 1);
+    setenv("BUILD_ROOT", getenv("SOVIET_BUILD_DIR"), 1);
 
     msg(INFO,"Testing 'make()'..");
 
