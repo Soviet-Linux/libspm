@@ -38,6 +38,9 @@ int get_repos(char** list)
     struct dirent *dir;
     d = opendir(getenv("SOVIET_REPOS_DIR"));
     int count = 0;
+    list[count] = calloc(strlen("local") + 1, 1);
+    sprintf(list[count], "local");
+    count++;
     if (d)
     {
         while ((dir = readdir(d)) != NULL)
