@@ -137,6 +137,9 @@ void test_move() {
 
 void test_make(char* spm_path) {
 
+    // Set environment variables for building
+    setenv("BUILD_ROOT", getenv("SOVIET_BUILD_DIR"), 1);
+
     msg(INFO,"Testing 'make()'..");
 
     init();
@@ -158,6 +161,21 @@ void test_make(char* spm_path) {
     dbg(1,"Legacy dir: %s",legacy_dir);
 
     assert(make(legacy_dir,&p) == 0);
+
+    // Run 'install' command
+    if (p.info.install == NULL && strlen(p.info.install) == 0) {
+        msg(FATAL, "No install command!");
+    }
+
+    char install_cmd[64 + strlen(legacy_dir) + strlen(p.info.install)];
+    sprintf(install_cmd, "( cd %s && %s )", legacy_dir, p.info.install);
+
+    dbg(2, "Executing install command: %s", install_cmd);
+    if (system(install_cmd) != 0) {
+        msg(FATAL, "Failed to install %s", p.name);
+        return -2;
+    }
+    dbg(1, "Install command executed!");
 
     dbg(1,"Getting locations for %s",p.name);
     p.locationsCount = get_locations(&p.locations,getenv("SOVIET_BUILD_DIR"));

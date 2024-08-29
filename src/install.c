@@ -155,6 +155,10 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         setenv("SHA256", pkg.sha256, 1);
     }
 
+    // Set environment variables for building
+    setenv("BUILD_ROOT", build_dir, 1);
+
+
     // Check if a package is a collection
     if(strcmp(pkg.type, "con") != 0)
     {
@@ -174,11 +178,11 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
             if (getuid() == 0) 
             {
                 /* process is running as root, drop privileges */
-                if (setgid(1000) != 0)
+                if (setgid(65534) != 0)
                 {
                     msg(ERROR, "setgid: Unable to drop group privileges");
                 }
-                if (setuid(1000) != 0)
+                if (setuid(65534) != 0)
                 {
                     msg(ERROR, "setuid: Unable to drop user privileges");
                 }
@@ -199,6 +203,21 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         }
 
         dbg(1, "Making %s done", pkg.name);
+
+        // Run 'install' command
+        if (pkg.info.install == NULL && strlen(pkg.info.install) == 0) {
+            msg(FATAL, "No install command!");
+        }
+
+        char install_cmd[64 + strlen(legacy_dir) + strlen(pkg.info.install)];
+        sprintf(install_cmd, "( cd %s && %s )", legacy_dir, pkg.info.install);
+
+        dbg(2, "Executing install command: %s", install_cmd);
+        if (system(install_cmd) != 0) {
+            msg(FATAL, "Failed to install %s", pkg.name);
+            return -2;
+        }
+        dbg(1, "Install command executed!");
 
         // Get package locations
         dbg(1, "Getting locations for %s", pkg.name);
@@ -448,7 +467,7 @@ int free_pkg(struct package* pkg) {
     if (pkg->info.special != NULL) free(pkg->info.special);
     if (pkg->info.download != NULL) free(pkg->info.download);
     if (pkg->info.install != NULL) free(pkg->info.install);
-    if (pkg->info.prepare != NULL) free(pkg->info.install);
+    if (pkg->info.prepare != NULL) free(pkg->info.prepare);
     if (pkg->info.test != NULL) free(pkg->info.test);
 
     if (pkg->locations) {

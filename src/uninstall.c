@@ -38,10 +38,6 @@ int uninstall(char* name)
     int REPO_COUNT = get_repos(REPOS);
     char* dataSpmPath = calloc(MAX_PATH, sizeof(char));
 
-    // add local repo
-    REPOS[REPO_COUNT] = "local";
-    REPO_COUNT++;
-
     for (int j = 0; j < REPO_COUNT; j++)
     {
         // Generate the path to the package's SPM file
