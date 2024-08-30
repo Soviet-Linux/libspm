@@ -65,7 +65,7 @@ int uninstall(char* name)
 
                 //dbg(3, "Removing %s", loc_path);                
                 if (rmany(loc_path) != 0) {
-                    msg(FATAL,"Failed to remove %s",loc_path);
+                    msg(ERROR,"Failed to remove %s",loc_path);
                     perror("remove");
                 }
             }
