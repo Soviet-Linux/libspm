@@ -17,6 +17,7 @@ int download(char* url, FILE* fp)
     if(curl)
     {
         CURLcode res;
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "CCCP/1.0 (https://www.sovietlinux.org/)");
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
