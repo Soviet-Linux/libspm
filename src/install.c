@@ -350,9 +350,6 @@ int install_package_binary(const char* archivePath, int as_dep, const char* repo
     QUEUE_COUNT++;
     dbg(1, "Added %s to QUEUE[%d]", pkg.name, QUEUE_COUNT - 1);
 
-    // Check package dependencies
-    check_dependencies(pkg.dependencies, pkg.dependenciesCount);
-
     // Move binaries to their destination
     dbg(1, "Moving binaries for %s", pkg.name);
     move_binaries(pkg.locations, pkg.locationsCount);
