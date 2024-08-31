@@ -122,12 +122,6 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         fclose(env_file);
     }
 
-    // Check package dependencies
-    if (pkg.dependencies != NULL && pkg.dependenciesCount > 0 && strlen(pkg.dependencies[0]) > 0) {
-        dbg(1, "Checking dependencies...");
-        check_dependencies(pkg.dependencies, pkg.dependenciesCount);
-    }
-
     // Set the package info section as environment vadiables for make script
 
     setenv("NAME", pkg.name, 1);
