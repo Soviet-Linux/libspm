@@ -2,6 +2,7 @@
 #include "unistd.h"
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <git2.h>
 
 #include "libspm.h"
 #include "cutils.h"
@@ -18,15 +19,17 @@ void init() {
     // Set the configuration file path
     setenv("SOVIET_CONFIG_FILE", "/etc/cccp.conf", 0);
     setenv("SOVIET_REPOS_LIST", "/etc/sources.list", 0);
-    dbg(3, "Cleaning...");
     readConfig(getenv("SOVIET_CONFIG_FILE"), 0);
 
-    dbg(3, "Setting variables");
+    // Init libgit
+    git_libgit2_init();
 
     // Set global variables for various paths and directories
+    dbg(3, "Setting variables");
     setenv("SOVIET_TEST_LOG", "/var/cccp/log/test.log", 0);
    
     // Clean the working directories
+    dbg(3, "Cleaning...");
     clean();
 
     // Check if all format plugins are installed
