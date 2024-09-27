@@ -122,12 +122,6 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
         fclose(env_file);
     }
 
-    // Check package dependencies
-    if (pkg.dependencies != NULL && pkg.dependenciesCount > 0 && strlen(pkg.dependencies[0]) > 0) {
-        dbg(1, "Checking dependencies...");
-        check_dependencies(pkg.dependencies, pkg.dependenciesCount);
-    }
-
     // Set the package info section as environment vadiables for make script
 
     setenv("NAME", pkg.name, 1);
@@ -355,9 +349,6 @@ int install_package_binary(const char* archivePath, int as_dep, const char* repo
     PACKAGE_QUEUE[QUEUE_COUNT] = pkg.name;
     QUEUE_COUNT++;
     dbg(1, "Added %s to QUEUE[%d]", pkg.name, QUEUE_COUNT - 1);
-
-    // Check package dependencies
-    check_dependencies(pkg.dependencies, pkg.dependenciesCount);
 
     // Move binaries to their destination
     dbg(1, "Moving binaries for %s", pkg.name);
