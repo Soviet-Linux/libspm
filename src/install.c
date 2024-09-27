@@ -100,7 +100,7 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
 
         for (int i = 0; i < pkg.exportsCount; i++)
         {
-            fprintf(env_file, "%s \n", pkg.exports[i]);
+            fprintf(env_file, "%s\n", pkg.exports[i]);
 
             if((pkg.exports[i][0] != '#' || (pkg.exports[i][0] != '/' && pkg.exports[i][1] != '/')) && strstr(pkg.exports[i], "=") != 0)
             {
@@ -483,9 +483,7 @@ int free_pkg(struct package* pkg) {
         free(pkg->optional);
     }
     if (pkg->files) {
-        for (int i = 0; i < pkg->filesCount; i++) {
-            if (pkg->files[i] != NULL) free(pkg->files[i]);
-        }
+        if (*pkg->files) free(*pkg->files);
         free(pkg->files);
     }
     return 0;

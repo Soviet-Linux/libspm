@@ -107,9 +107,9 @@ int make(char* package_dir, struct package* pkg) {
 
             SHA256((unsigned char*) buffer, size, hash);
 
-            if (hash[0] == 0) {
-                msg(FATAL, "Could not verify the file's hash");
-                return -1;
+            if (hash == NULL) {
+                    msg(FATAL, "Could not verify the file's hash");
+                    return -1;
             }
             
             dbg(1, "Hash is %s", file_sha256);

@@ -144,7 +144,7 @@ char ** search(char *term, int *num_results) {
 
     if (files_array != NULL) {
         // Print each file path
-        for (int i = 0; i < num_files-1; i++) 
+        for (int i = 0; i < num_files; i++) 
         {
 
             // This will break if the files are not separated into repos
