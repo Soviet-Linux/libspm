@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <git2.h>
 
 // Include custom headers
 #include "libspm.h"
@@ -87,59 +88,114 @@ int repo_sync() {
     const char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
     const char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
 
+    // Git repo handle
+    git_repository* repo_handle = NULL;
+    unsigned int* status = NULL;
+
     // bit of debugging
     dbg(3,"SOVIET_REPOS_DIR: %s",repo_dir);
     dbg(3,"SOVIET_DEFAULT_REPO_URL: %s",repo_url);
     dbg(3,"SOVIET_DEFAULT_REPO: %s",submodule_name);
 
-    char cmd[1024];
-
     // Check if the repository directory exists
-    if (access(repo_dir, F_OK) != 0) {
+    if (access(repo_dir, F_OK) != 0) 
+    {
         // Create the repository directory if it doesn't exist
-        snprintf(cmd, sizeof(cmd), "mkdir -p %s", repo_dir);
-        if (system(cmd) != 0) {
-            printf("Failed to create directory %s\n", repo_dir);
-            return 1;
+        if (pmkdir(repo_dir) != 0) 
+        {
+            msg(FATAL, "Failed to create directory %s", repo_dir);
         }
     }
 
-    // Check if repo_dir is a git repository
-    if (access(repo_dir, X_OK) == 0) {
-        // Change directory to repo_dir
-        if (chdir(repo_dir) != 0) {
-            printf("Failed to change directory to %s\n", repo_dir);
-            return 1;
-        }
-
-        // Check if it's a git repository
-        if (system("git rev-parse --is-inside-work-tree >/dev/null 2>&1") != 0) {
-            // Initialize a new Git repository
-            if (system("git init") != 0) {
-                printf("Failed to initialize git repository in %s\n", repo_dir);
-                return 2;
-            }
-        }
-
-        // Check if submodule exists
-        snprintf(cmd, sizeof(cmd), "git submodule status %s | grep -qF ' %s '", repo_dir, submodule_name);
-        if (system(cmd) != 0) {
-            // Add the submodule
-            snprintf(cmd, sizeof(cmd), "git submodule add --depth 1 %s %s", repo_url, submodule_name);
-            if (system(cmd) != 0) {
-                printf("Failed to add submodule %s\n", submodule_name);
-                return 2;
-            }
-        }
-
-        // Update submodules
-        if (system("git submodule update --depth 1 --remote --init --recursive") != 0) {
-            printf("Failed to update submodules in %s\n", repo_dir);
-            return 3;
-        }
-    } else {
-        printf("%s is not a directory or cannot be accessed.\n", repo_dir);
+    // Check if repo_dir can be accessed
+    if (access(repo_dir, X_OK) != 0) 
+    {
+        msg(FATAL, "%s is not a directory or cannot be accessed.", repo_dir);
     }
 
+    // Check if it's a git repository
+    if (git_repository_open(&repo_handle, repo_dir) != 0) 
+    {
+        // Initialize a new Git repository
+        if (git_repository_init(&repo_handle, repo_dir, false) != 0) 
+        {
+            msg(FATAL, "Failed to initialize git repository in %s.", repo_dir);
+        }
+    }
+    
+    // Check if submodule exists
+    if(git_submodule_status(&status, repo_handle, submodule_name, GIT_SUBMODULE_IGNORE_ALL) != 0)
+    {
+        if (add_repo(submodule_name, repo_url) != 0) {msg(ERROR, "Failed to create the default repository");}
+    }
+
+    // TODO: add a way to get all submodules and update them
+    // But maybe a single system call isn't too bad...
+    // Update submodules
+    if (system("git submodule update --depth 1 --remote --init --recursive") != 0) 
+    {
+        printf("Failed to update submodules in %s\n", repo_dir);
+        return 3;
+    }
+
+    git_repository_free(repo_handle);
     return 0;
+}
+
+int add_repo(char* name, char* url)
+{
+    const char* repo_dir = getenv("SOVIET_REPOS_DIR");
+    git_repository* repo_handle = NULL;
+
+    // Set clone options
+    unsigned int* status = NULL;
+    git_clone_options opts = GIT_CLONE_OPTIONS_INIT;
+    git_fetch_options fopts = GIT_FETCH_OPTIONS_INIT;
+    opts.fetch_opts = fopts;
+    opts.fetch_opts.depth = 1;
+
+    // Check if it's a git repository
+    if (git_repository_open(&repo_handle, repo_dir) != 0) 
+    {
+        msg(ERROR, "%s is not initialized! - run 'cccp --update'", repo_dir);
+        return -1;
+    }
+
+    // Check if submodule exists
+    if(git_submodule_status(&status, repo_handle, name, GIT_SUBMODULE_IGNORE_ALL) != 0)
+    {
+        git_repository* submodule_handle = NULL;
+        git_repository* temp_handle = NULL;
+
+        // Add the submodule
+        if(git_submodule_add_setup(&submodule_handle, repo_handle, url, name, 1) != 0)
+        {
+            const git_error* error = giterr_last();
+            msg(ERROR, "Failed to add submodule %s - %s", name, error->message);
+            return -1;
+        }
+
+        msg(INFO, "Cloning %s into %s/%s...", name, repo_dir, name);
+
+        if(git_submodule_clone(&temp_handle, submodule_handle, &opts) != 0)
+        {
+            const git_error* error = giterr_last();
+            msg(ERROR, "Failed to clone submodule %s - %s", name, error->message);
+            return -1;
+        }
+
+        if(git_submodule_add_finalize(submodule_handle) != 0)
+        {
+            const git_error* error = giterr_last();
+            msg(ERROR, "Failed to finalize submodule %s - %s", name, error->message);
+            return -1;
+        }
+
+        git_submodule_free(submodule_handle);
+        git_repository_free(temp_handle);
+        return 0;
+    }
+
+    msg(ERROR, "A repository with the name '%s' already exists.", name);
+    return -1;
 }

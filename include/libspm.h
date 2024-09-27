@@ -69,7 +69,7 @@ int get_repos(char** list);
 char** get_all_files(const char* root, const char *path, int *num_files);
 int download(char* url, FILE* fp);
 int parse_env(char** in);
-
+int add_repo(char* name, char* url);
 
 //end test
 
