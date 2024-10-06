@@ -16,7 +16,9 @@ int update()
     int new_version_found = 0;
     
     const char *path = getenv("SOVIET_SPM_DIR");
+    dbg(2, "path is %s", path);
     const char *repo_path = getenv("SOVIET_REPOS_DIR");
+    dbg(2, "repo path is %s", repo_path);
     int num_files;
     char **files_array = get_all_files(path, path, &num_files);
 
@@ -31,7 +33,9 @@ int update()
         // But it doesnt cause a crash, just a visual bug
         // I think
         char* local_repo = strtok(files_array[i], "/");
+        //dbg(2, "local repo is %s", local_repo);
         char* local_package_name = strchr(files_array[i], '\0') + 1;
+        //dbg(2, "local package name is %s", local_package_name);
 
         // Allocate the packages to be compared
         struct package* local = calloc(1, sizeof(struct package));
@@ -41,6 +45,7 @@ int update()
         char* remote_path = calloc(MAX_PATH, sizeof(char));
 
         sprintf(local_path, "%s/%s/%s", path, local_repo, local_package_name);
+        //dbg(2, "local path is %s", local_path);
 
         int num_searched_files;
         char **searched_files_array = get_all_files(repo_path, repo_path, &num_searched_files);
@@ -54,9 +59,12 @@ int update()
                 // But it doesnt cause a crash, just a visual bug
                 // I think
                 char* remote_repo = strtok(searched_files_array[j], "/");
+                //dbg(2, "remote repo is %s", remote_repo);
                 char* remote_package = strchr(searched_files_array[j], '\0') + 1;
-                char* remote_package_name = calloc(strlen(remote_package) + 1, sizeof(char));
+                //dbg(2, "remote package is %s", remote_package);
+                char* remote_package_name = calloc(strlen(remote_package) + 2, sizeof(char));
                 strcpy(remote_package_name, remote_package);
+                //dbg(2, "remote package name is %s", remote_package_name);
 
                 while(strtok(remote_package_name, "/"))
                 {
@@ -77,7 +85,8 @@ int update()
                     {
                         // Compare the filename
                         sprintf(remote_path, "%s/%s/%s", repo_path, remote_repo, remote_package);
-                        
+                        dbg(2, "remote path is %s", remote_path);
+
                         open_pkg(local_path, local, "ecmp");
                         open_pkg(remote_path, remote, "ecmp");
 
