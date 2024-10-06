@@ -56,8 +56,12 @@ int parse_env(char** in)
     }
 
     char* var = strdup(*in + start_i + 1);
+    char* dup_in = calloc(start_i + 1, 1);
+    if(start_i != 0)
+    {
+        snprintf(dup_in, start_i + 1, "%s", *in);
+    }
     var[--i] = '\0';
-    (*in)[start_i] = '\0';
 
     dbg(2, "Var: %s", var);
     dbg(2, "In: %s",  *in);
@@ -73,9 +77,10 @@ int parse_env(char** in)
 
     char* full_in = calloc(strlen(*in) + strlen(full_var) + strlen(end) + 1, 1);
 
-    sprintf(full_in, "%s%s%s", *in, full_var, end);
+    sprintf(full_in, "%s%s%s", dup_in, full_var, end);
     
     free(*in);
+    free(dup_in);
     free(var);
     *in = full_in;
 
