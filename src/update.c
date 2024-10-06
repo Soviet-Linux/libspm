@@ -169,7 +169,7 @@ int upgrade()
                     // I think
                     char* remote_repo = strtok(searched_files_array[j], "/");
                     char* remote_package = strchr(searched_files_array[j], '\0') + 1;
-                    char* remote_package_name = calloc(strlen(remote_package) + 1, sizeof(char));
+                    char* remote_package_name = calloc(strlen(remote_package) + 2, sizeof(char));
                     strcpy(remote_package_name, remote_package);
 
                     while(strtok(remote_package_name, "/"))
