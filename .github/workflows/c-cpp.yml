@@ -21,7 +21,7 @@ jobs:
     - name: Install libcurl-dev
       run: |
         sudo apt-get update
-        sudo apt-get install -y libcurl4-openssl-dev
+        sudo apt-get install -y libcurl4-openssl-dev libgit2-dev
 
     - name: Make all
       run: make all
