@@ -65,7 +65,6 @@ char** search(char *term,  int *num_results);
 int update();
 int upgrade();
 void create_links(char build_loc[4096], char dest_loc[4096]);
-int check_optional_dependencies(char ** dependencies,int dependenciesCount);
 int get_repos(char** list);
 char** get_all_files(const char* root, const char *path, int *num_files);
 int download(char* url, FILE* fp);
@@ -392,19 +391,6 @@ Returns:
 - long: The number of file locations retrieved.
 */
 long get_locations(char*** locations, const char* loc_dir);
-
-// Function to check if all dependencies of a package are installed
-/*
-Accepts:
-- char **dependencies: An array of dependency names.
-- int dependenciesCount: The number of dependencies in the array.
-
-Returns:
-- int: An integer indicating the result of dependency checking.
-  - 0: All dependencies are installed.
-  - -1: An error occurred during dependency checking.
-*/
-int check_dependencies(char ** dependencies,int dependenciesCount);
 
 
 

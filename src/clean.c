@@ -30,7 +30,7 @@ int clean()
       struct stat st;
       if (lstat(cleanup_loc[i], &st) != 0)
       {
-        msg(ERROR,"Error getting file info\n");
+        dbg(2, "Error getting file info");
       }
       else
       {
