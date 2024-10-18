@@ -21,8 +21,15 @@ jobs:
     - name: Install libcurl-dev
       run: |
         sudo apt-get update
-        sudo apt-get install -y libcurl4-openssl-dev libgit2-dev
-        cat /usr/include/git2/version.h
+        sudo apt-get install -y libcurl4-openssl-dev
+    - name: Install libgit2
+      run: |
+        curl -L https://codeload.github.com/libgit2/libgit2/tar.gz/refs/tags/v1.8.1ate
+        tar -xzf libgit2-1.8.1.tar.gz
+        cd libgit2-1.8.1
+        mkdir build && cd build
+        cmake ..
+        sudo cmake --build . --target install
 
     - name: Make all
       run: make all
