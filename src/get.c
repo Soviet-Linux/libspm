@@ -84,9 +84,9 @@ int get_repos(char** list)
 
 // Function to synchronize the local repository with a remote repository
 int repo_sync() {
-    const char* repo_dir = getenv("SOVIET_REPOS_DIR");
-    const char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
-    const char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
+    char* repo_dir = getenv("SOVIET_REPOS_DIR");
+    char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
+    char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
 
     // Git repo handle
     git_repository* repo_handle = NULL;
@@ -124,7 +124,7 @@ int repo_sync() {
     }
     
     // Check if submodule exists
-    if(git_submodule_status(&status, repo_handle, submodule_name, GIT_SUBMODULE_IGNORE_ALL) != 0)
+    if(git_submodule_status(status, repo_handle, submodule_name, GIT_SUBMODULE_IGNORE_ALL) != 0)
     {
         if (add_repo(submodule_name, repo_url) != 0) {msg(ERROR, "Failed to create the default repository");}
     }
@@ -149,7 +149,7 @@ int add_repo(char* name, char* url)
 
     // Set clone options
     unsigned int* status = NULL;
-    git_clone_options opts = GIT_CLONE_OPTIONS_INIT;
+    git_submodule_update_options opts = GIT_CLONE_OPTIONS_INIT;
     git_fetch_options fopts = GIT_FETCH_OPTIONS_INIT;
     opts.fetch_opts = fopts;
     opts.fetch_opts.depth = 1;
@@ -162,9 +162,9 @@ int add_repo(char* name, char* url)
     }
 
     // Check if submodule exists
-    if(git_submodule_status(&status, repo_handle, name, GIT_SUBMODULE_IGNORE_ALL) != 0)
+    if(git_submodule_status(status, repo_handle, name, GIT_SUBMODULE_IGNORE_ALL) != 0)
     {
-        git_repository* submodule_handle = NULL;
+        git_submodule* submodule_handle = NULL;
         git_repository* temp_handle = NULL;
 
         // Add the submodule
