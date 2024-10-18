@@ -28,7 +28,7 @@ jobs:
         tar -xzf libgit2-1.8.1.tar.gz
         cd libgit2-1.8.1
         mkdir build && cd build
-        cmake ..
+        sudo cmake .. -DCMAKE_INSTALL_PREFIX=/usr
         sudo cmake --build . --target install
 
     - name: Make all
