@@ -34,7 +34,7 @@ DBGFLAGS = -g -fsanitize=address
 
 # set local lib to lib/*/*.a
 LOCAL_LIBS = $(wildcard lib/*/*.a)
-LIBS = ${LOCAL_LIBS} -lcurl -lm -lcrypto
+LIBS = ${LOCAL_LIBS} -lgit2 -lcurl -lm -lcrypto
 
 # change these to proper directories where each file should be
 SRCDIR   = src
