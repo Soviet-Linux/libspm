@@ -90,7 +90,7 @@ int repo_sync() {
 
     // Git repo handle
     git_repository* repo_handle = NULL;
-    unsigned int* status = NULL;
+    unsigned int status = 0;
 
     // bit of debugging
     dbg(3,"SOVIET_REPOS_DIR: %s",repo_dir);
@@ -124,7 +124,7 @@ int repo_sync() {
     }
     
     // Check if submodule exists
-    if(git_submodule_status(status, repo_handle, submodule_name, GIT_SUBMODULE_IGNORE_ALL) != 0)
+    if(git_submodule_status(&status, repo_handle, submodule_name, GIT_SUBMODULE_IGNORE_ALL) != 0)
     {
         if (add_repo(submodule_name, repo_url) != 0) {msg(ERROR, "Failed to create the default repository");}
     }
@@ -132,6 +132,7 @@ int repo_sync() {
     // TODO: add a way to get all submodules and update them
     // But maybe a single system call isn't too bad...
     // Update submodules
+    chdir(repo_dir);
     if (system("git submodule update --depth 1 --remote --init --recursive") != 0) 
     {
         printf("Failed to update submodules in %s\n", repo_dir);
