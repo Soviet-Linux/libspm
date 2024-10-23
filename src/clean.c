@@ -17,39 +17,53 @@ int clean()
     // Get the paths to the build and make directories from environment variables
     char* build_dir = getenv("SOVIET_BUILD_DIR");
     char* make_dir = getenv("SOVIET_MAKE_DIR");
+
+    // Clean the build and make directories, create them if they don't exist
+    // Return the sum of return codes from rmrf (remove directory), mkdir (create directory)
+    return rmrf(build_dir) + rmrf(make_dir) + mkdir(build_dir, 0755) + mkdir(make_dir, 0755);
+}
+
+void clean_install()
+{
+    // Get the paths to the build and make directories from environment variables
+    char* build_dir = getenv("SOVIET_BUILD_DIR");
     char* cleanups = strdup(getenv("SOVIET_CLEANUP"));
 
-    int result = 0;
-
     char** cleanup_loc;
-    msg(WARNING, "This will delete: %s", cleanups);
     int count = splita(cleanups, ':', &cleanup_loc);
 
     for(int i = 0; i < count; i++)
     {
       struct stat st;
-      if (lstat(cleanup_loc[i], &st) != 0)
+      char* full_cleanup_path = calloc(strlen(build_dir) + strlen(cleanup_loc[i]) + 2, 1);
+      snprintf(full_cleanup_path, strlen(build_dir) + strlen(cleanup_loc[i]) + 1, "%s%s", build_dir, cleanup_loc[i]);
+
+      if(strstr(full_cleanup_path, "/.") != NULL)
       {
-        dbg(2, "Error getting file info");
+          dbg(1, "path %s is sus", full_cleanup_path);
       }
       else
       {
-        if (S_ISDIR(st.st_mode)) 
-        {
-            dbg(2, "%s is a dir", cleanup_loc[i]);
-            result += rmrf(cleanup_loc[i]);
-        }
+        dbg(1, "deleting %s", full_cleanup_path);
 
-        if (S_ISREG(st.st_mode)) 
+        if (lstat(full_cleanup_path, &st) != 0)
         {
-            dbg(2, "%s is a file", cleanup_loc[i]);
-            result += remove(cleanup_loc[i]);
+          dbg(2, "Error getting file info");
+        }
+        else
+        {
+          if (S_ISDIR(st.st_mode)) 
+          {
+              dbg(2, "%s is a dir", full_cleanup_path);
+              rmrf(full_cleanup_path);
+          }
+
+          if (S_ISREG(st.st_mode)) 
+          {
+              dbg(2, "%s is a file", full_cleanup_path);
+              remove(full_cleanup_path);
+          }
         }
       }
-
     }
-
-    // Clean the build and make directories, create them if they don't exist
-    // Return the sum of return codes from rmrf (remove directory), mkdir (create directory)
-    return rmrf(build_dir) + rmrf(make_dir) + mkdir(build_dir, 0755) + mkdir(make_dir, 0755);
 }
