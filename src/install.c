@@ -211,7 +211,9 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
             msg(FATAL, "Failed to install %s", pkg.name);
             return -2;
         }
+        clean_install();
         dbg(1, "Install command executed!");
+
 
         // Get package locations
         dbg(1, "Getting locations for %s", pkg.name);
