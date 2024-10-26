@@ -157,8 +157,8 @@ unsigned int parseraw(char* s, char** dest)
 	return strlen(s);
 }
 
-unsigned int parseinfo(char *s, struct package* dest)
-{
+unsigned int parseinfo(char *s, struct package* dest) {
+    (void)dest;
     char* p = s;
     while (*p != '\0') {
         if (*p == ' ') {
@@ -214,9 +214,11 @@ unsigned int getsections(char* path,section*** sections) {
 	ssize_t read;
 	*sections = calloc(16,sizeof(section));
 	unsigned int sectionsalloc = 256;
+	(void)sectionsalloc;
 	unsigned int sectionscount = 0;
 
 	section* current = NULL;
+	(void)current;
 	unsigned int alloc = 0;
 
 	while ((read = getline(&line,&len,fp)) != EOF) {
@@ -319,4 +321,3 @@ int create(const char* path,struct package* pkg)
 	return 0;
 
 } 
-
