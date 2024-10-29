@@ -25,6 +25,7 @@ Returns:
 */
 int make(char* package_dir, struct package* pkg) {
     char* build_dir = getenv("SOVIET_BUILD_DIR");
+    (void)build_dir;
     char* make_dir = getenv("SOVIET_MAKE_DIR");
 
     char* cmd_params;
@@ -44,7 +45,9 @@ int make(char* package_dir, struct package* pkg) {
     for (int i = 0; i < pkg->filesCount; i++)
     {
         int download_attempts = 3;
-        int download_success = 0;
+        (void)download_attempts;
+	int download_success = 0;
+	(void)download_success;
 
         struct stat st_source = {0};
         struct stat st_source_loc = {0};
@@ -107,10 +110,11 @@ int make(char* package_dir, struct package* pkg) {
 
             SHA256((unsigned char*) buffer, size, hash);
 
-            if (hash == NULL) {
+	   /* This caused and warning and functionally does nothing. Here hash is an array of unsigned char, but arrays in C are not pointers that can be NULL. This should probably be done with fread or fopen instead. Commenting out for now to silence the warning*/
+            /*if (hash == NULL) {
                     msg(FATAL, "Could not verify the file's hash");
                     return -1;
-            }
+            }*/
             
             dbg(1, "Hash is %s", file_sha256);
             for(int k = 0; k < SHA256_DIGEST_LENGTH; k++) {
@@ -136,8 +140,8 @@ int make(char* package_dir, struct package* pkg) {
             dbg(1, "Loading form %s", source_location);
             loadFile(source_file_location, location);
         }
-        
-        free(files);
+
+	free(files);
         free(location);
         free(source_location);
         free(source_file_location);
