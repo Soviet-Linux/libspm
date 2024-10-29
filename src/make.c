@@ -141,6 +141,7 @@ int make(char* package_dir, struct package* pkg) {
             loadFile(source_file_location, location);
         }
 
+	free(files);
         free(location);
         free(source_location);
         free(source_file_location);
