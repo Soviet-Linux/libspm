@@ -11,12 +11,11 @@
 #include "libspm.h"
 #include "cutils.h"
 
-int download(char* url, FILE* fp)
-{
+int download(char* url, FILE* fp) {
     CURL *curl = curl_easy_init();
-    if(curl)
-    {
+    if(curl) {
         CURLcode res;
+	    (void) res;
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "CCCP/1.0 (https://www.sovietlinux.org/)");
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
         curl_easy_setopt(curl, CURLOPT_URL, url);
