@@ -104,6 +104,8 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     // Set environment variables for building
     setenv("BUILD_ROOT", build_dir, 1);
 
+    /* Warning: there is something sussy going on beyond this point */
+
     // Get global environment variables
     if (pkg.environment != NULL) 
     {
