@@ -80,7 +80,7 @@ int readConfig(const char* configFilePath, int overwrite)
         line[strlen(line) - 1] = 0;
         parse_env(&line);
 
-        if((line[0] != '#' || (line[0] != '/' && line[1] != '/')) && strstr(line, "=") != 0)
+        if(((line[0] != '#') && ((line[0] != '/') && (line[1] != '/'))) && (strstr(line, "=") != 0))
         {
             char* key = strtok(line, "=");
             char* value = strchr(line, '\0') + 1;
