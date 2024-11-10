@@ -205,6 +205,8 @@ void test_split() {
     free(*split_list);
     free(split_list);
 
+    dbg(2, "str_split: %s", str_split);
+    dbg(2, "split_str: %s", split_str);
 
     assert(strcmp(str_split,split_str) == 0);
 

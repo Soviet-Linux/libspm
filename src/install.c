@@ -75,55 +75,7 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     QUEUE_COUNT++;
     dbg(1, "Added %s to the queue", pkg.name);
 
-
-    // Get global environment variables
-
-    if (pkg.environment != NULL) 
-    {
-        dbg(1, "Getting environment variables...");
-        char* env_path = calloc(MAX_PATH, 1);
-        sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg.environment);
-
-        readConfig(env_path, 1);
-    }
-
-    // Set global environment variables
-
-    if (pkg.exports != NULL && pkg.exportsCount > 0 && strlen(pkg.exports[0]) > 0) 
-    {
-        dbg(1, "Setting environment variables...");
-        char* env_path = calloc(MAX_PATH, 1);
-        sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg.name);
-
-        FILE *env_file;
-        env_file = fopen(env_path, "w"); 
-
-        for (int i = 0; i < pkg.exportsCount; i++)
-        {
-            fprintf(env_file, "%s\n", pkg.exports[i]);
-
-            if((pkg.exports[i][0] != '#' || (pkg.exports[i][0] != '/' && pkg.exports[i][1] != '/')) && strstr(pkg.exports[i], "=") != 0)
-            {
-                char* key = strtok(pkg.exports[i], "=");
-                char* value = strchr(pkg.exports[i], '\0') + 1;
-
-                if (key == NULL || value == NULL) 
-                {
-                    msg(ERROR, "Invalid config file");
-                }
-
-                dbg(2, "Key: %s Value: %s", key, value);
-
-                // Set environment variables based on the key-value pairs in the config file
-                setenv(key, value, 1);
-            }
-        }
-
-        fclose(env_file);
-    }
-
     // Set the package info section as environment vadiables for make script
-
     setenv("NAME", pkg.name, 1);
     setenv("VERSION", pkg.version, 1);
 
@@ -151,6 +103,55 @@ int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
 
     // Set environment variables for building
     setenv("BUILD_ROOT", build_dir, 1);
+
+    /* Warning: there is something sussy going on beyond this point */
+
+    // Get global environment variables
+    if (pkg.environment != NULL) 
+    {
+        dbg(1, "Getting environment variables...");
+        char* env_path = calloc(MAX_PATH, 1);
+        sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg.environment);
+
+        readConfig(env_path, 1);
+    }
+
+    // Set global environment variables
+    if (pkg.exports != NULL && pkg.exportsCount > 0 && strlen(pkg.exports[0]) > 0) 
+    {
+        dbg(1, "Setting environment variables...");
+        char* env_path = calloc(MAX_PATH, 1);
+        sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg.name);
+
+        FILE *env_file;
+        env_file = fopen(env_path, "w"); 
+
+        for (int i = 0; i < pkg.exportsCount; i++)
+        {
+            fprintf(env_file, "%s\n", pkg.exports[i]);
+            char* line = strdup(pkg.exports[i]);
+            parse_env(&line);
+
+            if(((line[0] != '#') && ((line[0] != '/') && (line[1] != '/'))) && (strstr(line, "=") != 0))
+            {
+                char* key = strtok(line, "=");
+                char* value = strchr(line, '\0') + 1;
+
+                if (key == NULL || value == NULL) 
+                {
+                    msg(ERROR, "Invalid config file");
+                }
+
+                dbg(2, "Key: %s Value: %s", key, value);
+
+                // Set environment variables based on the key-value pairs in the config file
+                setenv(key, value, 1);
+            }
+            free(line);
+        }
+
+        fclose(env_file);
+    }
 
 
     // Check if a package is a collection
