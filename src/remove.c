@@ -23,6 +23,10 @@ This function is used as a callback by the nftw function to unlink (remove) file
 */
 int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {
+    (void)sb;
+    (void)typeflag;
+    (void)ftwbuf;
+  
     int rv = remove(fpath);
 
     if (rv)
