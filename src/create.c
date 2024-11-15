@@ -36,6 +36,9 @@ int f_create_binary_from_source(const char* src_path, const char* bin_path, cons
 {
     struct package pkg;
 
+    (void)in_format;
+    (void)out_format;
+    
     // Open the package source
     open_pkg(src_path, &pkg, NULL);
 

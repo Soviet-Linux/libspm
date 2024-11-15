@@ -43,6 +43,8 @@ Returns:
 int f_install_package_source(const char* spm_path, int as_dep, char* repo) {
     // Check if spm_path is NULL
 
+   (void)as_dep;
+    
     if (spm_path == NULL) {
         msg(ERROR, "spm_path is NULL");
         return -1;
@@ -313,6 +315,8 @@ Returns:
 int install_package_binary(const char* archivePath, int as_dep, const char* repo) {
 
     struct package pkg;
+
+    (void)as_dep;
 
     // Get required environment variables
     char* default_format = getenv("SOVIET_DEFAULT_FORMAT");
