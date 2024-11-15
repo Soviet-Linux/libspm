@@ -215,6 +215,8 @@ Returns:
 */
 int exec_special(const char* cmd, const char* package_dir) {
     dbg(2, "Executing special command: %s", cmd);
+	
+    (void)package_dir;
 
     if (system(cmd) != 0) {
         return 1;
