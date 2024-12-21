@@ -18,9 +18,6 @@ bool OVERWRITE = false;
 // Flag for quiet mode (no verbose output)
 bool QUIET = true;
 
-// Flag for skipping checksum validation
-bool INSECURE = false;
-
 // Flag indicating that a user passed either Y or N to be used as default
 bool OVERWRITE_CHOISE = false;
 

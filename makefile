@@ -72,17 +72,17 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 
 
 test:
-#	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/spm.c ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
-#	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/package.c ${DEVDIR}/test.c $(LIBS) -o bin/package-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
+	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/spm.c ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
+	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/package.c ${DEVDIR}/test.c $(LIBS) -o bin/package-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
 	@echo "Test binary created"
 
 check-all:
 	echo "..."
-# bin/spm-test all
-# @if [ $$? -gt 0 ]; then echo "Error Tests Failed"; else echo "All good"; fi
+ 	bin/spm-test
+	@if [ $$? -gt 0 ]; then echo "Error Tests Failed"; else echo "All good"; fi
 
 check: test check-all
-	@echo "ERROR: no tests ran"
+	@echo "All tests passed"
 
 
 # This will conflict with other artifacts so you should run make clean before `make debug` and after you're done
