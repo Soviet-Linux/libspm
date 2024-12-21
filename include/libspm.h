@@ -33,6 +33,7 @@ struct package
     char* sha256;
     char* url;
     char* environment;
+    char* repo;
 
     char** files;
     int filesCount;
@@ -58,26 +59,42 @@ struct package
 
 };
 
-//test
+// List of installed packages
 int list_installed();
+
+// num. of installed packages
 int count_installed();
+
+// Serach for a package by term
 char** search(char *term,  int *num_results);
+
+// Check what packages need updating
 int update();
+
+// Upgrade all packages that need updating
 int upgrade();
+
+// Create links for the package
 void create_links(char build_loc[4096], char dest_loc[4096]);
+
+// Get all repositories currently present
 int get_repos(char** list);
+
+// Get all files from a location, ignoring root in the result
 char** get_all_files(const char* root, const char *path, int *num_files);
+
+// Download a file from url into fp with curl
+// note: it does not open nor close the FILE
 int download(char* url, FILE* fp);
+
+// Pare the string in for environment variables, the original in will be freed and replaced
 int parse_env(char** in);
+
+// Clone a git repository
 int add_repo(char* name, char* url);
+
+// Cleanup unneded files after a package is installed
 void clean_install();
-
-//end test
-
-// package info
-
-
-// shared function to be called by external programs
 
 // This prints the version , its bad 
 // TODO: Rework this
@@ -109,21 +126,7 @@ Returns:
   - 0: Package installed successfully.
   - -1: Installation failed.
 */
-int install_package_source(const char* spm_path,int as_dep);
-int f_install_package_source(const char* spm_path, int as_dep,  char* repo);
-
-// Function to install a package from a binary archive
-/*
-Accepts:
-- const char* archivePath: Path to the binary archive.
-- int as_dep: Flag indicating if the package is a dependency.
-
-Returns:
-- int: An integer indicating the result of the installation.
-  - 0: Package installed successfully.
-  - -1: Installation failed.
-*/
-int install_package_binary(const char* archivePath, int as_dep, const char* repo);
+int install_package_source(struct package* pkg);
 
 // Function to uninstall packages
 /*
@@ -160,30 +163,6 @@ Returns:
 */
 int check(const char* name);
 
-// Function to create a binary package from source with input and output formats
-/*
-Accepts:
-- const char* src_path: The path to the source package.
-- const char* bin_path: The path where the binary package will be created.
-- const char* in_format: The input format (optional).
-- const char* out_format: The output format.
-
-Returns:
-- int: An integer indicating the result of the binary package creation.
-*/
-int f_create_binary_from_source(const char* src_path,const char* bin_path,const char* in_format,const char* out_format);
-
-// Function to create a binary package from source
-/*
-Accepts:
-- const char* spm_path: The path to the source package.
-- const char* bin_path: The path where the binary package will be created.
-
-Returns:
-- int: An integer indicating the result of the binary package creation.
-*/
-int create_binary_from_source(const char* spm_path,const char* bin_path);
-
 // Function to retrieve a package from a data repository
 /*
 Accepts:
@@ -211,11 +190,12 @@ Notes:
 Returns: None
 */
 void move_binaries(char** locations,long loc_size);
+
 // build a package from source
 int make (char* package_dir,struct package* pkg);
+
 // execute post install scripts
 int exec_special(const char* cmd,const char* package_dir);
-
 
 // update the system
 int update();
@@ -231,6 +211,7 @@ Returns:
     - mkdir(make_dir, 0755): Creating the make directory with the specified permissions.
 */
 int clean();
+
 // Function to synchronize the local repository with a remote repository
 int repo_sync();
 
@@ -298,7 +279,7 @@ Returns:
   - 0: Package created successfully.
   - -1: File is not a valid package file or the format plugin isn't loaded.
 */
-int create_pkg(const char* path,struct package* pkg,const char* format);
+int create_pkg(struct package* pkg,const char* format);
 
 // Load a format plugin, execute a specific function, and close the plugin
 /*
@@ -319,19 +300,6 @@ Returns:
   - -1: Format plugin function returned an error.
 */
 int runFormatLib (const char* format,const char* fn,const char* pkg_path,struct package* pkg);
-
-// Function to get the package name from a binary archive path
-/*
-Accepts:
-- const char* bin_path: Path to the binary package archive.
-- char* name: A character array to store the package name.
-
-Returns:
-- int: An integer indicating the result of name extraction.
-  - 0: Name extracted successfully.
-  - -1: Extraction failed.
-*/
-int get_bin_name(const char* bin_path,char* name);
 
 // Function to check if a package is already installed
 /*
@@ -381,17 +349,6 @@ Returns:
   - 1: Download failure.
 */
 int loadFile(const char* path, const char* file_path);
-
-// Function to retrieve file locations within a directory
-/*
-Accepts:
-- char*** locations: Pointer to an array of strings to store file locations.
-- const char* loc_dir: Path to the directory to search for files.
-
-Returns:
-- long: The number of file locations retrieved.
-*/
-long get_locations(char*** locations, const char* loc_dir);
 
 
 

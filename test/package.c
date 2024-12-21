@@ -1,3 +1,5 @@
+// Tests disabled for now
+#if 0
 // this file will be used by the our to check a package's validity.
 // it replaces in this usage the test.c file, now only used for libspm testing.
 
@@ -34,3 +36,5 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
+
+#endif

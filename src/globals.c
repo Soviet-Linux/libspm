@@ -5,7 +5,7 @@
 #include "globals.h"
 
 // Define a constant for the maximum queue size
-#define QUEUE_MAX 64
+#define QUEUE_MAX 256
 
 // Declare global variables
 
@@ -29,4 +29,4 @@ char* USER_CHOISE[2];
 
 // Array for package queue and its count
 char* PACKAGE_QUEUE[QUEUE_MAX];
-int QUEUE_COUNT;
+int QUEUE_COUNT = 0;

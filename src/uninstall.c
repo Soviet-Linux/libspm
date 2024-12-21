@@ -9,9 +9,6 @@
 #include  "libspm.h"
 #include "cutils.h"
 
-// remove a file or link or directory
-int rmany(char* path);
-
 // Function to uninstall packages
 /*
 Accepts:
@@ -79,38 +76,3 @@ int uninstall(char* name)
 }
 
 
-int rmany(char* path) {
-    // check if its a symlink
-    struct stat s;
-
-    if (lstat(path, &s) == 0) {
-        if (S_ISLNK(s.st_mode)) {
-            // remove the symlink
-             if (unlink(path) == 0) {
-                return 0;
-            } else {
-                return -1;
-            }
-        }
-        // check if its a directory
-        if (S_ISDIR(s.st_mode)) {
-            // remove the directory
-            if (rmdir(path) == 0) {
-                return 0;
-            } else {
-                msg(ERROR, "Error removing directory %s (Probably not empty)", path);
-                return -1;
-            }
-        }
-        // check if its a file
-        if (S_ISREG(s.st_mode)) {
-            // remove the file
-            if (remove(path) == 0) {
-                return 0;
-            } else {
-                return -1;
-            }
-        }
-    } 
-    return -1;
-}

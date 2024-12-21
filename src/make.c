@@ -24,8 +24,6 @@ Returns:
   - -3: No install command found.
 */
 int make(char* package_dir, struct package* pkg) {
-    char* build_dir = getenv("SOVIET_BUILD_DIR");
-    (void)build_dir;
     char* make_dir = getenv("SOVIET_MAKE_DIR");
 
     char* cmd_params;
@@ -199,26 +197,5 @@ int make(char* package_dir, struct package* pkg) {
         dbg(1, "Test command executed!");
     }
 
-    return 0;
-}
-
-// Function to execute a special command for post-installation
-/*
-Accepts:
-- const char* cmd: The special command to execute.
-- const char* package_dir: Path to the package directory.
-
-Returns:
-- int: An integer indicating the result of the special command execution.
-  - 0: Special command executed successfully.
-  - 1: An error occurred during special command execution.
-*/
-int exec_special(const char* cmd, const char* package_dir) {
-    dbg(2, "Executing special command: %s", cmd);
-
-    if (system(cmd) != 0) {
-        return 1;
-    }
-    dbg(1, "Special command executed!");
     return 0;
 }

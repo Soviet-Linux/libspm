@@ -38,7 +38,7 @@ void clean_install()
       char* full_cleanup_path = calloc(strlen(build_dir) + strlen(cleanup_loc[i]) + 2, 1);
       snprintf(full_cleanup_path, strlen(build_dir) + strlen(cleanup_loc[i]) + 1, "%s%s", build_dir, cleanup_loc[i]);
 
-      if(strstr(full_cleanup_path, "/.") != NULL)
+      if(strstr(full_cleanup_path, "/..") != NULL)
       {
           dbg(1, "path %s is sus", full_cleanup_path);
       }

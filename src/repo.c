@@ -1,7 +1,7 @@
-#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <git2.h>
@@ -11,27 +11,7 @@
 #include "globals.h"
 #include "cutils.h"
 
-// Function to retrieve a package from a data repository
-/*
-Accepts:
-- struct package* i_pkg: A pointer to a package structure with package details.
-- const char* out_path: The local path to save the downloaded package.
-
-Returns:
-- char*: A pointer to the package format or NULL if there's an error.
-*/
-char* get(struct package* i_pkg, const char* repo, const char* out_path)
-{
-    // Check if the package name is specified
-    if (i_pkg->name == NULL)
-    {
-        msg(ERROR, "Package name not specified!");
-        return NULL;
-    }
-
-    return load_from_repo(i_pkg->name, repo, out_path);
-}
-
+// Get currently present repos
 int get_repos(char** list)
 {
     dbg(3, "checking for repos");
@@ -83,7 +63,8 @@ int get_repos(char** list)
 }
 
 // Function to synchronize the local repository with a remote repository
-int repo_sync() {
+int repo_sync() 
+{
     char* repo_dir = getenv("SOVIET_REPOS_DIR");
     char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
     char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
@@ -143,6 +124,7 @@ int repo_sync() {
     return 0;
 }
 
+// Add a new repository from a git repo
 int add_repo(char* name, char* url)
 {
     const char* repo_dir = getenv("SOVIET_REPOS_DIR");

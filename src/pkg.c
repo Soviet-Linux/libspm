@@ -3,6 +3,7 @@
 #include "string.h"
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <sqlite3.h>
 
 #include "cutils.h"
 #include "libspm.h"
@@ -23,7 +24,8 @@ Returns:
   - 1: File does not exist or is not a valid package file.
   - 1: File is not a valid package file or the format plugin isn't loaded.
 */
-int open_pkg(const char* path, struct package* pkg, const char* format) {
+int open_pkg(const char* path, struct package* pkg, const char* format)
+{
     dbg(2, "Setting everything to NULL");
     // Set all variables to NULL
     memset(pkg, 0, sizeof(struct package));
@@ -81,7 +83,19 @@ Returns:
   - 0: Package created successfully.
   - -1: File is not a valid package file or the format plugin isn't loaded.
 */
-int create_pkg(const char* path, struct package* pkg, const char* format) {
+int create_pkg(struct package* pkg, const char* format) 
+{
+    char repo_path[MAX_PATH];
+    sprintf(repo_path, "%s/%s", getenv("SOVIET_SPM_DIR"), pkg->repo);
+
+    if(isdir(repo_path) != 0)
+    { 
+        pmkdir(repo_path);
+    }
+    
+    char path[MAX_PATH]; 
+    sprintf(path, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"), pkg->repo, pkg->name, getenv("SOVIET_DEFAULT_FORMAT"));
+
     msg(INFO, "Creating package %s", path);
 
     char** FORMATS;
@@ -100,10 +114,9 @@ int create_pkg(const char* path, struct package* pkg, const char* format) {
         {
             if (strcmp(format,FORMATS[i]) == 0)
             {
-                dbg(2,"Opening package with %s format",FORMATS[i]);
-                runFormatLib(FORMATS[i],"create",path,pkg);
+                dbg(2, "Opening package with %s format", FORMATS[i]);
+                runFormatLib(FORMATS[i], "create", path, pkg);
                 //free(*FORMATS);
-                //free(FORMATS);
                 return 0;
             }
         }
@@ -114,50 +127,47 @@ int create_pkg(const char* path, struct package* pkg, const char* format) {
     return -1;
 }
 
-// Load a format plugin, execute a specific function, and close the plugin
+// Function to free memory allocated for a package structure
 /*
 Accepts:
-- const char* format: The format of the package.
-- const char* fn: The name of the function to execute in the format plugin.
-- const char* pkg_path: The path to the package file.
-- struct package* pkg: A pointer to the package structure.
-
-Description:
-This function loads a format plugin, executes a specified function within the plugin, and then closes the plugin.
+- struct package* pkg: Pointer to a package structure.
 
 Returns:
-- int: An integer indicating the result of running the format plugin.
-  - 0: Format plugin executed successfully.
-  - 1: Format plugin file does not exist.
-  - 1: Error loading or executing the format plugin.
-  - -1: Format plugin function returned an error.
+- int: An integer indicating the result of memory deallocation.
+  - 0: Memory freed successfully.
 */
-int runFormatLib(const char* format, const char* fn, const char* pkg_path, struct package* pkg) {
-    char lib_path[MAX_PATH];
-    sprintf(lib_path, "%s/%s.so", getenv("SOVIET_PLUGIN_DIR"), format);
-    dbg(2, "Loading %s", lib_path);
+int free_pkg(struct package* pkg) 
+{
+    if (pkg->name != NULL) free(pkg->name);
+    if (pkg->version != NULL) free(pkg->version);
+    if (pkg->license != NULL) free(pkg->license);
+    if (pkg->type != NULL) free(pkg->type);
+    if (pkg->url != NULL) free(pkg->url);
 
-    if (access(lib_path, F_OK) != 0) {
-        msg(ERROR, "File %s does not exist", lib_path);
-        return 1;
-    }
+    if (pkg->info.make != NULL) free(pkg->info.make);
+    if (pkg->info.special != NULL) free(pkg->info.special);
+    if (pkg->info.download != NULL) free(pkg->info.download);
+    if (pkg->info.install != NULL) free(pkg->info.install);
+    if (pkg->info.prepare != NULL) free(pkg->info.prepare);
+    if (pkg->info.test != NULL) free(pkg->info.test);
 
-    // Load a function from the shared library
-    void* handle = dlopen(lib_path, RTLD_LAZY);
-    if (!handle) {
-        fprintf(stderr, "%s\n", dlerror());
-        return 1;
+    if (pkg->locations) {
+        if (*pkg->locations) free(*pkg->locations);
+        free(pkg->locations);
     }
-    int (*func)(const char*, struct package*) = dlsym(handle, fn);
-    char* error = dlerror();
-    if (error != NULL) {
-        fprintf(stderr, "%s\n", error);
-        return 1;
+    if (pkg->dependencies) {
+        if (*pkg->dependencies) free(*pkg->dependencies);
+        free(pkg->dependencies);
     }
-    if (func(pkg_path, pkg) != 0) {
-        return -1;
+    if (pkg->optional) {
+        if (*pkg->optional) free(*pkg->optional);
+        free(pkg->optional);
     }
-
-    dlclose(handle);
+    if (pkg->files) {
+        if (*pkg->files) free(*pkg->files);
+        free(pkg->files);
+    }
     return 0;
 }
+
+int create_package_db(){}
