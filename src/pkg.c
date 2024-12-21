@@ -8,22 +8,51 @@
 #include "cutils.h"
 #include "libspm.h"
 
+// Allocate an array of packages
+struct packages create_pkgs(int reserve)
+{
+	packages pkgs;
+	pkgs.size = 1 + reserve;
+	pkgs.count = 0;
+	pkgs.buffer = (struct package*)calloc(1 + reserve, sizeof(struct package));
+	return pkgs;
+}
+
+// Merge 2 package arrays
+void merge_pkgs(struct packages* destination, struct packages* source)
+{
+    for(int i = 0; i < source->count; i++)
+    {
+        pkg = pop_pkg(source);
+        push_pkg(destination, pkg);
+        free_pkg(pkg);
+    }
+}
+
+// Push a package into the array
+void push_pkg(struct packages* pkgs, struct package* pkg)
+{
+	if (pkgs->count == pkgs->size)
+	{
+		pkgs->buffer = realloc(pkgs->buffer, sizeof(struct package)*(pkgs->count + pkgs->size));
+		pkgs->size = pkgs->count + pkgs->size;
+	}
+    memcpy(pkgs->buffer[pkgs->count], pkg, sizeof(struct package));
+	pkgs->count++;
+}
+
+// Pop the last added package from the array
+struct package* pop_pkg(struct packages* pkgs)
+{
+	pkgs->count--;
+	struct package* pkg = calloc(1, sizeof(struct package));
+    memcpy(pkg, pkgs->buffer[pkgs->count], sizeof(struct package));
+	free_pkg(&(pkgs->buffer[pkgs->count]));
+	return pkg;
+}
+
+
 // Open a package from the given path and populate the package structure
-/*
-Accepts:
-- const char* path: The path to the package file.
-- struct package* pkg: A pointer to the package structure to populate.
-- const char* format: The format of the package (optional).
-
-Description:
-This function opens a package from the specified path, reads the package file's format, and populates the provided package structure with its contents.
-
-Returns:
-- int: An integer indicating the result of opening the package.
-  - 0: Package opened successfully.
-  - 1: File does not exist or is not a valid package file.
-  - 1: File is not a valid package file or the format plugin isn't loaded.
-*/
 int open_pkg(const char* path, struct package* pkg, const char* format)
 {
     dbg(2, "Setting everything to NULL");
@@ -69,20 +98,6 @@ int open_pkg(const char* path, struct package* pkg, const char* format)
 }
 
 // Create a package at the given path using the specified format and package structure
-/*
-Accepts:
-- const char* path: The path to the package file to be created.
-- struct package* pkg: A pointer to the package structure containing package data.
-- const char* format: The format of the package (optional).
-
-Description:
-This function creates a package file at the specified path using the provided format and package data from the package structure.
-
-Returns:
-- int: An integer indicating the result of creating the package.
-  - 0: Package created successfully.
-  - -1: File is not a valid package file or the format plugin isn't loaded.
-*/
 int create_pkg(struct package* pkg, const char* format) 
 {
     char repo_path[MAX_PATH];
@@ -128,14 +143,6 @@ int create_pkg(struct package* pkg, const char* format)
 }
 
 // Function to free memory allocated for a package structure
-/*
-Accepts:
-- struct package* pkg: Pointer to a package structure.
-
-Returns:
-- int: An integer indicating the result of memory deallocation.
-  - 0: Memory freed successfully.
-*/
 int free_pkg(struct package* pkg) 
 {
     if (pkg->name != NULL) free(pkg->name);
@@ -170,4 +177,87 @@ int free_pkg(struct package* pkg)
     return 0;
 }
 
-int create_package_db(){}
+// Create the database that stores all packages in a directory
+int create_pkg_db(char* db_path, struct packages* pkgs)
+{
+    remove(db_path);
+    sqlite3* db;
+    sqlite3_stmt* pkg_table;
+    int result = sqlite3_open(db_path, &db);
+    if(result)
+    {
+        msg(FATAL, "SQL error when creating SOVIET_DB");
+    }
+
+    result = sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS Packages (Name TEXT, Path TEXT)", NULL, NULL, NULL);
+    if (result != SQLITE_OK) 
+    {
+        msg(FATAL, "SQL error when creating pkg_table");
+    }
+
+    char* ins = "INSERT INTO Packages VALUES (?,?)";
+
+    sqlite3_close(&db);
+}
+
+// Get all packages from a directory
+struct packages get_pkgs(char* path)
+{
+    int num_files;
+    char **files_array = get_all_files(path, path, &num_files);
+    if (files_array != NULL) 
+    {
+        packages pkgs = create_pkgs(num_files);
+        // Print each file path
+        for (int j = 0; j < num_files; j++) 
+        {
+            char* path = strdup(files_array[j]);
+            char* name = strdup(files_array[j]);
+
+            while(strtok(package_name, "/"))
+            {
+                char* tmp = name;
+                name = strchr(package_name, '\0') + 1;
+                if(*name == '\0')
+                {
+                    name = tmp;
+                    break;
+                }
+            }
+
+            dbg(1, "path is %s, name is %s", path, name);
+
+            // Free each file path string
+            free(files_array[i]);
+            free(path);
+        }
+        // Free the array of file paths
+        free(files_array);
+    } 
+    else 
+    {
+        msg(ERROR, "Repository %s empty", REPOS[i]);  
+    }
+}
+
+// Get all packages from a directory
+struct packages get_pkgs_from_repos()
+{
+    char** REPOS = calloc(512,sizeof(char*));
+    int num_repos = get_repos(REPOS)
+    if(num_repos < 2)
+    {   
+        msg(FATAL, "No local repositories");  
+    }
+
+    struct packages pkgs = create_pkgs(0);
+    for(int i = 1; i < num_repos; i++)
+    {
+        char* path = calloc(MAX_PATH, 1);
+        sprintf(path, "%s/%s", getenv("SOVIET_REPOS_DIR"), REPOS[i]);
+        struct packages result = get_pkgs(path);
+        merge_pkgs(&pkgs, &result);
+    }
+
+    return pkgs;
+}

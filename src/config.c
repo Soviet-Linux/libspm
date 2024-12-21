@@ -8,8 +8,6 @@
 
 #include <stdbool.h>
 
-#define DEFAULT_CONFIG_FILE "/etc/cccp.conf" // Default config file path
-
 // A hashmap to store config values with default values
 typedef struct {
     const char* key;
@@ -18,10 +16,11 @@ typedef struct {
 
 ConfigEntry configEntries[] = {
     { "SOVIET_ROOT", "/" },
+    { "SOVIET_USER_ROOT", "~/.local/" },
     { "SOVIET_DEFAULT_FORMAT", "ecmp" },
     { "SOVIET_MAIN_DIR", "/var/cccp" },
     { "SOVIET_WORK_DIR", "/var/cccp/work" },
-    { "SOVIET_CONFIG_FILE", DEFAULT_CONFIG_FILE },
+    { "SOVIET_CONFIG_FILE", "/etc/cccp.conf" },
     { "SOVIET_REPOS_DIR", "/var/cccp/sources" },
     { "SOVIET_SPM_DIR", "/var/cccp/spm" },
     { "SOVIET_LOG_DIR", "/var/cccp/log" },
@@ -35,6 +34,8 @@ ConfigEntry configEntries[] = {
     { "SOVIET_SOURCE_DIR", "/usr/src/cccp" },
     { "SOVIET_ENV_DIR", "/etc/cccp" },
     { "SOVIET_CLEANUP", "/usr/share/info/dir:/usr/share/doc/" },
+    { "SOVIET_ALL_DB", "/var/cccp/all.db" },
+    { "SOVIET_INSTALLED_DB", "/var/cccp/installed.db" },
     // Add more key-value pairs with default values as needed
 };
 
@@ -44,7 +45,7 @@ const size_t numConfigEntries = sizeof(configEntries) / sizeof(configEntries[0])
 int readConfig(const char* configFilePath, int overwrite)
 {
     if (configFilePath == NULL) {
-        configFilePath = DEFAULT_CONFIG_FILE; // Use the default config file path
+        msg(FATAL, "Tried to use non-existing config");
     }
 
     dbg(2, "config: %s", configFilePath);

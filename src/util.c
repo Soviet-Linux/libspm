@@ -51,10 +51,10 @@ int rmany(char* path)
         // check if its a directory
         if (S_ISDIR(s.st_mode)) {
             // remove the directory
-            if (rmdir(path) == 0) {
+            if (rmrf(path) == 0) {
                 return 0;
             } else {
-                msg(ERROR, "Error removing directory %s (Probably not empty)", path);
+                msg(ERROR, "Error removing directory %s", path);
                 return -1;
             }
         }

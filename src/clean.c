@@ -46,24 +46,7 @@ void clean_install()
       {
         dbg(1, "deleting %s", full_cleanup_path);
 
-        if (lstat(full_cleanup_path, &st) != 0)
-        {
-          dbg(2, "Error getting file info");
-        }
-        else
-        {
-          if (S_ISDIR(st.st_mode)) 
-          {
-              dbg(2, "%s is a dir", full_cleanup_path);
-              rmrf(full_cleanup_path);
-          }
-
-          if (S_ISREG(st.st_mode)) 
-          {
-              dbg(2, "%s is a file", full_cleanup_path);
-              remove(full_cleanup_path);
-          }
-        }
+        rmany(full_cleanup_path);
       }
     }
 }
