@@ -30,7 +30,11 @@ struct package
     char* sha256;
     char* url;
     char* environment;
-    char* repo;
+
+    // Internal
+    char* path;
+    char* format;
+    //
 
     char** files;
     int filesCount;
@@ -84,25 +88,11 @@ void create_links(char build_loc[4096], char dest_loc[4096]);
 // Get all repositories currently present
 int get_repos(char** list);
 
-// Get all files from a location, ignoring root in the result
-char** get_all_files(const char* root, const char *path, int *num_files);
-
-// Download a file from url into fp with curl
-// note: it does not open nor close the FILE
-int download(char* url, FILE* fp);
-
-// Pare the string in for environment variables, the original in will be freed and replaced
-int parse_env(char** in);
-
 // Clone a git repository
 int add_repo(char* name, char* url);
 
 // Cleanup unneded files after a package is installed
 void clean_install();
-
-// This prints the version , its bad 
-// TODO: Rework this
-float version();
 
 // Function to install a package from source with a specific format
 int install_package_source(struct package* pkg);
@@ -137,33 +127,51 @@ int repo_sync();
 // init the system
 void init();
 
-// Quit the program with the given status code and display an error message if status is not 0
-void quit(int status);
-
 // Read the soviet config
 int readConfig(const char* configFilePath, int overwrite);
 
 // Function to check the existence of package locations
 int check_locations(char** locations,int locationsCount);
 
-// Open a package from the given path and populate the package structure
-int open_pkg(const char* path, struct package* pkg,const char* format);
-
-// Create a package at the given path using the specified format and package structure
-int create_pkg(struct package* pkg,const char* format);
-
-// Load a format plugin, execute a specific function, and close the plugin
-int runFormatLib (const char* format,const char* fn,const char* pkg_path,struct package* pkg);
-
 // Function to check if a package is already installed
 bool is_installed(const char* name);
 
+/*pkg.c*/
+// Allocate an array of packages
+struct packages create_pkgs(int reserve);
+// Merge 2 package arrays
+void merge_pkgs(struct packages* destination, struct packages* source);
+// Push a package into the array
+void push_pkg(struct packages* pkgs, struct package* pkg);
+// Pop the last added package from the array
+struct package* pop_pkg(struct packages* pkgs);
+// Open a package from the given path and populate the package structure
+int open_pkg(const char* path, struct package* pkg, const char* format);
+// Create a package at the given path using the specified format and package structure
+int create_pkg(struct package* pkg);
 // Function to free memory allocated for a package structure
 int free_pkg(struct package* pkg);
+// Create the database that stores all packages in a directory
+int create_pkg_db(char* db_path, struct packages* pkgs);
+// Get all packages from a directory
+struct packages get_pkgs(char* path);
 
-
-
-
-
-
-
+/*util.c*/
+// Recursively remove a directory and its contents
+int rmrf(char *path);
+// remove a file or link or directory
+int rmany(char* path);
+// Quit the program with the given status code and display an error message if status is not 0
+void quit(int status);
+// Function to recursively retrieve all files in a directory and its subdirectories
+char **get_all_files(const char* root, const char *path, int *num_files);
+// Load a format plugin, execute a specific function, and close the plugin
+int runFormatLib(const char* format, const char* fn, const char* pkg_path, struct package* pkg);
+// A function to retrieve the version number of the libspm library.
+float version();
+// This will parse a string for environment variables
+// It makes an assumption that a variable is: $A-Z_0-9
+int parse_env(char** in);
+// Download a file from url into FILE 
+int download(char* url, FILE* fp);
+int cp(char* from, char* to);

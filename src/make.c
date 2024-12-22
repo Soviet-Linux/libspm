@@ -44,8 +44,8 @@ int make(char* package_dir, struct package* pkg) {
     {
         int download_attempts = 3;
         (void)download_attempts;
-	int download_success = 0;
-	(void)download_success;
+	    int download_success = 0;
+	    (void)download_success;
 
         struct stat st_source = {0};
         struct stat st_source_loc = {0};
@@ -81,13 +81,6 @@ int make(char* package_dir, struct package* pkg) {
             download(file_url, fp);
             fclose(fp);
 
-            // Check if the checksum shall be bypassed
-          
-            if (INSECURE) {
-                msg(WARNING, "The Checksum is being skipped");
-                goto skip_checksum;
-            }
-
             // Check the hash, abort if mismatch
             unsigned char hash[SHA256_DIGEST_LENGTH];
             char* hash_str = calloc(SHA256_DIGEST_LENGTH, 8);
@@ -108,7 +101,7 @@ int make(char* package_dir, struct package* pkg) {
 
             SHA256((unsigned char*) buffer, size, hash);
 
-	   /* This caused and warning and functionally does nothing. Here hash is an array of unsigned char, but arrays in C are not pointers that can be NULL. This should probably be done with fread or fopen instead. Commenting out for now to silence the warning*/
+	        /* This caused and warning and functionally does nothing. Here hash is an array of unsigned char, but arrays in C are not pointers that can be NULL. This should probably be done with fread or fopen instead. Commenting out for now to silence the warning*/
             /*if (hash == NULL) {
                     msg(FATAL, "Could not verify the file's hash");
                     return -1;
@@ -128,15 +121,13 @@ int make(char* package_dir, struct package* pkg) {
             free(hash_str);
             free(buffer);
 
-            skip_checksum:
-
             dbg(1, "Download finished");
 
-            loadFile(location, source_file_location);            
+            cp(location, source_file_location);            
         }
         else {
             dbg(1, "Loading form %s", source_location);
-            loadFile(source_file_location, location);
+            cp(source_file_location, location);
         }
 
 	free(files);

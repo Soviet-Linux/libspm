@@ -29,7 +29,6 @@ int install_package_source(struct package* pkg)
     {
         char* make_dir = getenv("SOVIET_MAKE_DIR");
         char* build_dir = getenv("SOVIET_BUILD_DIR");
-        char* format = getenv("SOVIET_DEFAULT_FORMAT");
         // Temporary for compatibility
         setenv("BUILD_ROOT", build_dir, 1);
 
@@ -102,7 +101,7 @@ int install_package_source(struct package* pkg)
                 }
                 // Build the package
                 dbg(1, "Making %s", pkg->name);
-                if (make(legacy_dir, &pkg) != 0) {
+                if (make(legacy_dir, pkg) != 0) {
                     msg(ERROR, "Failed to make %s", pkg->name);
                     exit(1);
                 }
@@ -176,7 +175,7 @@ int install_package_source(struct package* pkg)
         }
     }
 
-    create_pkg(&pkg, NULL); 
+    create_pkg(pkg); 
     dbg(1, "Package %s installed", pkg->name);
 
     // Clean up
@@ -190,7 +189,7 @@ int install_package_source(struct package* pkg)
 }
 
 /* Warning: there is something sussy going on beyond this point */
-int configure_package(struct package* pkg)
+void configure_package(struct package* pkg)
 {
     // Get global environment variables
     if (pkg->environment != NULL) 
@@ -276,7 +275,7 @@ bool is_installed(const char* name)
     return false;
 }
 
-int add_to_queue(const char* name)
+void add_to_queue(char* name)
 {
     // Add the package name to the queue
     PACKAGE_QUEUE[QUEUE_COUNT] = name;

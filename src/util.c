@@ -292,3 +292,9 @@ int download(char* url, FILE* fp) {
     }
     return 0;
 }
+
+// Copy a file
+int cp(char* from, char* to)
+{
+    return 1;
+}

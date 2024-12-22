@@ -1,4 +1,5 @@
 #include "cutils.h"         // Custom utility library
+#include "libspm.h"
 #include <stdlib.h>         // Standard library for general functions
 #include <sys/stat.h>       // Standard library for file status information
 
@@ -34,7 +35,6 @@ void clean_install()
 
     for(int i = 0; i < count; i++)
     {
-      struct stat st;
       char* full_cleanup_path = calloc(strlen(build_dir) + strlen(cleanup_loc[i]) + 2, 1);
       snprintf(full_cleanup_path, strlen(build_dir) + strlen(cleanup_loc[i]) + 1, "%s%s", build_dir, cleanup_loc[i]);
 

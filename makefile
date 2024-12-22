@@ -34,7 +34,7 @@ DBGFLAGS = -g -fsanitize=address
 
 # set local lib to lib/*/*.a
 LOCAL_LIBS = $(wildcard lib/*/*.a)
-LIBS = ${LOCAL_LIBS} -lgit2 -lcurl -lsqlite3 -lm -lcrypto
+LIBS = ${LOCAL_LIBS} -lgit2 -lsqlite3 -lcurl -lm -lcrypto
 
 # change these to proper directories where each file should be
 SRCDIR   = src
@@ -77,12 +77,11 @@ test:
 	@echo "Test binary created"
 
 check-all:
-	echo "..."
- 	bin/spm-test
+	bin/spm-test all
 	@if [ $$? -gt 0 ]; then echo "Error Tests Failed"; else echo "All good"; fi
 
 check: test check-all
-	@echo "All tests passed"
+	@echo "All Tests Passed"
 
 
 # This will conflict with other artifacts so you should run make clean before `make debug` and after you're done
@@ -118,6 +117,3 @@ install: $(BINDIR)/$(LIBOUT)
 	for i in include/*; do install -vDm 755 $$i $(DESTDIR)/usr/include/spm/; done
 	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/usr/lib/$(LIBOUT)
 	install  $(BINDIR)/plugins/ecmp.so -vDm 755 $(DESTDIR)/var/cccp/plugins/ecmp.so
-
-
-
