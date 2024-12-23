@@ -7,17 +7,16 @@
 #include "libspm.h"
 #include "cutils.h"
 
-//should probably add there to the header when we are done
-
+// Function to update a package
 int update()
 {
     msg(INFO, "fetching updates");
 
     int new_version_found = 0;
     
-    const char *path = getenv("SOVIET_SPM_DIR");
+    char *path = getenv("SOVIET_SPM_DIR");
     dbg(2, "path is %s", path);
-    const char *repo_path = getenv("SOVIET_REPOS_DIR");
+    char *repo_path = getenv("SOVIET_REPOS_DIR");
     dbg(2, "repo path is %s", repo_path);
     int num_files;
     char **files_array = get_all_files(path, path, &num_files);
@@ -87,8 +86,8 @@ int update()
                         sprintf(remote_path, "%s/%s/%s", repo_path, remote_repo, remote_package);
                         dbg(2, "remote path is %s", remote_path);
 
-                        open_pkg(local_path, local, "ecmp");
-                        open_pkg(remote_path, remote, "ecmp");
+                        open_pkg(local_path, local);
+                        open_pkg(remote_path, remote);
 
                         // Compare the versions
                         if(strcmp(local->version, remote->version) != 0)

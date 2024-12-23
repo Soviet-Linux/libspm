@@ -47,37 +47,33 @@ int open(char* path,struct package* pkg)
 	void* parsers[][3] = {
         {parseinfo,pkg,NULL},
 
-        {parseraw,&pkg->info.make,NULL},
         {parseraw,&pkg->info.install,NULL},
-        {parseraw,&pkg->info.download,NULL},
         {parseraw,&pkg->info.prepare,NULL},
         {parseraw,&pkg->info.special,NULL},
 
         {parsenl,&pkg->files,&pkg->filesCount},
         {parsenl,&pkg->dependencies,&pkg->dependenciesCount},
         {parsenl,&pkg->optional,&pkg->optionalCount},
-        {parsenl,&pkg->inputs,&pkg->inputsCount},
+
         {parsenl,&pkg->locations,&pkg->locationsCount},
-		{parseraw,&pkg->info.description,NULL},
-		{parsenl,&pkg->exports,&pkg->exportsCount}
+		{parseraw,&pkg->description,NULL},
+		{parsenl,&pkg->config,&pkg->configCount}
     };
 
     void* pairs[][2] = {
         {"info",parsers[0]},
 
-        {"make",parsers[1]},
-        {"install",parsers[2]},
-        {"download",parsers[3]},
-        {"prepare",parsers[4]},
-        {"special",parsers[5]},
+        {"install",parsers[1]},
+        {"prepare",parsers[2]},
+        {"special",parsers[3]},
 
-        {"files",parsers[6]},
-        {"dependencies",parsers[7]},
-        {"optional",parsers[8]},
-        {"inputs",parsers[9]},
-        {"locations",parsers[10]},
-		{"description",parsers[11]},
-		{"exports",parsers[12]},
+        {"files",parsers[4]},
+        {"dependencies",parsers[5]},
+        {"optional",parsers[6]},
+
+        {"locations",parsers[7]},
+		{"description",parsers[8]},
+		{"config",parsers[9]},
         {NULL,NULL}
     };
 
@@ -87,7 +83,6 @@ int open(char* path,struct package* pkg)
 		{"type",&pkg->type},
 		{"url",&pkg->url},
 		{"license",&pkg->license},
-		{"sha256",&pkg->sha256},
 		{"environment",&pkg->environment},
 		{NULL,NULL}
 	};
@@ -221,7 +216,8 @@ unsigned int getsections(char* path,section*** sections) {
 	(void)current;
 	unsigned int alloc = 0;
 
-	while ((read = getline(&line,&len,fp)) != EOF) {
+	while ((read = getline(&line,&len,fp)) != EOF) 
+	{
 		if (line[0] == '#' || line[0] == '\n' || strlen(line) < 2) {
 			continue;
 		}
@@ -246,6 +242,7 @@ unsigned int getsections(char* path,section*** sections) {
 		}
 		strcat((*sections)[sectionscount-1]->buff,line);
 	}
+	free(line);
 	return sectionscount;
 }
 
@@ -259,15 +256,13 @@ int create(const char* path,struct package* pkg)
 	// i love hashmaps but here we'll use maparray
 	// we have the list[0] = section and list[1] = function to do stuff
 	void* list[][3] = {
-		{"download",pkg->info.download,NULL},
 		{"prepare",pkg->info.prepare,NULL},
-		{"make",pkg->info.make,NULL},
 		{"install",pkg->info.install,NULL},
 		{"special",pkg->info.special,NULL},
 
 		{"dependencies",pkg->dependencies,&pkg->dependenciesCount},
 		{"optional",pkg->optional,&pkg->optionalCount},
-		{"description",pkg->info.description,NULL},		
+		{"description",pkg->description,NULL},		
 
 		{"locations",pkg->locations,&pkg->locationsCount},
 	};
@@ -287,7 +282,6 @@ int create(const char* path,struct package* pkg)
 	if (pkg->type != NULL) fprintf(ecmp,"type = %s\n",pkg->type);
 	if (pkg->license != NULL) fprintf(ecmp,"license = %s\n",pkg->license);
 	if (pkg->url != NULL) fprintf(ecmp,"url = %s\n",pkg->url);
-	if (pkg->sha256 != NULL) fprintf(ecmp,"sha256 = %s\n",pkg->sha256);
 	fprintf(ecmp,"\n"); // for improved readability
 
 	for (unsigned int i = 0;i < sizeof(list) / sizeof(list[0]);i++ )

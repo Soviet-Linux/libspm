@@ -23,9 +23,7 @@ Returns:
   - -2: Failed to install the package.
   - -3: No install command found.
 */
-int make(char* package_dir, struct package* pkg) {
-    char* make_dir = getenv("SOVIET_MAKE_DIR");
-
+int make(struct package* pkg) {
     char* cmd_params;
     if (QUIET) {
         cmd_params = "&> /dev/null";
@@ -33,12 +31,6 @@ int make(char* package_dir, struct package* pkg) {
         cmd_params = "";
     }
 
-    // TODO: this
-    // Thinking about putting the package caching here
-    // Maybe it will check if the installed version matches $VERSION
-    // If so, it will just copy the dir from /usr/src/$NAME-$VERSION
-    // Instead of executing the following:
-    //
     // Parse the files
     for (int i = 0; i < pkg->filesCount; i++)
     {
@@ -96,7 +88,7 @@ int make(char* package_dir, struct package* pkg) {
 
             if (buffer == NULL) {
                     msg(FATAL, "Could not verify the file's hash");
-                    return -1;
+                    return 2;
             }
 
             SHA256((unsigned char*) buffer, size, hash);
@@ -106,12 +98,12 @@ int make(char* package_dir, struct package* pkg) {
                     msg(FATAL, "Could not verify the file's hash");
                     return -1;
             }*/
-            
             dbg(1, "Hash is %s", file_sha256);
             for(int k = 0; k < SHA256_DIGEST_LENGTH; k++) {
                 char* temp = calloc(8, 1);
                 sprintf(temp, "%02x", hash[k]);
                 strcat(hash_str, temp);
+                free(temp);
             }
 
             dbg(1, "Got %s", hash_str);
@@ -123,70 +115,43 @@ int make(char* package_dir, struct package* pkg) {
 
             dbg(1, "Download finished");
 
-            cp(location, source_file_location);            
+            //cp(location, source_file_location);            
         }
         else {
             dbg(1, "Loading form %s", source_location);
-            cp(source_file_location, location);
+            //cp(source_file_location, location);
         }
 
-	free(files);
+	    free(files);
         free(location);
         free(source_location);
         free(source_file_location);
     }
 
-    // Download package sources
-    if (pkg->info.download != NULL && strlen(pkg->info.download) > 0) {
-        char sources_cmd[64 + strlen(make_dir) + strlen(pkg->info.download)];
-
-        sprintf(sources_cmd, "(cd %s && %s) %s ", make_dir, pkg->info.download, cmd_params);
-        dbg(2, "Downloading sources with %s", sources_cmd);
-        int res = system(sources_cmd);
-
-        if (res != 0) {
-            msg(ERROR, "Failed to download sources for %s", pkg->name);
-            return -1;
-        }
-    }
-
     // Run 'prepare' command
     if (pkg->info.prepare != NULL && strlen(pkg->info.prepare) > 0) {
-        char prepare_cmd[64 + strlen(package_dir) + strlen(pkg->info.prepare) + strlen(cmd_params)];
+        char prepare_cmd[64 + strlen(getenv("SOVIET_MAKE_DIR")) + strlen(pkg->info.prepare) + strlen(cmd_params)];
 
-        sprintf(prepare_cmd, "( cd %s && %s ) %s", package_dir, pkg->info.prepare, cmd_params);
+        sprintf(prepare_cmd, "( cd %s && %s ) %s", getenv("SOVIET_MAKE_DIR"), pkg->info.prepare, cmd_params);
 
         dbg(2, "Executing prepare command: %s", prepare_cmd);
         if (system(prepare_cmd) != 0) {
             msg(FATAL, "Failed to prepare %s", pkg->name);
-            return -2;
+            return 2;
         }
         dbg(1, "Prepare command executed!");
     }
 
-    // Run 'make' command
-    if (pkg->info.make && strlen(pkg->info.make)) {
-        char make_cmd[64 + strlen(package_dir) + strlen(pkg->info.make) + strlen(cmd_params)];
-        sprintf(make_cmd, "( cd %s && %s ) %s", package_dir, pkg->info.make, cmd_params);
-
-        dbg(2, "Executing make command: %s", make_cmd);
-        if (system(make_cmd) != 0) {
-            return 1;
-        }
-        dbg(1, "Make command executed!");
-    }
-
     // Run 'test' command (if in testing mode)
     if (pkg->info.test != NULL && TESTING && strlen(pkg->info.test) > 0) {
-        char test_cmd[64 +  strlen(package_dir) + strlen(pkg->info.test) + strlen(cmd_params)];
-        sprintf(test_cmd, "( cd %s && %s ) %s", package_dir, pkg->info.test, cmd_params);
+        char test_cmd[64 +  strlen(getenv("SOVIET_MAKE_DIR")) + strlen(pkg->info.test) + strlen(cmd_params)];
+        sprintf(test_cmd, "( cd %s && %s ) %s", getenv("SOVIET_MAKE_DIR"), pkg->info.test, cmd_params);
 
         dbg(2, "Executing test command: %s", test_cmd);
         if (system(test_cmd) != 0) {
-            return 1;
+            return 2;
         }
         dbg(1, "Test command executed!");
     }
-
     return 0;
 }

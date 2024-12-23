@@ -15,27 +15,27 @@ typedef struct {
 } ConfigEntry;
 
 ConfigEntry configEntries[] = {
-    { "SOVIET_ROOT", "/" },
-    { "SOVIET_USER_ROOT", "~/.local/" },
-    { "SOVIET_DEFAULT_FORMAT", "ecmp" },
-    { "SOVIET_MAIN_DIR", "/var/cccp" },
-    { "SOVIET_WORK_DIR", "/var/cccp/work" },
-    { "SOVIET_CONFIG_FILE", "/etc/cccp.conf" },
-    { "SOVIET_REPOS_DIR", "/var/cccp/sources" },
-    { "SOVIET_SPM_DIR", "/var/cccp/spm" },
-    { "SOVIET_LOG_DIR", "/var/cccp/log" },
-    { "SOVIET_PLUGIN_DIR", "/var/cccp/plugins" },
-    { "SOVIET_BUILD_DIR", "/var/cccp/work/build" },
-    { "SOVIET_MAKE_DIR", "/var/cccp/work/make" },
-    { "MAKE_FLAGS", "-j1" },
-    { "SOVIET_DEFAULT_REPO", "OUR" },
-    { "SOVIET_DEFAULT_REPO_URL", "https://github.com/Soviet-Linux/OUR.git" },
-    { "SOVIET_FORMATS", "ecmp" },
-    { "SOVIET_SOURCE_DIR", "/usr/src/cccp" },
-    { "SOVIET_ENV_DIR", "/etc/cccp" },
-    { "SOVIET_CLEANUP", "/usr/share/info/dir:/usr/share/doc/" },
-    { "SOVIET_ALL_DB", "/var/cccp/all.db" },
-    { "SOVIET_INSTALLED_DB", "/var/cccp/installed.db" },
+    { "SOVIET_ROOT"                 ,   "/"                                         },
+    { "SOVIET_USER_ROOT"            ,   "~/.local/"                                 },
+    { "SOVIET_DEFAULT_FORMAT"       ,   "ecmp"                                      },
+    { "SOVIET_MAIN_DIR"             ,   "/var/cccp"                                 },
+    { "SOVIET_WORK_DIR"             ,   "/var/cccp/work"                            },
+    { "SOVIET_CONFIG_FILE"          ,   "/etc/cccp.conf"                            },
+    { "SOVIET_REPOS_DIR"            ,   "/var/cccp/sources"                         },
+    { "SOVIET_SPM_DIR"              ,   "/var/cccp/spm"                             },
+    { "SOVIET_LOG_DIR"              ,   "/var/cccp/log"                             },
+    { "SOVIET_PLUGIN_DIR"           ,   "/var/cccp/plugins"                         },
+    { "SOVIET_BUILD_DIR"            ,   "/var/cccp/work/build"                      },
+    { "SOVIET_MAKE_DIR"             ,   "/var/cccp/work/make"                       },
+    { "SOVIET_DEFAULT_REPO"         ,   "OUR"                                       },
+    { "SOVIET_DEFAULT_REPO_URL"     ,   "https://github.com/Soviet-Linux/OUR.git"   },
+    { "SOVIET_FORMATS"              ,   "ecmp"                                      },
+    { "SOVIET_SOURCE_DIR"           ,   "/usr/src/cccp"                             },
+    { "SOVIET_ENV_DIR"              ,   "/etc/cccp"                                 },
+    { "SOVIET_CLEANUP"              ,   "/usr/share/info/dir:/usr/share/doc/"       },
+    { "SOVIET_ALL_DB"               ,   "/var/cccp/all.db"                          },
+    { "SOVIET_INSTALLED_DB"         ,   "/var/cccp/installed.db"                    },
+    { "MAKE_FLAGS"                  ,   "-j1"                                       },
     // Add more key-value pairs with default values as needed
 };
 
@@ -48,7 +48,6 @@ int readConfig(const char* configFilePath, int overwrite)
         msg(FATAL, "Tried to use non-existing config");
     }
 
-    dbg(2, "config: %s", configFilePath);
     dbg(2, "config: %s", configFilePath);
     FILE* file = fopen(configFilePath, "r");
     dbg(2, "file is readed");
@@ -78,7 +77,7 @@ int readConfig(const char* configFilePath, int overwrite)
     char* line = calloc(1024, 1);
 
     while (fgets(line, 1024, file)) {
-        line[strlen(line) - 1] = 0;
+        line[strlen(line)] = 0;
         parse_env(&line);
 
         if(((line[0] != '#') && ((line[0] != '/') && (line[1] != '/'))) && (strstr(line, "=") != 0))

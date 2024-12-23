@@ -7,8 +7,6 @@
 #include "../include/globals.h"
 #include "../include/cutils.h"
 
-#define STATIC
-
 void test_check();
 void test_clean();
 void test_config();
@@ -22,6 +20,4 @@ void test_repo();
 void test_uninstall();
 void test_update();
 void test_util();
-
-extern char WORKING_DIR[2048];
 

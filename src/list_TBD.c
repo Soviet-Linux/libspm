@@ -12,7 +12,7 @@
 
 // Function to count the number of installed packages
 int count_installed() {
-    const char *path = getenv("SOVIET_SPM_DIR");
+    char *path = getenv("SOVIET_SPM_DIR");
     int num_files;
     char **files_array = get_all_files(path, path, &num_files);
     if (files_array != NULL) {
@@ -27,7 +27,7 @@ int count_installed() {
 
 // Function to list all installed packages
 int list_installed() {
-    const char *path = getenv("SOVIET_SPM_DIR");
+    char *path = getenv("SOVIET_SPM_DIR");
     int num_files;
     char **files_array = get_all_files(path, path, &num_files);
     if (files_array != NULL) {
@@ -56,7 +56,7 @@ int list_installed() {
 // Function to search for a term in installed files
 char ** search(char *term, int *num_results) {
     int found = 0;
-    const char *path = getenv("SOVIET_REPOS_DIR");
+    char *path = getenv("SOVIET_REPOS_DIR");
     int num_files;
     char **files_array = get_all_files(path, path, &num_files);
     char **searched_array = NULL;

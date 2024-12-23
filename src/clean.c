@@ -48,5 +48,8 @@ void clean_install()
 
         rmany(full_cleanup_path);
       }
+      free(full_cleanup_path);
     }
+    free(cleanup_loc);
+    free(cleanups);
 }

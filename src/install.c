@@ -62,11 +62,6 @@ int install_package_source(struct package* pkg)
         {
             setenv("LICENSE", pkg->license, 1);
         }
-
-        if (pkg->sha256 != NULL)
-        {
-            setenv("SHA256", pkg->sha256, 1);
-        }
     }
 
     // Check if a package is a collection
@@ -74,11 +69,10 @@ int install_package_source(struct package* pkg)
     {
         // Legacy directory path for compatibility
         char legacy_dir[MAX_PATH];
+        sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg->name, pkg->version);
 
         //  Build the package
         {
-            sprintf(legacy_dir, "%s/%s-%s", getenv("SOVIET_MAKE_DIR"), pkg->name, pkg->version);
-
             // ...
             chmod(getenv("SOVIET_MAKE_DIR"), 0777);
             chmod(getenv("SOVIET_BUILD_DIR"), 0777);
@@ -87,31 +81,39 @@ int install_package_source(struct package* pkg)
             int status = 0;
             if ( p == 0)
             {
-                if (getuid() == 0) 
+                // Ensure that the build is done as a regular user
                 {
-                    /* process is running as root, drop privileges */
-                    if (setgid(65534) != 0)
+                    if (getuid() == 0) 
                     {
-                        msg(ERROR, "setgid: Unable to drop group privileges");
-                    }
-                    if (setuid(65534) != 0)
-                    {
-                        msg(ERROR, "setuid: Unable to drop user privileges");
+                        // process is running as root, drop privileges
+                        if (setgid(65534) != 0)
+                        {
+                            msg(ERROR, "setgid: Unable to drop group privileges");
+                        }
+                        if (setuid(65534) != 0)
+                        {
+                            msg(ERROR, "setuid: Unable to drop user privileges");
+                        }
                     }
                 }
+                
                 // Build the package
                 dbg(1, "Making %s", pkg->name);
-                if (make(legacy_dir, pkg) != 0) {
-                    msg(ERROR, "Failed to make %s", pkg->name);
-                    exit(1);
-                }
+                make(pkg);
                 exit(0);
             } 
-            while(wait(&status) > 0);
+            else
+            {
+                waitpid(p, &status, 0);
+            }
 
+            if(WIFSIGNALED(status))
+            {
+                msg(FATAL, "WIFSIGNALED");
+            }
             if(WEXITSTATUS(status) != 0)
             {
-                msg(FATAL, "make exited with error code %d", pkg->name, WEXITSTATUS(status));
+                msg(FATAL, "make exited with error code %d", WEXITSTATUS(status));
             }
 
             dbg(1, "Making %s done", pkg->name);
@@ -148,7 +150,7 @@ int install_package_source(struct package* pkg)
             dbg(1, "Got %d locations for %s", pkg->locationsCount, pkg->name);
 
             // Check if the package is already installed
-            if (is_installed(pkg->name)) {
+            if (is_installed_pkg(getenv("SOVIET_SPM_DIR"), pkg)) {
                 msg(WARNING, "Package %s is already installed, reinstalling", pkg->name);
                 uninstall(pkg->name);
             } else {
@@ -175,21 +177,37 @@ int install_package_source(struct package* pkg)
         }
     }
 
-    create_pkg(pkg); 
+    if(create_pkg(getenv("SOVIET_SPM_DIR"), pkg) != 0) return 1;
+    
     dbg(1, "Package %s installed", pkg->name);
-
+    
     // Clean up
     clean();
-
-    // Remove the package from the queue
-    QUEUE_COUNT--;
-    PACKAGE_QUEUE[QUEUE_COUNT] = NULL;
-
     return 0;
 }
 
 /* Warning: there is something sussy going on beyond this point */
-void configure_package(struct package* pkg)
+void write_package_configuration_file(struct package* pkg)
+{
+    // Set global environment variables
+    if (pkg->config != NULL && pkg->configCount > 0 && strlen(pkg->config[0]) > 0) 
+    {
+        dbg(1, "Setting environment variables...");
+        char* env_path = calloc(MAX_PATH, 1);
+        sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg->name);
+
+        FILE *env_file;
+        env_file = fopen(env_path, "w"); 
+
+        for (int i = 0; i < pkg->configCount; i++)
+        {
+            fprintf(env_file, "%s\n", pkg->config[i]);
+        }
+        fclose(env_file);
+    }
+}
+
+void read_package_configuration_file(struct package* pkg)
 {
     // Get global environment variables
     if (pkg->environment != NULL) 
@@ -201,89 +219,14 @@ void configure_package(struct package* pkg)
         readConfig(env_path, 1);
     }
 
+
     // Set global environment variables
-    if (pkg->exports != NULL && pkg->exportsCount > 0 && strlen(pkg->exports[0]) > 0) 
+    if (pkg->config != NULL && pkg->configCount > 0 && strlen(pkg->config[0]) > 0) 
     {
         dbg(1, "Setting environment variables...");
         char* env_path = calloc(MAX_PATH, 1);
         sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg->name);
 
-        FILE *env_file;
-        env_file = fopen(env_path, "w"); 
-
-        for (int i = 0; i < pkg->exportsCount; i++)
-        {
-            fprintf(env_file, "%s\n", pkg->exports[i]);
-            char* line = strdup(pkg->exports[i]);
-            parse_env(&line);
-
-            if(((line[0] != '#') && ((line[0] != '/') && (line[1] != '/'))) && (strstr(line, "=") != 0))
-            {
-                char* key = strtok(line, "=");
-                char* value = strchr(line, '\0') + 1;
-
-                if (key == NULL || value == NULL) 
-                {
-                    msg(ERROR, "Invalid config file");
-                }
-
-                dbg(2, "Key: %s Value: %s", key, value);
-
-                // Set environment variables based on the key-value pairs in the config file
-                setenv(key, value, 1);
-            }
-            free(line);
-        }
-        fclose(env_file);
+        readConfig(env_path, 1);
     }
-}
-
-// Function to check if a package is already installed
-/*
-Accepts:
-- const char* name: Name of the package to check.
-
-Returns:
-- bool: A boolean value indicating whether the package is installed.
-  - true: Package is installed.
-  - false: Package is not installed.
-*/
-bool is_installed(const char* name)
-{
-    char path[1024];
-    char** FORMATS;
-    int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")),' ',&FORMATS);
-
-    char** REPOS = calloc(512,sizeof(char));
-    int REPO_COUNT = get_repos(REPOS);
-
-    // loop through all formats
-    for (int i = 0; i < FORMAT_COUNT; i++)
-    {
-        // loop through all repos
-        for (int j = 0; j < REPO_COUNT; j++)
-        {
-            sprintf(path,"%s/%s/%s.%s",getenv("SOVIET_SPM_DIR"), REPOS[j],name,FORMATS[i]);
-            if (access(path,F_OK) == 0)
-            {
-                free(REPOS);
-                free(FORMATS);
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-void add_to_queue(char* name)
-{
-    // Add the package name to the queue
-    PACKAGE_QUEUE[QUEUE_COUNT] = name;
-    QUEUE_COUNT++;
-    if (QUEUE_COUNT > QUEUE_MAX)
-    {
-        msg(FATAL, "Package tree too large");
-    }
-
-    dbg(1, "Added %s to the queue", name);
 }

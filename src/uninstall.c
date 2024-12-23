@@ -51,7 +51,7 @@ int uninstall(char* name)
             struct package r_pkg;
 
             // Open the package's SPM file and populate the r_pkg struct
-            open_pkg(dataSpmPath, &r_pkg, NULL);
+            open_pkg(dataSpmPath, &r_pkg);
 
             dbg(3, "Found %d locations", r_pkg.locationsCount);
             // Remove all the files in the data["locations"]

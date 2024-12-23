@@ -19,6 +19,10 @@
 // Callback function used by nftw to unlink files and directories
 int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {
+    (void)sb;
+    (void)typeflag;
+    (void)ftwbuf;
+
     int rv = remove(fpath);
 
     if (rv)
@@ -81,7 +85,7 @@ void quit(int status)
 }
 
 // Function to recursively retrieve all files in a directory and its subdirectories
-char **get_all_files(const char* root, const char *path, int *num_files) 
+char **get_all_files(const char* root, char *path, int *num_files) 
 {
     DIR *dir;
     struct dirent *entry;
@@ -204,19 +208,14 @@ int parse_env(char** in)
     char* env = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_";
     char* start = strchr(*in, '$');
     char* end = NULL;
-    int i, start_i;
+    size_t i, start_i;
 
     if (start == NULL)
     {
         return 0;
     }
 
-    dbg(2, "Start: %s", start);
-
-    start_i = strlen(*in) - strlen(start);
-
-    dbg(2, "Start i: %d, from '%d' and '%d'", start_i, strlen(*in), strlen(start));
-    
+    start_i = strlen(*in) - strlen(start);    
     for (i = 1; i < strlen(start); i++)
     {
         end = strchr(env, start[i]);
@@ -238,7 +237,7 @@ int parse_env(char** in)
 
         if(i + 1 == strlen(start))
         {
-            end = " ";
+            end = "";
         }
     }
 
@@ -250,8 +249,7 @@ int parse_env(char** in)
     }
     var[--i] = '\0';
 
-    dbg(2, "Var: %s", var);
-    dbg(2, "In: %s",  *in);
+    dbg(2, "Found variable: %s", var);
 
     char* full_var = getenv(var);
 
@@ -260,7 +258,7 @@ int parse_env(char** in)
         return 0;
     }
 
-    dbg(2, "Full var: %s", full_var);
+    dbg(2, "Substituting for: %s", full_var);
 
     char* full_in = calloc(strlen(*in) + strlen(full_var) + strlen(end) + 1, 1);
 
@@ -296,5 +294,7 @@ int download(char* url, FILE* fp) {
 // Copy a file
 int cp(char* from, char* to)
 {
+    (void)from;
+    (void)to;
     return 1;
 }

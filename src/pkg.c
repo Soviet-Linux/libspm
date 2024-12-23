@@ -52,39 +52,32 @@ struct package* pop_pkg(struct packages* pkgs)
 }
 
 // Open a package from the given path and populate the package structure
-int open_pkg(const char* path, struct package* pkg, const char* format)
+int open_pkg(const char* path, struct package* pkg)
 {
-    dbg(2, "Setting everything to NULL");
-    // Set all variables to NULL
-    memset(pkg, 0, sizeof(struct package));
-
-    // Print make dependencies count
-    dbg(3, "make dependencies count: %d", pkg->optionalCount);
     dbg(3, "path: %s", path);
-
     // Check if the file exists
     if (access(path, F_OK) != 0) {
         msg(ERROR, "File %s does not exist\n", path);
         return 1;
     }
 
-    // Check file extension
-    if (format == NULL) {
-        dbg(2, "Getting format from file extension");
-        format = strrchr(path, '.') + 1;
-        dbg(1, "Format: %s\n", format);
-    }
+    dbg(2, "Getting format from file extension");
+    char* format = strrchr(path, '.') + 1;
+    dbg(1, "Format: %s", format);
 
     char** FORMATS;
     int FORMAT_COUNT = splita(getenv("SOVIET_FORMATS"), ' ', &FORMATS);
 
     if (format != NULL) {
         // This is experimental
-        for (int i = 0; i < FORMAT_COUNT; i++) {
-            dbg(2, "format: %s = %s\n", format, FORMATS[i]);
-            if (strcmp(format, FORMATS[i]) == 0) {
+        for (int i = 0; i < FORMAT_COUNT; i++)
+        {
+            dbg(2, "format: %s = %s", format, FORMATS[i]);
+            if (strcmp(format, FORMATS[i]) == 0) 
+            {
                 dbg(2, "Opening package with %s format", FORMATS[i]);
                 runFormatLib(FORMATS[i], "open", path, pkg);
+                free(FORMATS);
                 return 0;
             }
         }
@@ -96,12 +89,14 @@ int open_pkg(const char* path, struct package* pkg, const char* format)
     return 1;
 }
 
-// Create a package at the given path using the specified format and package structure
-int create_pkg(struct package* pkg) 
+// Create a package at the given path using the specified package structure
+int create_pkg(char* in_path, struct package* pkg) 
 {
     char path[MAX_PATH];
-    sprintf(path, "%s/%s", getenv("SOVIET_SPM_DIR"), pkg->path);
+    sprintf(path, "%s/%s", in_path, pkg->path);
 
+    // This might seem stupid
+    // and it is
     if(isdir(path) != 0)
     { 
         pmkdir(path);
@@ -111,7 +106,7 @@ int create_pkg(struct package* pkg)
     msg(INFO, "Creating package %s", path);
 
     char** FORMATS;
-    int FORMAT_COUNT = splita(strdup(getenv("SOVIET_FORMATS")),' ',&FORMATS);
+    int FORMAT_COUNT = splita(getenv("SOVIET_FORMATS"),' ',&FORMATS);
     
     if (pkg->format != NULL)
     {
@@ -122,14 +117,14 @@ int create_pkg(struct package* pkg)
             {
                 dbg(2, "Opening package with %s format", FORMATS[i]);
                 runFormatLib(FORMATS[i], "create", path, pkg);
-                free(FORMATS[i]);
+                free(FORMATS);
                 return 0;
             }
         }
     }
     msg(ERROR,"File %s is not a valid package file, or the format plugin isn't loaded", path);
     free(FORMATS);
-    return -1;
+    return 1;
 }
 
 // Function to free memory allocated for a package structure
@@ -140,35 +135,58 @@ int free_pkg(struct package* pkg)
     if (pkg->license != NULL) free(pkg->license);
     if (pkg->type != NULL) free(pkg->type);
     if (pkg->url != NULL) free(pkg->url);
-    if (pkg->path != NULL) free(pkg->path);
+    if (pkg->description != NULL) free(pkg->description);
 
-    if (pkg->info.make != NULL) free(pkg->info.make);
-    if (pkg->info.special != NULL) free(pkg->info.special);
-    if (pkg->info.download != NULL) free(pkg->info.download);
     if (pkg->info.install != NULL) free(pkg->info.install);
+    if (pkg->info.special != NULL) free(pkg->info.special);
     if (pkg->info.prepare != NULL) free(pkg->info.prepare);
     if (pkg->info.test != NULL) free(pkg->info.test);
 
-    if (pkg->locations) {
-        if (*pkg->locations) free(*pkg->locations);
+    if (pkg->locations) 
+    {
+        for(int i = 0; i < pkg->locationsCount; i++)
+        {
+            free(pkg->locations[i]);
+        }
         free(pkg->locations);
     }
-    if (pkg->dependencies) {
-        if (*pkg->dependencies) free(*pkg->dependencies);
+    if (pkg->dependencies) 
+    {
+        for(int i = 0; i < pkg->dependenciesCount; i++)
+        {
+            free(pkg->dependencies[i]);
+        }
         free(pkg->dependencies);
     }
-    if (pkg->optional) {
-        if (*pkg->optional) free(*pkg->optional);
+    if (pkg->optional) 
+    {
+        for(int i = 0; i < pkg->optionalCount; i++)
+        {
+            free(pkg->optional[i]);
+        }
         free(pkg->optional);
     }
-    if (pkg->files) {
-        if (*pkg->files) free(*pkg->files);
+    if (pkg->files) 
+    {
+        for(int i = 0; i < pkg->filesCount; i++)
+        {
+            free(pkg->files[i]);
+        }
         free(pkg->files);
     }
     return 0;
 }
 
+// Function to check if a given package is already in the file tree
+int is_installed_pkg(char* path, struct package* pkg)
+{
+    (void)path;
+    (void)pkg;
+    return 0;
+}
+
 // Create the database that stores all packages in a directory
+/*
 int create_pkg_db(char* db_path, struct packages* pkgs)
 {
     remove(db_path);
@@ -186,10 +204,11 @@ int create_pkg_db(char* db_path, struct packages* pkgs)
         msg(FATAL, "SQL error when creating pkg_table");
     }
 
-    char* ins = "INSERT INTO Packages VALUES (?,?)";
+    //char* ins = "INSERT INTO Packages VALUES (?,?)";
 
-    sqlite3_close(&db);
+    sqlite3_close(db);
 }
+*/
 
 // Get all packages from a directory
 struct packages get_pkgs(char* path)
@@ -233,10 +252,13 @@ struct packages get_pkgs(char* path)
             free(files_array[j]);
         }
         // Free the array of file paths
+        return pkgs;
         free(files_array);
     } 
     else 
     {
         msg(ERROR, "Path %s empty", path);  
+        struct packages pkgs = {0};
+        return pkgs;
     }
 }

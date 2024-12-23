@@ -1,9 +1,6 @@
-// Tests disabled for now
-#if 1
 #include "test.h"
+#include "../include/libspm.h"
 #include <threads.h>
-
-char WORKING_DIR[2048];
 
 int main()
 {
@@ -17,24 +14,19 @@ int main()
     DEBUG_UNIT = NULL;
     /* END LIBSPM CONFIG */
 
-    char cwd[2048];
-    getcwd(cwd, 2048);
-    sprintf(WORKING_DIR,"%s/test/assets",cwd);
-
-    char TEST_SPM_PATH[2048];
-    sprintf(TEST_SPM_PATH,"%s/vim.ecmp",WORKING_DIR);
-
     // Check for root privileges for all other commands
     if (geteuid() != 0) {
         printf("You must have root privileges to run this command.\n");
         return 1;
     }
 
+    setenv("SOVIET_TEST_DIR", "/tmp/cccp-test", 1);
+    rmany(getenv("SOVIET_TEST_DIR"));
+    pmkdir(getenv("SOVIET_TEST_DIR"));
+
     test_check();
     test_clean();
     test_config();
-    test_globals();
-    test_init();
     test_install();
     test_make();
     test_move();
@@ -48,6 +40,10 @@ int main()
     if (leaks > 0) 
     {
         msg(WARNING,"Leaks: %d",leaks);
+    }
+    else
+    {
+        msg(INFO, "No leaks detected ;3");
     }
 
     msg(INFO,"Done testing LibSPM.");

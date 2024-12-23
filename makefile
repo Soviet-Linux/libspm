@@ -30,7 +30,7 @@ SDIR = src
 
 
 CFLAGS = -Wall -fPIC -O2 -Wextra -L./bin -Iinclude 
-DBGFLAGS = -g -fsanitize=address
+DBGFLAGS = -g -fsanitize=address -lasan
 
 # set local lib to lib/*/*.a
 LOCAL_LIBS = $(wildcard lib/*/*.a)
@@ -72,8 +72,7 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 
 
 test:
-	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/spm.c ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
-	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/package.c ${DEVDIR}/test.c $(LIBS) -o bin/package-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
+	$(CC) $(CFLAGS) -lasan -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/spm.c ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
 	@echo "Test binary created"
 
 check-all:

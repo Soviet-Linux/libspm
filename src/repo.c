@@ -132,8 +132,17 @@ int add_repo(char* name, char* url)
 
     // Set clone options
     unsigned int* status = NULL;
-    git_submodule_update_options opts = GIT_CLONE_OPTIONS_INIT;
-    git_fetch_options fopts = GIT_FETCH_OPTIONS_INIT;
+    git_submodule_update_options opts = {0};
+    if(git_submodule_update_options_init(&opts, GIT_SUBMODULE_UPDATE_OPTIONS_VERSION)!= 0)
+    {
+        msg(FATAL, "Failed to initialize git submodule options");
+    }
+    git_fetch_options fopts = {0};
+    if(git_fetch_options_init(&fopts, GIT_SUBMODULE_UPDATE_OPTIONS_VERSION)!= 0)
+    {
+        msg(FATAL, "Failed to initialize git fetch options");
+    }
+    
     opts.fetch_opts = fopts;
     opts.fetch_opts.depth = 1;
 
