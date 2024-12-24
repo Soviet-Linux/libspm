@@ -3,7 +3,7 @@
 #include "cutils.h"
 #include "globals.h"
 
-#define LIBSPM_VERSION 1.000
+#define LIBSPM_VERSION 1.001
 
 #define SOURCE "src"
 #define BINARY "bin"
