@@ -12,54 +12,55 @@
 #include "cutils.h"
 
 // Get currently present repos
-int get_repos(char** list)
+char** get_repos(int* count)
 {
+    char** list = calloc(512, sizeof(char*));
     dbg(3, "checking for repos");
     DIR *d;
     struct dirent *dir;
     d = opendir(getenv("SOVIET_REPOS_DIR"));
-    int count = 0;
-    list[count] = calloc(strlen("local") + 1, 1);
-    sprintf(list[count], "local");
-    count++;
+    *count = 0;
+    list[*count] = calloc(strlen("local") + 1, 1);
+    sprintf(list[*count], "local");
+    (*count)++;
     if (d)
     {
         while ((dir = readdir(d)) != NULL)
         {
-            if (count > 512)
+            if (*count > 512)
             {
                 printf("Error : too many elements in list , reallocating\n");
-                list = realloc(list,(count+512) * sizeof(char*));
+                list = realloc(list,(*count+512) * sizeof(char*));
             }
             if (dir->d_type != DT_DIR || dir->d_name[0] == '.') continue;
 
-            list[count] = calloc(strlen(dir->d_name) + 1, sizeof(char));
-            strcpy(list[count], dir->d_name);
-            count++;
+            list[*count] = calloc(strlen(dir->d_name) + 1, sizeof(char));
+            strcpy(list[*count], dir->d_name);
+            (*count)++;
         }
     }
 
-    for (int i = 0; i < count - 1; i++)
+    for (int i = 0; i < *count - 1; i++)
     {
         if (strcmp(list[i], ".") == 0 || strcmp(list[i], "..") == 0)
         {
             // Move the . string to the end
             char* temp = list[i];
             dbg(3, "Moving: %s", temp);
-            for (int k = i; k < count - 1; k++)
+            for (int k = i; k < *count - 1; k++)
             {
                 list[k] = list[k + 1];
             }
-            list[count - 1] = temp;
+            list[*count - 1] = temp;
             i--;
-            count--;
+            (*count)--;
         }
     }
 
     closedir(d);
 
     dbg(3, "done checking for repos");
-    return count;
+    return list;
 }
 
 // Function to synchronize the local repository with a remote repository
@@ -100,7 +101,8 @@ int repo_sync()
         // Initialize a new Git repository
         if (git_repository_init(&repo_handle, repo_dir, false) != 0) 
         {
-            msg(FATAL, "Failed to initialize git repository in %s.", repo_dir);
+            const git_error* error = giterr_last();
+            msg(FATAL, "Failed to initialize git repository in %s - %s", repo_dir, error->message);
         }
     }
     
@@ -121,6 +123,7 @@ int repo_sync()
     }
 
     git_repository_free(repo_handle);
+    
     return 0;
 }
 
@@ -182,9 +185,10 @@ int add_repo(char* name, char* url)
             msg(ERROR, "Failed to finalize submodule %s - %s", name, error->message);
             return -1;
         }
-
         git_submodule_free(submodule_handle);
         git_repository_free(temp_handle);
+        git_repository_free(repo_handle);
+
         return 0;
     }
 

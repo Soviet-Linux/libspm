@@ -24,53 +24,40 @@ This function is used to uninstall packages. It relies on location data, which c
 
 Please avoid making changes to this code unless there's a critical bug or an important missing feature.
 */
-int uninstall(char* name)
+int uninstall(struct package* pkg)
 {
-    // Get the SPM directory from the environment variables
-    char* SPM_DIR = getenv("SOVIET_SPM_DIR");
-    dbg(3, "SOVIET_SPM_DIR = %s", SPM_DIR);
-    char* ROOT = getenv("SOVIET_ROOT");
+    char dataSpmPath[MAX_PATH];
+    sprintf(dataSpmPath, "%s/%s", getenv("SOVIET_SPM_DIR"), pkg->path);
 
-    char** REPOS = calloc(512,sizeof(char*));
-    int REPO_COUNT = get_repos(REPOS);
-    char* dataSpmPath = calloc(MAX_PATH, sizeof(char));
-
-    for (int j = 0; j < REPO_COUNT; j++)
+    // Check if the SPM file exists
+    if (check(pkg) == 0) 
     {
-        // Generate the path to the package's SPM file
-        char tmpSpmPath[MAX_PATH];
-        sprintf(tmpSpmPath, "%s/%s/%s.%s", (char*)getenv("SOVIET_SPM_DIR"),REPOS[j], name, getenv("SOVIET_DEFAULT_FORMAT"));
+        // Create a struct to store package information
+        struct package r_pkg = {0};
+        r_pkg.path = strdup(pkg->path);
 
-        // Verify if the package is installed
-        msg(INFO, "Verifying if the package is installed at %s", tmpSpmPath);
+        // Open the package's SPM file and populate the r_pkg struct
+        open_pkg(getenv("SOVIET_SPM_DIR"), &r_pkg);
 
-        // Check if the SPM file exists
-        if (access(tmpSpmPath, F_OK) == 0) {
-            sprintf(dataSpmPath, "%s/%s/%s.%s", getenv("SOVIET_SPM_DIR"),REPOS[j], name, getenv("SOVIET_DEFAULT_FORMAT"));
-            // Create a struct to store package information
-            struct package r_pkg;
+        dbg(3, "Found %d locations", r_pkg.locationsCount);
+        // Remove all the files in the data["locations"]
+        char loc_path[MAX_PATH];
+        for (int i = 0; i < r_pkg.locationsCount; i++) 
+        {
+            sprintf(loc_path, "%s%s", getenv("SOVIET_ROOT"), r_pkg.locations[i]);
 
-            // Open the package's SPM file and populate the r_pkg struct
-            open_pkg(dataSpmPath, &r_pkg);
-
-            dbg(3, "Found %d locations", r_pkg.locationsCount);
-            // Remove all the files in the data["locations"]
-            char loc_path[MAX_PATH];
-            for (int i = 0; i < r_pkg.locationsCount; i++) {
-
-                sprintf(loc_path, "%s%s", ROOT, r_pkg.locations[i]);
-
-                //dbg(3, "Removing %s", loc_path);                
-                if (rmany(loc_path) != 0) {
-                    msg(ERROR,"Failed to remove %s",loc_path);
-                    perror("remove");
-                }
+            dbg(3, "Removing %s", loc_path);                
+            if (rmany(loc_path) != 0) {
+                msg(ERROR,"Failed to remove %s",loc_path);
+                perror("remove");
             }
-            // Remove the SPM file from DATA_DIR
-            remove(dataSpmPath);
-            return 0;
         }
+        // Remove the SPM file from DATA_DIR
+        remove(dataSpmPath);
+        free_pkg(&r_pkg);
+        return 0;
     }
+
     msg(ERROR, "package not installed");
     return -1;
 }

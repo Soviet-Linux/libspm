@@ -1,5 +1,6 @@
 // Include necessary headers
 #include "stdbool.h"
+#include "libspm.h"
 #include <stdlib.h>
 #include "cutils.h"
 #include "globals.h"
@@ -18,12 +19,8 @@ bool OVERWRITE = false;
 // Flag for quiet mode (no verbose output)
 bool QUIET = true;
 
-// Flag indicating that a user passed either Y or N to be used as default
-bool OVERWRITE_CHOISE = false;
-
-// Choise for passing N or Y to a prompt by default
-char* USER_CHOISE[2];
+// Flag indicating that no inputs are required
+bool AUTO = false;
 
 // Array for package queue and its count
-char* PACKAGE_QUEUE[QUEUE_MAX];
-int QUEUE_COUNT = 0;
+struct packages* PACKAGE_QUEUE = {0};

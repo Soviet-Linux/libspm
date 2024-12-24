@@ -15,11 +15,8 @@ extern bool TESTING;
 extern bool OVERWRITE;
 // enable verbose mode
 extern bool QUIET;
-// Flag indicating that a user passed either Y or N to be used as default
-extern bool OVERWRITE_CHOISE;
-// Choise for passing N or Y to a prompt by default
-extern char* USER_CHOISE[2];
-
-extern char* PACKAGE_QUEUE[QUEUE_MAX];
-extern int QUEUE_COUNT;
+// Flag indicating that no inputs are required
+extern bool AUTO;
+// Package queue
+extern struct packages* PACKAGE_QUEUE;
 

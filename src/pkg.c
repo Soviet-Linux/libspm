@@ -218,7 +218,6 @@ struct packages* search_pkgs(char* db_path, char* term)
     result = sqlite3_prepare_v2(db, "SELECT Name, Path FROM Packages", -1, &stmt, NULL);
     if (result != SQLITE_OK) { msg(ERROR, "SQL error when preparing to search"); }
 
-    int i = 0;
     while ((result = sqlite3_step(stmt)) == SQLITE_ROW) 
     {
         // TODO:
@@ -232,7 +231,6 @@ struct packages* search_pkgs(char* db_path, char* term)
             pkg.name = strdup((const char*)name);
             pkg.path = strdup((const char*)path);
             push_pkg(pkgs, &pkg);
-            i++;
         }
     }
 
@@ -290,6 +288,8 @@ struct packages* get_pkgs(char* path)
                 {
                     if(strstr(files_array[j], getenv("SOVIET_DEFAULT_FORMAT"))[strlen(getenv("SOVIET_DEFAULT_FORMAT"))] == '\0')
                     {
+                        dbg(1, "file: %s", files_array[j]);
+
                         char path[MAX_PATH];
                         sprintf(path, "%s", files_array[j]);
                         char name[MAX_PATH];
@@ -297,7 +297,7 @@ struct packages* get_pkgs(char* path)
 
                         while(strrchr(name, '/') != NULL)
                         {
-                            strcpy(name, strrchr(name, '/') + 1);
+                            memmove(name, strrchr(name, '/') + 1, strlen(strrchr(name, '/') + 1) + 1);
                         }
 
                         name[strlen(name) - (strlen(getenv("SOVIET_DEFAULT_FORMAT")) + 1) /*+1 for the '.'*/] = '\0';
@@ -335,39 +335,30 @@ struct packages* get_pkgs(char* path)
     }
 }
 
-// Function to search for a package in the database
+// Function to dump a database into an array of packages
 struct packages* dump_db(char* db_path)
 {
-    /*
     sqlite3* db;
     int result = sqlite3_open(db_path, &db);
     if(result) {msg(ERROR, "SQL error when opening SOVIET_DB");}
-    */
-   // struct packages* pkgs = create_pkgs(256 /*absolutely random number*/);
+    struct packages* pkgs = create_pkgs(256 /*absolutely random number*/);
 
     // Prepare the SQL query
     // yes, this is a copy-paste from what we had a year ago
-    /*
     sqlite3_stmt* stmt;
     result = sqlite3_prepare_v2(db, "SELECT Name, Path FROM Packages", -1, &stmt, NULL);
     if (result != SQLITE_OK) { msg(ERROR, "SQL error when preparing to search"); }
 
-    int i = 0;
     while ((result = sqlite3_step(stmt)) == SQLITE_ROW) 
     {
-        // TODO:
-        // This very is stupid
         const unsigned char* name = sqlite3_column_text(stmt, 0);
         const unsigned char* path = sqlite3_column_text(stmt, 1);
-        if(strstr((const char*)name, term) != 0)
-        {
-            dbg(2, "FOUND: %s at %s", name, path);
-            struct package pkg = {0};
-            pkg.name = strdup((const char*)name);
-            pkg.path = strdup((const char*)path);
-            push_pkg(pkgs, &pkg);
-            i++;
-        }
+
+        struct package pkg = {0};
+
+        pkg.name = strdup((const char*)name);
+        pkg.path = strdup((const char*)path);
+        push_pkg(pkgs, &pkg);
     }
 
     result = sqlite3_finalize(stmt);                        
@@ -375,5 +366,22 @@ struct packages* dump_db(char* db_path)
 
     sqlite3_close(db);
     return pkgs;
-    */
+}
+
+// Function returns an array of packages that need updating
+struct packages* update_pkg(struct package* pkg)
+{
+    msg(INFO, "fetching updates");
+    int new_version_found = 0;
+    
+    if(access(getenv("SOVIET_INSTALLED_DB"), F_OK) != 0)
+    {
+        msg(ERROR, "no installed DB found");
+        return -1;
+    }
+
+    struct packages* installed_packages = dump_db(getenv("SOVIET_INSTALLED_DB"));
+
+    if(new_version_found == 0) { msg(INFO, "all packages are up to date"); }
+    return 0;
 }

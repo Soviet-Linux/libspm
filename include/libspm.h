@@ -129,10 +129,12 @@ int create_pkg_db(char* db_path, struct packages* pkgs);
 struct packages* get_pkgs(char* path);
 // Dump contents of a database to a package array
 struct packages* dump_db(char* db_path);
+// Function returns an array of packages that need updating
+struct packages* update(struct package* pkg);
 
 /*repo.c*/
 // Get currently present repos
-int get_repos(char** list);
+char** get_repos(int* count);
 // Function to synchronize the local repository with a remote repository
 int repo_sync();
 // Add a new repository from a git repo
@@ -140,11 +142,7 @@ int add_repo(char* name, char* url);
 
 /*uninstall.c*/
 // Function to uninstall packages
-int uninstall(char* name);
-
-/*update.c*/
-// Function to update a package
-int update();
+int uninstall(struct package* pkg);
 
 /*util.c*/
 // Recursively remove a directory and its contents

@@ -31,9 +31,8 @@ int main()
     test_make();
     test_move();
     test_pkg();
-    test_repo();
+    //test_repo();
     test_uninstall();
-    test_update();
     test_util();
 
     int leaks = check_leaks();

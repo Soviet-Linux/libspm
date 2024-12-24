@@ -18,6 +18,5 @@ void test_move();
 void test_pkg();
 void test_repo();
 void test_uninstall();
-void test_update();
 void test_util();
 

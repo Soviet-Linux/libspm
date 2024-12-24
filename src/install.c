@@ -150,7 +150,7 @@ int install_package_source(struct package* pkg)
             // Check if the package is already installed
             if (check(pkg) == 0) {
                 msg(WARNING, "Package %s is already installed, reinstalling", pkg->name);
-                uninstall(pkg->name);
+                uninstall(pkg);
             } else {
                 dbg(3, "Package %s is not installed", pkg->name);
             }

@@ -1,6 +1,7 @@
 #include "test.h"
 
 #include "../include/libspm.h"
+#include <git2.h>
 
 void test_check() 
 {
@@ -432,6 +433,9 @@ void test_pkg()
         result += strcmp(search_result->buffer[0].path, "test_repo/long/repo/file/tree/1.ecmp");
         result += strcmp(search_result->buffer[1].path, "test_repo/long/repo/file/tree/10.ecmp");
 
+        // Test dump_db
+        // Test update_pkg
+
         // Cleanup
         {
             free_pkgs(pkgs);
@@ -445,23 +449,89 @@ void test_pkg()
         }
     }
 
+    // Test updating packages
+    {
+
+    }
+
     if(result != 0) msg(FATAL, "FAILED");
     else            msg(INFO, "PASSED");
 }
 
 void test_repo()
 {
-    return;
+    int result = 0;
+    // Necessary prepwork
+    {
+        setenv("SOVIET_REPOS_DIR", "/tmp/cccp-test/repo_dir", 1);
+        setenv("SOVIET_DEFAULT_REPO_URL", "https://github.com/Soviet-Linux/OUR.git", 1);
+        setenv("SOVIET_DEFAULT_REPO", "OUR", 1);
+        setenv("SOVIET_DEFAULT_FORMAT", "ecmp", 1);
+
+        pmkdir("/tmp/cccp-test/repo_dir/repo-1");
+        pmkdir("/tmp/cccp-test/repo_dir/repo-2");
+        pmkdir("/tmp/cccp-test/repo_dir/repo-3");
+
+        git_libgit2_init();
+    }
+
+    int repo_count;
+    char** REPOS = get_repos(&repo_count);
+    // we expect 3 repos + 1 local;
+    result += (repo_count - 4);
+    result += repo_sync();
+
+    if(result != 0) msg(FATAL, "FAILED");
+    else            msg(INFO, "PASSED");
+
+    // Cleanup
+    {
+        git_libgit2_shutdown();
+
+        for(int i = 0; i < 4; i++)
+        {
+            free(REPOS[i]);
+        }
+        free(REPOS);
+        rmany("/tmp/cccp-test/repo_dir");
+        unsetenv("SOVIET_REPOS_DIR");
+        unsetenv("SOVIET_DEFAULT_REPO_URL");
+        unsetenv("SOVIET_DEFAULT_REPO");
+        unsetenv("SOVIET_DEFAULT_FORMAT");
+    }   
 }
 
 void test_uninstall()
 {
-    return;
-}
+    // Necessary prepwork
+    {
+        setenv("SOVIET_SPM_DIR", "/tmp/cccp-test", 1);
+        setenv("SOVIET_FORMATS", "ecmp", 1);
+        setenv("SOVIET_PLUGIN_DIR", "/var/cccp/plugins", 1);
+        setenv("SOVIET_ROOT", "/", 1);
 
-void test_update()
-{
-    return;
+        FILE *ptr;
+        ptr = fopen("/tmp/cccp-test/test.ecmp","w"); 
+        fprintf(ptr, "[locations]\n");
+        fprintf(ptr, "/tmp/cccp-test/test.ecmp\n");
+        fclose(ptr);
+    }
+
+    struct package pkg = {0};
+    pkg.path = strdup("test.ecmp");
+    int result = uninstall(&pkg);
+    free_pkg(&pkg);
+
+    if(result != 0) msg(FATAL, "FAILED");
+    else            msg(INFO, "PASSED");
+
+    // Cleanup
+    {
+        unsetenv("SOVIET_SPM_DIR");
+        unsetenv("SOVIET_ROOT");
+        unsetenv("SOVIET_FORMATS");
+        unsetenv("SOVIET_PLUGIN_DIR");
+    }
 }
 
 void test_util()
