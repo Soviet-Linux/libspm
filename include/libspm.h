@@ -166,3 +166,5 @@ int parse_env(char** in);
 int download(char* url, FILE* fp);
 // Copy a file
 int cp(char* from, char* to);
+// Ask a yes/no queston
+int get_input(char* prompt, int def);

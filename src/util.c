@@ -340,3 +340,52 @@ int cp(char* from, char* to)
 
     return 0;
 }
+
+// Ask a yes/no queston
+int get_input(char* prompt, int def)
+{
+    char* str = calloc(2, sizeof(char));
+    
+    if(def == 0)
+    {
+        printf("%s (y/N)\n", prompt);
+    }
+    else 
+    {
+        printf("%s (Y/n)\n", prompt);
+    }
+
+    
+    if(AUTO)
+    {
+        free(str);
+        return def;
+    }
+    else
+    {
+        fgets(str, 2, stdin);
+        if ( strchr(str, '\n') == NULL )
+        {
+            while ((getchar()) != '\n');
+        }
+
+        int i = 0;
+
+        while (str[i] != '\n' && str[i] != '\0')
+        {
+            i++;
+        }
+
+        if (str[i] == '\n')
+        {
+            str[i] = '\0';
+        }
+    }
+    if(str[0] == 'Y' || str[0] == 'y')
+    {
+        free(str);
+        return 1;
+    }
+    free(str);
+    return 0;
+}
