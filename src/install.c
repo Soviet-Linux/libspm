@@ -29,9 +29,7 @@ int install_package_source(struct package* pkg)
     {
         char* make_dir = getenv("SOVIET_MAKE_DIR");
         char* build_dir = getenv("SOVIET_BUILD_DIR");
-        // Temporary for compatibility
-        setenv("BUILD_ROOT", build_dir, 1);
-
+        
         if (make_dir == NULL || build_dir == NULL)
         {
             msg(ERROR, "SOVIET_MAKE_DIR or SOVIET_BUILD_DIR is not set");
@@ -150,7 +148,7 @@ int install_package_source(struct package* pkg)
             dbg(1, "Got %d locations for %s", pkg->locationsCount, pkg->name);
 
             // Check if the package is already installed
-            if (is_installed_pkg(getenv("SOVIET_SPM_DIR"), pkg)) {
+            if (check(pkg) == 0) {
                 msg(WARNING, "Package %s is already installed, reinstalling", pkg->name);
                 uninstall(pkg->name);
             } else {
@@ -167,7 +165,6 @@ int install_package_source(struct package* pkg)
     {
         if (pkg->info.special != NULL && strlen(pkg->info.special) > 0) 
         {
-            msg(WARNING, "Special: %s", pkg->info.special);
             dbg(1, "Executing post install script for %s", pkg->name);
             if (system(pkg->info.special) != 0) 
             {
@@ -178,7 +175,7 @@ int install_package_source(struct package* pkg)
     }
 
     if(create_pkg(getenv("SOVIET_SPM_DIR"), pkg) != 0) return 1;
-    
+
     dbg(1, "Package %s installed", pkg->name);
     
     // Clean up
@@ -204,6 +201,7 @@ void write_package_configuration_file(struct package* pkg)
             fprintf(env_file, "%s\n", pkg->config[i]);
         }
         fclose(env_file);
+        free(env_path);
     }
 }
 
@@ -217,6 +215,7 @@ void read_package_configuration_file(struct package* pkg)
         sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg->environment);
 
         readConfig(env_path, 1);
+        free(env_path);
     }
 
 
@@ -228,5 +227,6 @@ void read_package_configuration_file(struct package* pkg)
         sprintf(env_path, "%s/%s", getenv("SOVIET_ENV_DIR"), pkg->name);
 
         readConfig(env_path, 1);
+        free(env_path);
     }
 }

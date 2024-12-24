@@ -84,6 +84,10 @@ int readConfig(const char* configFilePath, int overwrite)
         {
             char* key = strtok(line, "=");
             char* value = strchr(line, '\0') + 1;
+            if(strchr(value, '\n') != NULL)
+            {
+                value[strlen(value) - strlen(strchr(value, '\n'))] = '\0';
+            }
 
             if (key == NULL || value == NULL) {
                 msg(ERROR, "Invalid config file");

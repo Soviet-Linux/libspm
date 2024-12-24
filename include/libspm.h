@@ -29,7 +29,6 @@ struct package
 
     // Internal
     char* path;
-    char* format;
     //
 
     char* description;
@@ -60,6 +59,8 @@ struct packages
     int size;
     struct package* buffer;
 };
+
+/*for use examples see test.c*/
 
 /*check.c*/
 // Function to check if a package is installed and untouched
@@ -105,9 +106,11 @@ void move_binaries(char** locations, long loc_size);
 
 /*pkg.c*/
 // Allocate an array of packages
-struct packages create_pkgs(int reserve);
+struct packages* create_pkgs(int reserve);
 // Merge 2 package arrays
 void merge_pkgs(struct packages* destination, struct packages* source);
+// Free a package array
+void free_pkgs(struct packages* pkgs);
 // Push a package into the array
 void push_pkg(struct packages* pkgs, struct package* pkg);
 // Pop the last added package from the array
@@ -118,12 +121,14 @@ int open_pkg(const char* path, struct package* pkg);
 int create_pkg(char* in_path, struct package* pkg);
 // Function to free memory allocated for a package structure
 int free_pkg(struct package* pkg);
-// Function to check if a given package is already in the file tree
-int is_installed_pkg(char* path, struct package* pkg);
+// Function to search for packages in the database
+struct packages* search_pkgs(char* db_path, char* name);
 // Create the database that stores all packages in a directory
 int create_pkg_db(char* db_path, struct packages* pkgs);
 // Get all packages from a directory
-struct packages get_pkgs(char* path);
+struct packages* get_pkgs(char* path);
+// Dump contents of a database to a package array
+struct packages* dump_db(char* db_path);
 
 /*repo.c*/
 // Get currently present repos

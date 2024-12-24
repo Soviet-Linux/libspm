@@ -35,7 +35,7 @@ int check(struct package* pkg)
 
     // Open the package data file and load its contents
     dbg(2, "Opening the package");
-    open_pkg(dataSpmPath, pkg);
+    open_pkg(getenv("SOVIET_SPM_DIR"), pkg);
 
     dbg(2, "Checking package locations");
     // If the package data file lacks location information, return exit code 2
