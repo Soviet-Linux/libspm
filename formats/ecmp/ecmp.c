@@ -78,6 +78,9 @@ int open(char* path,struct package* pkg)
     };
 
 	void* infodict[][2] = {
+		// This is very stupid, but basically I assume that the name was obtained from the database
+		// This is to go around a memory leak caused by overwriting name when opening a package
+		// This is very stupid
 		{"name",&pkg->name},
 		{"version",&pkg->version},
 		{"type",&pkg->type},
@@ -181,6 +184,12 @@ unsigned int parseinfo(char *s, struct package* dest) {
 
         // add to corresponding value in dict
         char** destbuff = hm_get(infohm, key);
+		
+		if(strcmp(key, "name") == 0)
+		{
+			// This is very stupid
+			continue;
+		}
         if (destbuff == NULL) {
             msg(WARNING, "Unknown key : '%s'", key);
             continue;

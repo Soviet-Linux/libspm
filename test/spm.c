@@ -10,7 +10,6 @@ int main()
     setenv("SOVIET_DEBUG","3",1);
     DEBUG = 3;
     QUIET = false;
-    OVERWRITE = true;
     DEBUG_UNIT = NULL;
     /* END LIBSPM CONFIG */
 
@@ -31,9 +30,8 @@ int main()
     test_make();
     test_move();
     test_pkg();
-    //test_repo();
+    test_repo();
     test_uninstall();
-    test_util();
 
     int leaks = check_leaks();
     if (leaks > 0) 

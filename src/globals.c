@@ -13,9 +13,6 @@
 // Flag for testing mode
 bool TESTING = false;
 
-// Flag for overwriting files
-bool OVERWRITE = false;
-
 // Flag for quiet mode (no verbose output)
 bool QUIET = true;
 

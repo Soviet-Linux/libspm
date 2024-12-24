@@ -57,6 +57,8 @@ struct packages
 {
     int count;
     int size;
+    // This should have probably been named 'pkg' or something
+    // using pkgs->buffer[i].… is not that nice
     struct package* buffer;
 };
 
@@ -130,7 +132,7 @@ struct packages* get_pkgs(char* path);
 // Dump contents of a database to a package array
 struct packages* dump_db(char* db_path);
 // Function returns an array of packages that need updating
-struct packages* update(struct package* pkg);
+struct packages* update_pkg();
 
 /*repo.c*/
 // Get currently present repos

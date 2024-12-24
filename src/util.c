@@ -294,7 +294,49 @@ int download(char* url, FILE* fp) {
 // Copy a file
 int cp(char* from, char* to)
 {
-    (void)from;
-    (void)to;
-    return 1;
+    struct stat st;
+    stat(from, &st);
+    int size = st.st_size;
+    int permissions = st.st_mode;
+    int owner = st.st_uid;
+    int group = st.st_gid;
+
+    char* buffer = malloc(size);
+
+    FILE *old_ptr;
+    FILE *new_ptr;
+
+    old_ptr = fopen(from,"r"); 
+    if (old_ptr == NULL) {
+        msg(ERROR,"Error opening file %s",from);
+        return -1;
+    }
+    fread(buffer, sizeof(char), size, old_ptr); 
+    fclose(old_ptr);
+
+    new_ptr = fopen(to,"w"); 
+    if (new_ptr == NULL) {
+        msg(ERROR,"Error opening file %s",to);
+        return -2;
+    }
+    fwrite(buffer, sizeof(char), size, new_ptr);
+    int result = fclose(new_ptr);
+
+    if (result != 0) {
+        msg(ERROR,"Error writing to file %s",to);
+        return -3;
+    }
+
+    free(buffer);
+
+    if (chown(to, owner, group) != 0) {
+        msg(ERROR,"Error changing owner of %s",to);
+        return -4;
+    }
+    if (chmod(to, permissions) != 0) {
+        msg(ERROR,"Error changing permissions of %s",to);
+        return -5;
+    }
+
+    return 0;
 }

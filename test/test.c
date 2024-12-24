@@ -11,6 +11,7 @@ void test_check()
         setenv("SOVIET_FORMATS", "ecmp", 1);
         setenv("SOVIET_PLUGIN_DIR", "/var/cccp/plugins", 1);
 
+        // I'm heavily abusing the fact that there is no check on the validity of the package
         FILE *ptr;
         ptr = fopen("/tmp/cccp-test/test.ecmp","w"); 
         fprintf(ptr, "[locations]\n");
@@ -154,7 +155,7 @@ void test_install()
     }
 
     struct package pkg = {0};
-    pkg.name = "test";
+    pkg.name = strdup("test");
     pkg.path = strdup("test.ecmp");
     
     result += open_pkg("/tmp/cccp-test", &pkg);
@@ -225,7 +226,7 @@ void test_make()
     }
 
     struct package pkg = {0};
-    pkg.name = "test";
+    pkg.name = strdup("test");
     pkg.path = strdup("test.ecmp");
     
     result += open_pkg("/tmp/cccp-test", &pkg);
@@ -316,6 +317,7 @@ void test_pkg()
         result += (pkgs->count - 10);
         dbg(2, "size %d - count %d", pkgs->size, pkgs->count);
 
+        dbg(2, "result: %d ", result);
         // Cleanup
         {
             free_pkgs(pkgs);    
@@ -366,12 +368,15 @@ void test_pkg()
         result += create_pkg("/tmp/cccp-test", &pkg_0);
 
         struct package pkg_1 = {0};
+        pkg_1.name = strdup("test");
         pkg_1.path = strdup("test-0.ecmp");
         result += open_pkg("/tmp/cccp-test", &pkg_1);
         result += strcmp(pkg_1.name, "test");
         result += strcmp(pkg_1.version, "0");
         result += strcmp(pkg_1.type, "src");
         result += strcmp(pkg_1.description, "test package\n");
+        dbg(2, "Finished testing create and open package");
+        dbg(2, "result: %d ", result);
 
         // Cleanup
         {
@@ -396,7 +401,7 @@ void test_pkg()
             pmkdir(getenv("SOVIET_REPO_DIR"));
             pmkdir("/tmp/cccp-test/repo_dir/test_repo/long/repo/file/tree");
             pmkdir(getenv("SOVIET_SPM_DIR"));
-            for(int i = 0; i < 15; i++)
+            for(int i = 0; i < 10; i++)
             {
                 char dir[MAX_PATH];
                 sprintf(dir, "%s/%s/%d%s", getenv("SOVIET_REPO_DIR"), "test_repo/long/repo/file/tree", i, ".ecmp");
@@ -419,26 +424,36 @@ void test_pkg()
             }
         }
 
+        // Get packages
         struct packages* pkgs = get_pkgs("/tmp/cccp-test/repo_dir/");
-        result += (pkgs->count - 15);
-        for(int i = 0; i < 15; i++)
+        // there should be 10 packages in that directory
+        result += (pkgs->count - 10);
+        for(int i = 0; i < 10; i++)
         {
             char str[8];
             sprintf(str, "%d", i);
+            // all the found packages should be 0-9
             result += strcmp(pkgs->buffer[i].name, str);
         }
+        
+        // Create a database
         result += create_pkg_db("/tmp/cccp-test/test.db", pkgs);
-        struct packages* search_result = search_pkgs("/tmp/cccp-test/test.db", "1");
-        result += ((search_result->count) - 6);
-        result += strcmp(search_result->buffer[0].path, "test_repo/long/repo/file/tree/1.ecmp");
-        result += strcmp(search_result->buffer[1].path, "test_repo/long/repo/file/tree/10.ecmp");
 
-        // Test dump_db
-        // Test update_pkg
+        // Preform a search
+        struct packages* search_result = search_pkgs("/tmp/cccp-test/test.db", "1");
+        // we should find only one '1'
+        result += (search_result->count - 1);
+        result += strcmp(search_result->buffer[0].path, "test_repo/long/repo/file/tree/1.ecmp");
+
+        struct packages* db_pkgs = dump_db("/tmp/cccp-test/test.db");
+        // there should be 10 packages in the database
+        result += (db_pkgs->count - 10);
+        dbg(2, "Finished testing package database");
 
         // Cleanup
         {
             free_pkgs(pkgs);
+            free_pkgs(db_pkgs);
             free_pkgs(search_result);
             rmany(getenv("SOVIET_REPO_DIR"));
             rmany(getenv("SOVIET_SPM_DIR"));
@@ -451,7 +466,113 @@ void test_pkg()
 
     // Test updating packages
     {
+        // Necessary prepwork
+        {
+            setenv("SOVIET_REPO_DIR", "/tmp/cccp-test/repo_dir", 1);
+            setenv("SOVIET_SPM_DIR", "/tmp/cccp-test/spm_dir", 1);
+            setenv("SOVIET_DEFAULT_FORMAT", "ecmp", 1);
+            setenv("SOVIET_FORMATS", "ecmp", 1);
+            setenv("SOVIET_PLUGIN_DIR", "/var/cccp/plugins", 1);
 
+            pmkdir(getenv("SOVIET_REPO_DIR"));
+            pmkdir("/tmp/cccp-test/repo_dir/test_repo/long/repo/file/tree");
+
+            pmkdir(getenv("SOVIET_SPM_DIR"));
+            pmkdir("/tmp/cccp-test/spm_dir/test_repo/long/repo/file/tree");
+
+            // File 1 - outdated
+            {
+                char spm_dir[MAX_PATH];
+                char repo_dir[MAX_PATH];
+                sprintf(repo_dir, "%s/%s/%s", getenv("SOVIET_REPO_DIR"), "test_repo/long/repo/file/tree", "outdated.ecmp");
+                sprintf(spm_dir, "%s/%s/%s", getenv("SOVIET_SPM_DIR"), "test_repo/long/repo/file/tree", "outdated.ecmp");
+
+                FILE *ptr;
+                ptr = fopen(repo_dir,"w"); 
+                fprintf(ptr, "[info]\n");
+                fprintf(ptr, "name = outdated\n");
+                fprintf(ptr, "version = 1\n");
+                fclose(ptr);
+
+                ptr = fopen(spm_dir,"w"); 
+                fprintf(ptr, "[info]\n");
+                fprintf(ptr, "name = outdated\n");
+                fprintf(ptr, "version = 0\n");
+                fclose(ptr);
+            }
+
+            // File 2 - same
+            {
+                char spm_dir[MAX_PATH];
+                char repo_dir[MAX_PATH];
+                sprintf(repo_dir, "%s/%s/%s", getenv("SOVIET_REPO_DIR"), "test_repo/long/repo/file/tree", "same.ecmp");
+                sprintf(spm_dir, "%s/%s/%s", getenv("SOVIET_SPM_DIR"), "test_repo/long/repo/file/tree", "same.ecmp");
+
+                FILE *ptr;
+                ptr = fopen(repo_dir,"w"); 
+                fprintf(ptr, "[info]\n");
+                fprintf(ptr, "name = same\n");
+                fprintf(ptr, "version = 1\n");
+                fclose(ptr);
+
+                ptr = fopen(spm_dir,"w"); 
+                fprintf(ptr, "[info]\n");
+                fprintf(ptr, "name = same\n");
+                fprintf(ptr, "version = 1\n");
+                fclose(ptr);
+            }
+
+            // File 3 - local only
+            {
+                char spm_dir[MAX_PATH];
+                sprintf(spm_dir, "%s/%s/%s", getenv("SOVIET_SPM_DIR"), "test_repo/long/repo/file/tree", "local.ecmp");
+
+                FILE *ptr;
+                ptr = fopen(spm_dir,"w"); 
+                fprintf(ptr, "[info]\n");
+                fprintf(ptr, "name = local\n");
+                fprintf(ptr, "version = 1\n");
+                fclose(ptr);
+            }
+
+            struct packages* installed = get_pkgs(getenv("SOVIET_SPM_DIR"));
+            struct packages* remote = get_pkgs(getenv("SOVIET_REPO_DIR"));
+
+            setenv("SOVIET_ALL_DB", "/tmp/cccp-test/all.db", 1);
+            setenv("SOVIET_INSTALLED_DB", "/tmp/cccp-test/installed.db", 1);
+
+            create_pkg_db(getenv("SOVIET_ALL_DB"), remote);
+            create_pkg_db(getenv("SOVIET_INSTALLED_DB"), installed);
+
+            free_pkgs(installed);
+            free_pkgs(remote);
+        }
+    
+        struct packages* need_updating = update_pkg();
+        // We expect only one of the packages to need updating
+        result += (need_updating->count - 1);
+        dbg(2, "Finished testing package update");
+
+        result += strcmp(need_updating->buffer[0].name, "outdated");
+        result += strcmp(need_updating->buffer[0].version, "1");
+
+        // Cleanup
+        {
+            free_pkgs(need_updating);
+            
+            rmany(getenv("SOVIET_REPO_DIR"));
+            rmany(getenv("SOVIET_SPM_DIR"));
+            rmany(getenv("SOVIET_ALL_DB"));
+            rmany(getenv("SOVIET_INSTALLED_DB"));
+
+            unsetenv("SOVIET_REPO_DIR");
+            unsetenv("SOVIET_SPM_DIR");
+            unsetenv("SOVIET_DEFAULT_FORMAT");
+            unsetenv("SOVIET_FORMATS");
+            unsetenv("SOVIET_PLUGIN_DIR");
+            unsetenv("SOVIET_ALL_DB");
+            unsetenv("SOVIET_INSTALLED_DB");
+        }
     }
 
     if(result != 0) msg(FATAL, "FAILED");
@@ -532,9 +653,4 @@ void test_uninstall()
         unsetenv("SOVIET_FORMATS");
         unsetenv("SOVIET_PLUGIN_DIR");
     }
-}
-
-void test_util()
-{
-    return;
 }

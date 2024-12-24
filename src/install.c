@@ -41,7 +41,9 @@ int install_package_source(struct package* pkg)
 
     // Set the package info section as environment vadiables for make script
     {
+        dbg(2, "%s", pkg->name);
         setenv("NAME", pkg->name, 1);
+        dbg(2, "%s", pkg->version);
         setenv("VERSION", pkg->version, 1);
 
         if (pkg->url != NULL)

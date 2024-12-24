@@ -69,8 +69,8 @@ int open_pkg(const char* path, struct package* pkg)
     sprintf(full_path, "%s/%s", path, pkg->path);
     dbg(3, "path: %s", full_path);
     // Check if the file exists
-    if (access(path, F_OK) != 0) {
-        msg(ERROR, "File %s does not exist\n", full_path);
+    if (access(full_path, F_OK) != 0) {
+        dbg(1, "File %s does not exist", full_path);
         return 1;
     }
 
@@ -95,11 +95,11 @@ int open_pkg(const char* path, struct package* pkg)
             }
         }
     } else {
-        msg(ERROR, "File %s is not a valid package file", full_path);
-        return 1;
+        dbg(1, "File %s is not a valid package file", full_path);
+        return 2;
     }
-    msg(ERROR, "File %s is not a valid package file, or the format plugin isn't loaded", full_path);
-    return 1;
+    dbg(1, "File %s is not a valid package file, or the format plugin isn't loaded", full_path);
+    return 2;
 }
 
 // Create a package at the given path using the specified package structure
@@ -220,8 +220,7 @@ struct packages* search_pkgs(char* db_path, char* term)
 
     while ((result = sqlite3_step(stmt)) == SQLITE_ROW) 
     {
-        // TODO:
-        // This very is stupid
+        // TODO: This very is stupid
         const unsigned char* name = sqlite3_column_text(stmt, 0);
         const unsigned char* path = sqlite3_column_text(stmt, 1);
         if(strstr((const char*)name, term) != 0)
@@ -277,9 +276,9 @@ struct packages* get_pkgs(char* path)
     int num_files;
     char **files_array = get_all_files(path, path, &num_files);
     if (files_array != NULL) 
-    {
+    {        
+        // TODO: get rid of the nested if's
         struct packages* pkgs = create_pkgs(num_files);
-        // Print each file path
         for (int j = 0; j < num_files; j++) 
         {
             if(strstr(files_array[j], "/.") == NULL)
@@ -297,12 +296,12 @@ struct packages* get_pkgs(char* path)
 
                         while(strrchr(name, '/') != NULL)
                         {
-                            memmove(name, strrchr(name, '/') + 1, strlen(strrchr(name, '/') + 1) + 1);
+                            memmove(name, strrchr(name, '/') + 1, strlen(strrchr(name, '/') + 1) + 1); /*tbh i just added +1 untill it worked*/
                         }
 
                         name[strlen(name) - (strlen(getenv("SOVIET_DEFAULT_FORMAT")) + 1) /*+1 for the '.'*/] = '\0';
 
-                        dbg(1, "path is %s, name is %s", path, name);
+                        dbg(1, "name: %s", name);
 
                         struct package pkg = {0};
                         pkg.name = strdup(name);
@@ -369,19 +368,64 @@ struct packages* dump_db(char* db_path)
 }
 
 // Function returns an array of packages that need updating
-struct packages* update_pkg(struct package* pkg)
+struct packages* update_pkg()
 {
     msg(INFO, "fetching updates");
-    int new_version_found = 0;
     
     if(access(getenv("SOVIET_INSTALLED_DB"), F_OK) != 0)
     {
         msg(ERROR, "no installed DB found");
-        return -1;
+        return create_pkgs(0);
     }
 
     struct packages* installed_packages = dump_db(getenv("SOVIET_INSTALLED_DB"));
+    if(installed_packages->count < 1)
+    {
+        msg(ERROR, "no installed packages");
+        return create_pkgs(0);
+    }
 
-    if(new_version_found == 0) { msg(INFO, "all packages are up to date"); }
-    return 0;
+    struct packages* pkgs = create_pkgs(installed_packages->count);
+
+    for(int i = 0; i < installed_packages->count; i++)
+    {  
+        struct package remote_package = {0};
+        remote_package.name = strdup(installed_packages->buffer[i].name);
+        remote_package.path = strdup(installed_packages->buffer[i].path);
+        // TODO: get rid of the nested if's
+        if (open_pkg(getenv("SOVIET_REPO_DIR"), &remote_package ) == 0)
+        {
+            if (open_pkg(getenv("SOVIET_SPM_DIR"), &(installed_packages->buffer[i])) == 0)
+            {
+                if(strcmp(remote_package.version, installed_packages->buffer[i].version) != 0)
+                {
+                    // We don't actually know if it's older or newer
+                    dbg(2, "package %s version %s differs from remote", installed_packages->buffer[i].name, installed_packages->buffer[i].version);
+                    // I suppose it doens't matter which package we push
+                    push_pkg(pkgs, &remote_package);
+                }
+                else
+                {
+                    dbg(2, "package %s is up to date", installed_packages->buffer[i].name);
+                    free_pkg(&remote_package);
+                }
+            }
+            else
+            {
+                // The local package does not exist, the database is corrupt/outdated
+                msg(ERROR, "package %s does not exist", installed_packages->buffer[i].name);
+                free_pkg(&remote_package);
+            }
+        }
+        else
+        {
+            // The package does not exist on the remote side
+            dbg(2, "package %s is local", installed_packages->buffer[i].name);
+            free_pkg(&remote_package);
+        }
+        
+    }
+    
+    free_pkgs(installed_packages);
+    return pkgs;
 }

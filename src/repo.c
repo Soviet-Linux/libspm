@@ -112,8 +112,7 @@ int repo_sync()
         if (add_repo(submodule_name, repo_url) != 0) {msg(ERROR, "Failed to create the default repository");}
     }
 
-    // TODO: add a way to get all submodules and update them
-    // But maybe a single system call isn't too bad...
+    // TODO: get all submodules and update them without the system call
     // Update submodules
     chdir(repo_dir);
     if (system("git submodule update --depth 1 --remote --init --recursive") != 0) 

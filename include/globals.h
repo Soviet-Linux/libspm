@@ -8,11 +8,8 @@ START OF THE (sort of) CONSTANTS DECALRATIONS
 (They are not mean to be modified a lot)
 */
 
-
 // enable testing mode
 extern bool TESTING;
-// overwrite file when installing
-extern bool OVERWRITE;
 // enable verbose mode
 extern bool QUIET;
 // Flag indicating that no inputs are required
