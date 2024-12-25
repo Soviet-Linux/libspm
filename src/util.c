@@ -345,13 +345,16 @@ int cp(char* from, char* to)
 int get_input(char* prompt, int def)
 {
     char* str = calloc(2, sizeof(char));
+    char def_char;
     
     if(def == 0)
     {
+        def_char = 'N';
         printf("%s (y/N)\n", prompt);
     }
     else 
     {
+        def_char = 'Y';
         printf("%s (Y/n)\n", prompt);
     }
 
@@ -380,6 +383,11 @@ int get_input(char* prompt, int def)
         {
             str[i] = '\0';
         }
+    }
+    if(str[0] == '\0')
+    {
+        str[0] = def_char;
+        str[1] = '\0';
     }
     if(str[0] == 'Y' || str[0] == 'y')
     {
