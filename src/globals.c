@@ -5,9 +5,6 @@
 #include "cutils.h"
 #include "globals.h"
 
-// Define a constant for the maximum queue size
-#define QUEUE_MAX 256
-
 // Declare global variables
 
 // Flag for testing mode
@@ -18,6 +15,3 @@ bool QUIET = true;
 
 // Flag indicating that no inputs are required
 bool AUTO = false;
-
-// Array for package queue and its count
-struct packages* PACKAGE_QUEUE = {0};
