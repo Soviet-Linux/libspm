@@ -394,17 +394,17 @@ void test_pkg()
     {
         // Necessary prepwork
         {
-            setenv("SOVIET_REPO_DIR", "/tmp/cccp-test/repo_dir", 1);
+            setenv("SOVIET_REPOS_DIR", "/tmp/cccp-test/repo_dir", 1);
             setenv("SOVIET_SPM_DIR", "/tmp/cccp-test/spm_dir", 1);
             setenv("SOVIET_DEFAULT_FORMAT", "ecmp", 1);
 
-            pmkdir(getenv("SOVIET_REPO_DIR"));
+            pmkdir(getenv("SOVIET_REPOS_DIR"));
             pmkdir("/tmp/cccp-test/repo_dir/test_repo/long/repo/file/tree");
             pmkdir(getenv("SOVIET_SPM_DIR"));
             for(int i = 0; i < 10; i++)
             {
                 char dir[MAX_PATH];
-                sprintf(dir, "%s/%s/%d%s", getenv("SOVIET_REPO_DIR"), "test_repo/long/repo/file/tree", i, ".ecmp");
+                sprintf(dir, "%s/%s/%d%s", getenv("SOVIET_REPOS_DIR"), "test_repo/long/repo/file/tree", i, ".ecmp");
 
                 FILE *ptr;
                 ptr = fopen(dir,"w"); 
@@ -415,7 +415,7 @@ void test_pkg()
             for(int i = 0; i < 10; i++)
             {
                 char dir[MAX_PATH];
-                sprintf(dir, "%s/%s/%s-%d", getenv("SOVIET_REPO_DIR"), "test_repo/long/repo/file/tree", ".ecmp", i);
+                sprintf(dir, "%s/%s/%s-%d", getenv("SOVIET_REPOS_DIR"), "test_repo/long/repo/file/tree", ".ecmp", i);
 
                 FILE *ptr;
                 ptr = fopen(dir,"w"); 
@@ -455,10 +455,10 @@ void test_pkg()
             free_pkgs(pkgs);
             free_pkgs(db_pkgs);
             free_pkgs(search_result);
-            rmany(getenv("SOVIET_REPO_DIR"));
+            rmany(getenv("SOVIET_REPOS_DIR"));
             rmany(getenv("SOVIET_SPM_DIR"));
             rmany("/tmp/cccp-test/test.db");
-            unsetenv("SOVIET_REPO_DIR");
+            unsetenv("SOVIET_REPOS_DIR");
             unsetenv("SOVIET_DEFAULT_FORMAT");
             unsetenv("SOVIET_SPM_DIR");
         }
@@ -468,13 +468,13 @@ void test_pkg()
     {
         // Necessary prepwork
         {
-            setenv("SOVIET_REPO_DIR", "/tmp/cccp-test/repo_dir", 1);
+            setenv("SOVIET_REPOS_DIR", "/tmp/cccp-test/repo_dir", 1);
             setenv("SOVIET_SPM_DIR", "/tmp/cccp-test/spm_dir", 1);
             setenv("SOVIET_DEFAULT_FORMAT", "ecmp", 1);
             setenv("SOVIET_FORMATS", "ecmp", 1);
             setenv("SOVIET_PLUGIN_DIR", "/var/cccp/plugins", 1);
 
-            pmkdir(getenv("SOVIET_REPO_DIR"));
+            pmkdir(getenv("SOVIET_REPOS_DIR"));
             pmkdir("/tmp/cccp-test/repo_dir/test_repo/long/repo/file/tree");
 
             pmkdir(getenv("SOVIET_SPM_DIR"));
@@ -484,7 +484,7 @@ void test_pkg()
             {
                 char spm_dir[MAX_PATH];
                 char repo_dir[MAX_PATH];
-                sprintf(repo_dir, "%s/%s/%s", getenv("SOVIET_REPO_DIR"), "test_repo/long/repo/file/tree", "outdated.ecmp");
+                sprintf(repo_dir, "%s/%s/%s", getenv("SOVIET_REPOS_DIR"), "test_repo/long/repo/file/tree", "outdated.ecmp");
                 sprintf(spm_dir, "%s/%s/%s", getenv("SOVIET_SPM_DIR"), "test_repo/long/repo/file/tree", "outdated.ecmp");
 
                 FILE *ptr;
@@ -505,7 +505,7 @@ void test_pkg()
             {
                 char spm_dir[MAX_PATH];
                 char repo_dir[MAX_PATH];
-                sprintf(repo_dir, "%s/%s/%s", getenv("SOVIET_REPO_DIR"), "test_repo/long/repo/file/tree", "same.ecmp");
+                sprintf(repo_dir, "%s/%s/%s", getenv("SOVIET_REPOS_DIR"), "test_repo/long/repo/file/tree", "same.ecmp");
                 sprintf(spm_dir, "%s/%s/%s", getenv("SOVIET_SPM_DIR"), "test_repo/long/repo/file/tree", "same.ecmp");
 
                 FILE *ptr;
@@ -536,7 +536,7 @@ void test_pkg()
             }
 
             struct packages* installed = get_pkgs(getenv("SOVIET_SPM_DIR"));
-            struct packages* remote = get_pkgs(getenv("SOVIET_REPO_DIR"));
+            struct packages* remote = get_pkgs(getenv("SOVIET_REPOS_DIR"));
 
             setenv("SOVIET_ALL_DB", "/tmp/cccp-test/all.db", 1);
             setenv("SOVIET_INSTALLED_DB", "/tmp/cccp-test/installed.db", 1);
@@ -560,12 +560,12 @@ void test_pkg()
         {
             free_pkgs(need_updating);
             
-            rmany(getenv("SOVIET_REPO_DIR"));
+            rmany(getenv("SOVIET_REPOS_DIR"));
             rmany(getenv("SOVIET_SPM_DIR"));
             rmany(getenv("SOVIET_ALL_DB"));
             rmany(getenv("SOVIET_INSTALLED_DB"));
 
-            unsetenv("SOVIET_REPO_DIR");
+            unsetenv("SOVIET_REPOS_DIR");
             unsetenv("SOVIET_SPM_DIR");
             unsetenv("SOVIET_DEFAULT_FORMAT");
             unsetenv("SOVIET_FORMATS");

@@ -393,7 +393,7 @@ struct packages* update_pkg()
         remote_package.name = strdup(installed_packages->buffer[i].name);
         remote_package.path = strdup(installed_packages->buffer[i].path);
         // TODO: get rid of the nested if's
-        if (open_pkg(getenv("SOVIET_REPO_DIR"), &remote_package ) == 0)
+        if (open_pkg(getenv("SOVIET_REPOS_DIR"), &remote_package ) == 0)
         {
             if (open_pkg(getenv("SOVIET_SPM_DIR"), &(installed_packages->buffer[i])) == 0)
             {
