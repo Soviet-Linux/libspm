@@ -91,7 +91,7 @@ debug: libs $(BINDIR)/$(LIBOUT) formats
 	@echo "Build done (debug)"
 
 libs:
-	for i in $(LOCAL_LIBS_DIRS); do make -C $$i all; done
+	for i in $(LOCAL_LIBS_DIRS); do make -C $$i clean all; done
 
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(BINDIR)/$(LIBOUT)

@@ -90,10 +90,13 @@ int open_pkg(const char* path, struct package* pkg)
             {
                 dbg(2, "Opening package with %s format", FORMATS[i]);
                 runFormatLib(FORMATS[i], "open", full_path, pkg);
+                free(FORMATS[i]);
                 free(FORMATS);
                 return 0;
             }
+            free(FORMATS[i]);
         }
+        free(FORMATS);
     } else {
         dbg(1, "File %s is not a valid package file", full_path);
         return 2;
@@ -134,9 +137,11 @@ int create_pkg(char* in_path, struct package* pkg)
             {
                 dbg(2, "Opening package with %s format", FORMATS[i]);
                 runFormatLib(FORMATS[i], "create", path, pkg);
+                free(FORMATS[i]);
                 free(FORMATS);
                 return 0;
             }
+            free(FORMATS[i]);
         }
     }
     msg(ERROR,"File %s is not a valid package file, or the format plugin isn't loaded", path);

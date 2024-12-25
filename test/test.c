@@ -155,6 +155,7 @@ void test_install()
     }
 
     struct package pkg = {0};
+
     pkg.name = strdup("test");
     pkg.path = strdup("test.ecmp");
     

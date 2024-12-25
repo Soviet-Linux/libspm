@@ -45,7 +45,7 @@ int open(char* path,struct package* pkg)
 	}
 	
 	void* parsers[][3] = {
-        {parseinfo,pkg,NULL},
+        {parseinfo,&pkg,NULL},
 
         {parseraw,&pkg->info.install,NULL},
         {parseraw,&pkg->info.prepare,NULL},
@@ -124,6 +124,7 @@ int open(char* path,struct package* pkg)
 	// free sections
 	for (unsigned int i = 0; i < count; i++) {
 		free(sections[i]->name);
+		free(sections[i]->buff);
 		free(sections[i]);
 	}
 	free(sections);
@@ -139,10 +140,10 @@ int open(char* path,struct package* pkg)
 
 unsigned int parsenl(char* s,char*** dest)
 {
-	char* str;
+	//char* str;
 	// the parseraw below is useless but i'll keep since in case
-	parseraw(s,&str);
-	return splita(str,'\n',dest);
+	//parseraw(s,&str);
+	return splita(s,'\n',dest);
 }
 unsigned int parseraw(char* s, char** dest)
 {	
@@ -151,7 +152,7 @@ unsigned int parseraw(char* s, char** dest)
 	// So we are just going to copy the pointer to it
 	// In the last version , we were copying the string to a new buffer
 	// Because the `s` string was a buffer that was going to be freed by `getline()`
-	*dest = s;
+	*dest = strdup(s);
 	return strlen(s);
 }
 
@@ -188,6 +189,7 @@ unsigned int parseinfo(char *s, struct package* dest) {
 		if(strcmp(key, "name") == 0)
 		{
 			// This is very stupid
+			free(nlist[i]);
 			continue;
 		}
         if (destbuff == NULL) {
@@ -199,14 +201,15 @@ unsigned int parseinfo(char *s, struct package* dest) {
         if (*destbuff == NULL) {
             msg(ERROR, "Error allocating memory for %s value", key);
             free(nlist);
-            free(s);
+            //free(s);
             return 0;
         }
         dbg(3, "Setting destbuff to %p - %s", *destbuff, *destbuff);
+		free(nlist[i]);
     }
 
     free(nlist);
-    free(s);
+    //free(s);
     return 0;
 }
 

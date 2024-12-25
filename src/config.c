@@ -111,6 +111,5 @@ int readConfig(const char* configFilePath, int overwrite)
             setenv(configEntries[i].key, configEntries[i].default_value, overwrite);
         }
     }
-
     return 0;
 }
