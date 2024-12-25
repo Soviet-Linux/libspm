@@ -102,7 +102,7 @@ int open(char* path,struct package* pkg)
 	for (unsigned int i = 0; i < count; i++) {
 		void** options = hm_get(hm,sections[i]->name);
 		if (options == NULL) {
-			msg(WARNING,"Unknown section : %s",sections[i]->name);
+			msg(FATAL,"Unknown section : %s",sections[i]->name);
 			free(sections[i]->buff);
 			continue;
 		}
@@ -116,7 +116,7 @@ int open(char* path,struct package* pkg)
 
 		}
 		else {
-			msg(WARNING,"Unknown parser for section : %s",sections[i]->name);
+			msg(FATAL,"Unknown parser for section : %s",sections[i]->name);
 		}
 	}
 	dbg(2,"done parsing | returning");
@@ -178,7 +178,7 @@ unsigned int parseinfo(char *s, struct package* dest) {
         char* key = strtok(nlist[i], "=");
         char* value = strtok(NULL, "=");
         if (key == NULL || value == NULL) {
-            msg(WARNING, "Invalid key-value pair: '%s'", nlist[i]);
+            msg(FATAL, "Invalid key-value pair: '%s'", nlist[i]);
             continue;
         }
 
@@ -191,7 +191,7 @@ unsigned int parseinfo(char *s, struct package* dest) {
 			continue;
 		}
         if (destbuff == NULL) {
-            msg(WARNING, "Unknown key : '%s'", key);
+            msg(FATAL, "Unknown key : '%s'", key);
             continue;
         }
 
