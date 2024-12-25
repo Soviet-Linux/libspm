@@ -56,6 +56,9 @@ int make(struct package* pkg) {
         sprintf(location, "%s/%s", getenv("SOVIET_MAKE_DIR"), file_name);
         sprintf(source_location, "%s/%s-%s", getenv("SOVIET_SOURCE_DIR"), getenv("NAME"), getenv("VERSION"));
         sprintf(source_file_location, "%s/%s-%s/%s", getenv("SOVIET_SOURCE_DIR"), getenv("NAME"), getenv("VERSION"), file_name);
+        dbg(4,location);
+        dbg(4,source_location);
+        dbg(4,source_file_location);
 
         dbg(1, "Downloading %s", file_name);
 
@@ -115,11 +118,11 @@ int make(struct package* pkg) {
 
             dbg(1, "Download finished");
 
-            //cp(location, source_file_location);            
+            cp(location, source_file_location);            
         }
         else {
             dbg(1, "Loading form %s", source_location);
-            //cp(source_file_location, location);
+            cp(source_file_location, location);
         }
 
 	    free(files);
