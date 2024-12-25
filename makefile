@@ -34,6 +34,7 @@ DBGFLAGS = -g -fsanitize=address -lasan
 
 # set local lib to lib/*/*.a
 LOCAL_LIBS = $(wildcard lib/*/*.a)
+LOCAL_LIBS_DIRS = $(wildcard lib/*/)
 LIBS = ${LOCAL_LIBS} -lgit2 -lsqlite3 -lcurl -lm -lcrypto
 
 # change these to proper directories where each file should be
@@ -90,7 +91,7 @@ debug: libs $(BINDIR)/$(LIBOUT) formats
 	@echo "Build done (debug)"
 
 libs:
-	for i in $(LOCAL_LIBS); do make -C $$(dirname $$i) all; done
+	for i in $(LOCAL_LIBS_DIRS); do make -C $$i all; done
 
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(BINDIR)/$(LIBOUT)
