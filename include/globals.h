@@ -1,6 +1,7 @@
 #include "stdbool.h"
 
-#define QUEUE_MAX 256
+// This is very stupid, but I don't want to work on this right now.
+#define QUEUE_MAX 65536
 
 #define MAX_PATH 2048
 /*
