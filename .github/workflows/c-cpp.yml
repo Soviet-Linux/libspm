@@ -22,6 +22,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libcurl4-openssl-dev
+    - name: Install libsqlite3-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libsqlite3-dev
     - name: Install libgit2
       run: |
         curl -L https://codeload.github.com/libgit2/libgit2/tar.gz/refs/tags/v1.8.1 --output libgit2-1.8.1.tar.gz
