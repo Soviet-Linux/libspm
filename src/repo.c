@@ -117,8 +117,11 @@ int repo_sync()
     chdir(repo_dir);
     if (system("git submodule update --depth 1 --remote --init --recursive") != 0) 
     {
-        printf("Failed to update submodules in %s\n", repo_dir);
-        return 3;
+        if(system("git submodule foreach --recursive git reset --hard") != 0)
+        {
+            printf("Failed to update submodules in %s\n", repo_dir);
+        }
+        return system("git submodule update --depth 1 --remote --init --recursive");
     }
 
     git_repository_free(repo_handle);
