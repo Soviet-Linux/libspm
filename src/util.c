@@ -316,6 +316,7 @@ int cp(char* from, char* to)
 
     new_ptr = fopen(to,"w"); 
     if (new_ptr == NULL) {
+        free(buffer);
         msg(ERROR,"Error opening file %s",to);
         return -2;
     }
@@ -323,6 +324,7 @@ int cp(char* from, char* to)
     int result = fclose(new_ptr);
 
     if (result != 0) {
+        free(buffer);
         msg(ERROR,"Error writing to file %s",to);
         return -3;
     }
