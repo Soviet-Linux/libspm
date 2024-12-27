@@ -39,14 +39,8 @@ void move_binaries(char** locations, long loc_size) {
         // Check if the destination location is empty
         if (!(access(dest_loc, F_OK) != 0)) 
         {
-            if (OVERWRITE) 
-            {
-                remove(dest_loc);
-            }
-            else
-            {
-                msg(FATAL, "%s is already here, use --overwrite?", locations[i]);
-            }      
+            dbg(1, "%s is already here", locations[i]);
+            remove(dest_loc); 
         }
 
         if (locations[i] == NULL) 

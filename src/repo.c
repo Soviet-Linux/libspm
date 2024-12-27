@@ -1,7 +1,7 @@
-#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <git2.h>
@@ -11,79 +11,61 @@
 #include "globals.h"
 #include "cutils.h"
 
-// Function to retrieve a package from a data repository
-/*
-Accepts:
-- struct package* i_pkg: A pointer to a package structure with package details.
-- const char* out_path: The local path to save the downloaded package.
-
-Returns:
-- char*: A pointer to the package format or NULL if there's an error.
-*/
-char* get(struct package* i_pkg, const char* repo, const char* out_path)
+// Get currently present repos
+char** get_repos(int* count)
 {
-    // Check if the package name is specified
-    if (i_pkg->name == NULL)
-    {
-        msg(ERROR, "Package name not specified!");
-        return NULL;
-    }
-
-    return load_from_repo(i_pkg->name, repo, out_path);
-}
-
-int get_repos(char** list)
-{
+    char** list = calloc(512, sizeof(char*));
     dbg(3, "checking for repos");
     DIR *d;
     struct dirent *dir;
     d = opendir(getenv("SOVIET_REPOS_DIR"));
-    int count = 0;
-    list[count] = calloc(strlen("local") + 1, 1);
-    sprintf(list[count], "local");
-    count++;
+    *count = 0;
+    list[*count] = calloc(strlen("local") + 1, 1);
+    sprintf(list[*count], "local");
+    (*count)++;
     if (d)
     {
         while ((dir = readdir(d)) != NULL)
         {
-            if (count > 512)
+            if (*count > 512)
             {
                 printf("Error : too many elements in list , reallocating\n");
-                list = realloc(list,(count+512) * sizeof(char*));
+                list = realloc(list,(*count+512) * sizeof(char*));
             }
             if (dir->d_type != DT_DIR || dir->d_name[0] == '.') continue;
 
-            list[count] = calloc(strlen(dir->d_name) + 1, sizeof(char));
-            strcpy(list[count], dir->d_name);
-            count++;
+            list[*count] = calloc(strlen(dir->d_name) + 1, sizeof(char));
+            strcpy(list[*count], dir->d_name);
+            (*count)++;
         }
     }
 
-    for (int i = 0; i < count - 1; i++)
+    for (int i = 0; i < *count - 1; i++)
     {
         if (strcmp(list[i], ".") == 0 || strcmp(list[i], "..") == 0)
         {
             // Move the . string to the end
             char* temp = list[i];
             dbg(3, "Moving: %s", temp);
-            for (int k = i; k < count - 1; k++)
+            for (int k = i; k < *count - 1; k++)
             {
                 list[k] = list[k + 1];
             }
-            list[count - 1] = temp;
+            list[*count - 1] = temp;
             i--;
-            count--;
+            (*count)--;
         }
     }
 
     closedir(d);
 
     dbg(3, "done checking for repos");
-    return count;
+    return list;
 }
 
 // Function to synchronize the local repository with a remote repository
-int repo_sync() {
+int repo_sync() 
+{
     char* repo_dir = getenv("SOVIET_REPOS_DIR");
     char* repo_url = getenv("SOVIET_DEFAULT_REPO_URL");
     char* submodule_name = getenv("SOVIET_DEFAULT_REPO");
@@ -119,7 +101,8 @@ int repo_sync() {
         // Initialize a new Git repository
         if (git_repository_init(&repo_handle, repo_dir, false) != 0) 
         {
-            msg(FATAL, "Failed to initialize git repository in %s.", repo_dir);
+            const git_error* error = giterr_last();
+            msg(FATAL, "Failed to initialize git repository in %s - %s", repo_dir, error->message);
         }
     }
     
@@ -129,10 +112,14 @@ int repo_sync() {
         if (add_repo(submodule_name, repo_url) != 0) {msg(ERROR, "Failed to create the default repository");}
     }
 
-    // TODO: add a way to get all submodules and update them
-    // But maybe a single system call isn't too bad...
+    // TODO: get all submodules and update them without the system call
     // Update submodules
     chdir(repo_dir);
+    if(system("git submodule foreach --recursive git reset --hard") != 0)
+    {
+        printf("Failed to update submodules in %s\n", repo_dir);
+        return 3;
+    }
     if (system("git submodule update --depth 1 --remote --init --recursive") != 0) 
     {
         printf("Failed to update submodules in %s\n", repo_dir);
@@ -140,9 +127,11 @@ int repo_sync() {
     }
 
     git_repository_free(repo_handle);
+    
     return 0;
 }
 
+// Add a new repository from a git repo
 int add_repo(char* name, char* url)
 {
     const char* repo_dir = getenv("SOVIET_REPOS_DIR");
@@ -150,8 +139,17 @@ int add_repo(char* name, char* url)
 
     // Set clone options
     unsigned int* status = NULL;
-    git_submodule_update_options opts = GIT_CLONE_OPTIONS_INIT;
-    git_fetch_options fopts = GIT_FETCH_OPTIONS_INIT;
+    git_submodule_update_options opts = {0};
+    if(git_submodule_update_options_init(&opts, GIT_SUBMODULE_UPDATE_OPTIONS_VERSION)!= 0)
+    {
+        msg(FATAL, "Failed to initialize git submodule options");
+    }
+    git_fetch_options fopts = {0};
+    if(git_fetch_options_init(&fopts, GIT_SUBMODULE_UPDATE_OPTIONS_VERSION)!= 0)
+    {
+        msg(FATAL, "Failed to initialize git fetch options");
+    }
+    
     opts.fetch_opts = fopts;
     opts.fetch_opts.depth = 1;
 
@@ -191,9 +189,10 @@ int add_repo(char* name, char* url)
             msg(ERROR, "Failed to finalize submodule %s - %s", name, error->message);
             return -1;
         }
-
         git_submodule_free(submodule_handle);
         git_repository_free(temp_handle);
+        git_repository_free(repo_handle);
+
         return 0;
     }
 

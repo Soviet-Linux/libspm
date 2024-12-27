@@ -7,18 +7,16 @@
 #include "../include/globals.h"
 #include "../include/cutils.h"
 
-
-#define STATIC
-
-
-void test_move();
-void test_get();
-void test_split();
+void test_check();
+void test_clean();
 void test_config();
-
-void test_ecmp(char* spm_path);
-void test_make(char* spm_path);
-void test_pm(char* spm_path);
-
-extern char WORKING_DIR[2048];
+void test_globals();
+void test_init();
+void test_install();
+void test_make();
+void test_move();
+void test_pkg();
+void test_repo();
+void test_uninstall();
+void test_util();
 

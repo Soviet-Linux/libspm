@@ -30,11 +30,12 @@ SDIR = src
 
 
 CFLAGS = -Wall -fPIC -O2 -Wextra -L./bin -Iinclude 
-DBGFLAGS = -g -fsanitize=address
+DBGFLAGS = -g -fsanitize=address -lasan
 
 # set local lib to lib/*/*.a
 LOCAL_LIBS = $(wildcard lib/*/*.a)
-LIBS = ${LOCAL_LIBS} -lgit2 -lcurl -lm -lcrypto
+LOCAL_LIBS_DIRS = $(wildcard lib/*/)
+LIBS = ${LOCAL_LIBS} -lgit2 -lsqlite3 -lcurl -lm -lcrypto
 
 # change these to proper directories where each file should be
 SRCDIR   = src
@@ -72,8 +73,7 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 
 
 test:
-	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/spm.c ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
-	$(CC) $(CFLAGS) -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/package.c ${DEVDIR}/test.c $(LIBS) -o bin/package-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
+	$(CC) $(CFLAGS) -lasan -DSTATIC ${FMT_DIR}/*/* ${DEVDIR}/spm.c ${DEVDIR}/test.c $(LIBS) -o bin/spm-test -lspm -L./bin -D MEMCHECK=$(MEMCHECK)
 	@echo "Test binary created"
 
 check-all:
@@ -91,7 +91,7 @@ debug: libs $(BINDIR)/$(LIBOUT) formats
 	@echo "Build done (debug)"
 
 libs:
-	for i in $(LOCAL_LIBS); do make -C $$(dirname $$i) all; done
+	for i in $(LOCAL_LIBS_DIRS); do make -C $$i clean all; done
 
 direct:
 	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -g -shared -fPIC -o $(BINDIR)/$(LIBOUT)
@@ -117,6 +117,3 @@ install: $(BINDIR)/$(LIBOUT)
 	for i in include/*; do install -vDm 755 $$i $(DESTDIR)/usr/include/spm/; done
 	install -vDm 755 $(BINDIR)/$(LIBOUT) $(DESTDIR)/usr/lib/$(LIBOUT)
 	install  $(BINDIR)/plugins/ecmp.so -vDm 755 $(DESTDIR)/var/cccp/plugins/ecmp.so
-
-
-

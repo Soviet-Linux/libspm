@@ -51,6 +51,7 @@ void init() {
             msg(ERROR, "Format plugin %s not found", format);
             exit(1);
         }
+        free(formats[i]);
     }
 
     //free(*formats);
